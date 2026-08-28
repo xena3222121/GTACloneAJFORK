@@ -9,11 +9,13 @@ const INTERACT_RANGE := 3.0
 const FIRE_COOLDOWN := 0.12
 const MUZZLE_FLASH_TIME := 0.08
 const MAX_HEALTH := 100.0
-# Positive spring_arm.rotation.x looks up (see _unhandled_input's mouse-look:
-# moving the mouse up increases camera_pitch, which feeds this directly) -
-# pushed well past the normal [-1.2, 0.8] gameplay clamp for a dramatic
-# straight-up-at-the-sky death cam.
-const DEATH_CAM_PITCH := 1.4
+# Verified by rendering a sweep of values, not assumed: the SpringArm3D
+# orbits the character rather than doing a true free-look, so pitch stops
+# behaving sensibly just past the normal gameplay clamp (0.8) - 0.9+ buries
+# the camera in the ground/a degenerate close-up. 0.85 is the highest value
+# confirmed to still show sky/buildings, so that's as dramatic as this
+# rig allows without breaking.
+const DEATH_CAM_PITCH := 0.85
 const DEATH_CAM_PAN_TIME := 1.8
 const DEATH_TEXT_DELAY := 1.0
 const DEATH_TEXT_FADE_TIME := 0.8

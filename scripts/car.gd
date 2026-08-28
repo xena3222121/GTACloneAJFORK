@@ -9,7 +9,9 @@ const STEER_SPEED := 3.0
 @export var max_health: float = 100.0
 @export var blast_radius: float = 5.0
 @export var blast_damage: float = 80.0
+@export var kill_radius: float = 2.5
 
+const INSTANT_KILL_DAMAGE := 99999.0
 const EXPLOSION := preload("res://scenes/Explosion.tscn")
 const SCORCH_MARK := preload("res://scenes/ScorchMark.tscn")
 const FIRE := preload("res://scenes/Fire.tscn")
@@ -92,9 +94,12 @@ func _apply_blast_damage() -> void:
 		var collider: Object = result.get("collider")
 		if collider and collider.has_method("take_damage"):
 			var dist: float = global_position.distance_to(collider.global_position)
-			var falloff: float = clamp(1.0 - dist / blast_radius, 0.0, 1.0)
-			if falloff > 0.0:
-				collider.take_damage(blast_damage * falloff, global_position)
+			if dist <= kill_radius:
+				collider.take_damage(INSTANT_KILL_DAMAGE, global_position)
+			else:
+				var falloff: float = clamp(1.0 - dist / blast_radius, 0.0, 1.0)
+				if falloff > 0.0:
+					collider.take_damage(blast_damage * falloff, global_position)
 
 func _char_model() -> void:
 	var burnt := StandardMaterial3D.new()

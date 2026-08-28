@@ -61,9 +61,12 @@ func _apply_blast_damage() -> void:
 		var collider: Object = result.get("collider")
 		if collider and collider.has_method("take_damage"):
 			var dist: float = global_position.distance_to(collider.global_position)
-			var falloff: float = clamp(1.0 - dist / blast_radius, 0.0, 1.0)
-			if falloff > 0.0:
-				collider.take_damage(blast_damage * falloff, global_position)
+			if dist <= kill_radius:
+				collider.take_damage(INSTANT_KILL_DAMAGE, global_position)
+			else:
+				var falloff: float = clamp(1.0 - dist / blast_radius, 0.0, 1.0)
+				if falloff > 0.0:
+					collider.take_damage(blast_damage * falloff, global_position)
 
 # One shared unshaded near-black material applied to every mesh in the model,
 # rather than trying to tint each of the FBX's original materials - simpler
