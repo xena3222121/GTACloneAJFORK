@@ -55,6 +55,7 @@ const UPPER_BODY_BONES := [
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var spring_arm: SpringArm3D = $CameraPivot/SpringArm3D
 @onready var camera: Camera3D = $CameraPivot/SpringArm3D/Camera3D
+@onready var gun_viewmodel: Node3D = $Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/GunViewmodel
 @onready var muzzle_point: Marker3D = $Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/GunViewmodel/MuzzlePoint
 @onready var muzzle_flash: MeshInstance3D = $Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/GunViewmodel/MuzzlePoint/MuzzleFlash
 @onready var muzzle_light: OmniLight3D = $Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/GunViewmodel/MuzzlePoint/MuzzleLight
@@ -65,6 +66,19 @@ const UPPER_BODY_BONES := [
 @onready var collision: CollisionShape3D = $CollisionShape3D
 @onready var anim: AnimationPlayer = model.find_child("AnimationPlayer", true, false)
 @onready var anim_tree: AnimationTree = $AnimTree
+
+# The RightHand bone's local orientation is completely different between the
+# relaxed (Idle/Walk) pose and the Aim pose - not just a twist, but which
+# local axis points "forward" changes (measured: idle barrel-forward is the
+# bone's local +X, aim barrel-forward is local +Y). So the gun's attachment
+# can't use one fixed offset; it blends between two authored orientations
+# using the same aim_blend the animation tree already tracks.
+const GUN_SCALE := 0.84
+const GUN_ORIGIN := Vector3(0, 0.22, 0.05)
+# Basis.slerp() requires pure (unscaled) rotation matrices, so scale is kept
+# separate here and reapplied after blending rather than baked into these.
+var gun_rot_idle := Basis(Vector3(1, 0, 0), Vector3(0, -1, 0), Vector3(0, 0, -1))
+var gun_rot_aim := Basis(Vector3(0, 1, 0), Vector3(1, 0, 0), Vector3(0, 0, -1))
 
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var camera_pitch := 0.0
@@ -327,6 +341,9 @@ func _physics_process(delta: float) -> void:
 	anim_tree["parameters/Locomotion/blend_amount"] = loco_blend
 	anim_tree["parameters/UpperAim/blend_amount"] = aim_blend
 	anim_tree["parameters/WalkSpeed/scale"] = speed / WALK_SPEED
+
+	gun_viewmodel.transform.basis = gun_rot_idle.slerp(gun_rot_aim, aim_blend).scaled(Vector3.ONE * GUN_SCALE)
+	gun_viewmodel.transform.origin = GUN_ORIGIN
 
 	move_and_slide()
 
