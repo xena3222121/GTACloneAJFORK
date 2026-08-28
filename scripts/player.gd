@@ -576,8 +576,12 @@ func _fire_ray(origin: Vector3, forward: Vector3, damage: float) -> void:
 		var point: Vector3 = result.position
 		var hit: Object = result.collider
 		var is_damageable: bool = hit and hit.has_method("take_damage")
+		# Cars/traffic cars have take_damage too (they explode after enough
+		# hits), but they're not alive - only CharacterBody3D targets
+		# (Player/NPC/Police) should spray blood; everything else sparks.
+		var is_person: bool = is_damageable and hit is CharacterBody3D
 
-		var fx: Node3D = IMPACT_HIT.instantiate() if is_damageable else IMPACT_EFFECT.instantiate()
+		var fx: Node3D = IMPACT_HIT.instantiate() if is_person else IMPACT_EFFECT.instantiate()
 		get_tree().current_scene.add_child(fx)
 		fx.global_position = point
 
@@ -716,8 +720,9 @@ func melee_attack() -> void:
 		var point: Vector3 = result.position
 		var hit: Object = result.collider
 		var is_damageable: bool = hit and hit.has_method("take_damage")
+		var is_person: bool = is_damageable and hit is CharacterBody3D
 
-		var fx: Node3D = IMPACT_HIT.instantiate() if is_damageable else IMPACT_EFFECT.instantiate()
+		var fx: Node3D = IMPACT_HIT.instantiate() if is_person else IMPACT_EFFECT.instantiate()
 		get_tree().current_scene.add_child(fx)
 		fx.global_position = point
 
