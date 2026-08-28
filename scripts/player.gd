@@ -11,14 +11,20 @@ const MUZZLE_FLASH_TIME := 0.08
 const MAX_HEALTH := 100.0
 # Verified by rendering a sweep of values, not assumed: the SpringArm3D
 # orbits the character rather than doing a true free-look, so pitch stops
-# behaving sensibly just past the normal gameplay clamp (0.8) - 0.9+ buries
-# the camera in the ground/a degenerate close-up. 0.85 is the highest value
-# confirmed to still show sky/buildings, so that's as dramatic as this
-# rig allows without breaking.
-const DEATH_CAM_PITCH := 0.85
+# framing cleanly past the normal gameplay clamp range in either direction.
+# -1.2 (the existing minimum from normal gameplay) gives a clean top-down
+# view of the body without pushing into that unstable territory.
+const DEATH_CAM_PITCH := -1.2
 const DEATH_CAM_PAN_TIME := 1.8
 const DEATH_TEXT_DELAY := 1.0
 const DEATH_TEXT_FADE_TIME := 0.8
+# spring_arm.collision_mask is 0 (collision avoidance disabled), so
+# spring_length grows freely without ever getting clipped by geometry -
+# safe to just keep raising it forever for the "reveal the whole city"
+# pull-back, capped only so it can't run away to something absurd if the
+# player leaves the death screen open for a very long time.
+const DEATH_CAM_ZOOM_SPEED := 2.5
+const DEATH_CAM_ZOOM_MAX := 300.0
 
 const IMPACT_EFFECT := preload("res://scenes/ImpactEffect.tscn")
 const IMPACT_HIT := preload("res://scenes/ImpactHit.tscn")
@@ -78,6 +84,9 @@ const UPPER_BODY_BONES := [
 @onready var anim: AnimationPlayer = model.find_child("AnimationPlayer", true, false)
 @onready var anim_tree: AnimationTree = $AnimTree
 @onready var death_screen: Control = $HUD/DeathScreen
+@onready var health_bar: ProgressBar = $HUD/HealthBar
+@onready var restart_button: Button = $HUD/DeathScreen/ButtonRow/RestartButton
+@onready var quit_button: Button = $HUD/DeathScreen/ButtonRow/QuitButton
 
 # The RightHand bone's local Y axis is "along the forearm" in both poses
 # (points down when the arm hangs relaxed, forward when raised to aim), so
@@ -105,6 +114,7 @@ var anim_die := ""
 var aiming := false
 var health := MAX_HEALTH
 var dead := false
+var death_cam_zooming := false
 var recoil_pitch := 0.0
 var ammo_in_mag := MAG_SIZE
 var reload_timer := 0.0
@@ -267,6 +277,16 @@ func _ready() -> void:
 		_setup_animation_tree()
 	gunshot_player.stream = _make_gunshot_sound()
 	_update_ammo_label()
+	health_bar.max_value = MAX_HEALTH
+	health_bar.value = health
+	restart_button.pressed.connect(_on_restart_pressed)
+	quit_button.pressed.connect(_on_quit_pressed)
+
+func _on_restart_pressed() -> void:
+	get_tree().reload_current_scene()
+
+func _on_quit_pressed() -> void:
+	get_tree().quit()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if dead:
@@ -525,6 +545,7 @@ func take_damage(amount: float, _hit_point: Vector3 = Vector3.ZERO) -> void:
 	if dead:
 		return
 	health -= amount
+	health_bar.value = health
 	if health <= 0.0:
 		die()
 
@@ -548,11 +569,25 @@ func die() -> void:
 func _play_death_camera() -> void:
 	var tween := create_tween()
 	tween.tween_property(spring_arm, "rotation:x", DEATH_CAM_PITCH, DEATH_CAM_PAN_TIME).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	# Starts immediately (not after the pan finishes) so the pull-back and
+	# the swing-to-top-down happen together rather than one after the other.
+	death_cam_zooming = true
 	await get_tree().create_timer(DEATH_TEXT_DELAY).timeout
 	_show_death_text()
 
 func _show_death_text() -> void:
 	death_screen.visible = true
 	death_screen.modulate.a = 0.0
+	# The buttons need a visible, usable cursor - normal gameplay keeps the
+	# mouse captured/hidden for looking around, which would otherwise leave
+	# Restart/Quit unclickable.
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	var tween := create_tween()
 	tween.tween_property(death_screen, "modulate:a", 1.0, DEATH_TEXT_FADE_TIME)
+
+# Runs every rendered frame regardless of _physics_process's early-return
+# once dead, so the "reveal the whole city" pull-back keeps going for as
+# long as the death screen is up.
+func _process(delta: float) -> void:
+	if death_cam_zooming:
+		spring_arm.spring_length = min(spring_arm.spring_length + DEATH_CAM_ZOOM_SPEED * delta, DEATH_CAM_ZOOM_MAX)
