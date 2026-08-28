@@ -78,7 +78,7 @@ const GUN_SCALE := 0.84
 const GUN_ORIGIN := Vector3(0, 0.22, 0.05)
 # Basis.slerp() requires pure (unscaled) rotation matrices, so scale is kept
 # separate here and reapplied after blending rather than baked into these.
-var gun_rot_idle := Basis(Vector3(0, 1, 0), Vector3(-1, 0, 0), Vector3(0, 0, 1))
+var gun_rot_idle := Basis(Vector3(0, 1, 0), Vector3(1, 0, 0), Vector3(0, 0, -1))
 var gun_rot_aim := Basis(Vector3(0, 1, 0), Vector3(1, 0, 0), Vector3(0, 0, -1))
 
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
