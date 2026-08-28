@@ -498,6 +498,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.3, 0.1, 40)
 speed = 5.0
 start_direction = -1.0
 
+[node name="TrafficCarC" parent="TrafficCars" instance=ExtResource("15")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.3, 0.1, 10)
+speed = 5.5
+start_direction = -1.0
+
 [node name="Trees" type="Node3D" parent="." unique_id=671295314]
 
 [node name="TreeE1" parent="Trees" unique_id=1697225780 instance=ExtResource("17")]
@@ -595,6 +600,83 @@ mesh = SubResource("BoxMesh_highway_whiteline")
 [node name="LaneDividerN2" type="MeshInstance3D" parent="Highway"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.11, 68)
 mesh = SubResource("BoxMesh_highway_whiteline")
+
+[node name="HighwaySouth" type="Node3D" parent="."]
+
+[node name="Asphalt" type="MeshInstance3D" parent="HighwaySouth"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.05, -60)
+mesh = SubResource("BoxMesh_highway")
+surface_material_override/0 = SubResource("StandardMaterial3D_highway")
+
+[node name="SidewalkOuter" type="MeshInstance3D" parent="HighwaySouth"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.075, -72.9)
+mesh = SubResource("BoxMesh_highway_sidewalk")
+surface_material_override/0 = SubResource("StandardMaterial3D_sidewalk")
+
+[node name="SidewalkInner" type="MeshInstance3D" parent="HighwaySouth"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.075, -47.1)
+mesh = SubResource("BoxMesh_highway_sidewalk")
+surface_material_override/0 = SubResource("StandardMaterial3D_sidewalk")
+
+[node name="CenterLineA" type="MeshInstance3D" parent="HighwaySouth"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.11, -60.15)
+mesh = SubResource("BoxMesh_highway_yellowline")
+surface_material_override/0 = SubResource("StandardMaterial3D_dash")
+
+[node name="CenterLineB" type="MeshInstance3D" parent="HighwaySouth"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.11, -59.85)
+mesh = SubResource("BoxMesh_highway_yellowline")
+surface_material_override/0 = SubResource("StandardMaterial3D_dash")
+
+[node name="LaneDividerS1" type="MeshInstance3D" parent="HighwaySouth"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.11, -68)
+mesh = SubResource("BoxMesh_highway_whiteline")
+
+[node name="LaneDividerS2" type="MeshInstance3D" parent="HighwaySouth"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.11, -64)
+mesh = SubResource("BoxMesh_highway_whiteline")
+
+[node name="LaneDividerN1" type="MeshInstance3D" parent="HighwaySouth"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.11, -56)
+mesh = SubResource("BoxMesh_highway_whiteline")
+
+[node name="LaneDividerN2" type="MeshInstance3D" parent="HighwaySouth"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.11, -52)
+mesh = SubResource("BoxMesh_highway_whiteline")
+
+[node name="TrafficCarsHighwayNorth" type="Node3D" parent="."]
+
+[node name="CarA" parent="TrafficCarsHighwayNorth" instance=ExtResource("15")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 0.1, 54)
+axis = 1
+min_pos = -10.0
+max_pos = 95.0
+speed = 7.0
+
+[node name="CarB" parent="TrafficCarsHighwayNorth" instance=ExtResource("16")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 90, 0.1, 66)
+axis = 1
+min_pos = -10.0
+max_pos = 95.0
+speed = 6.0
+start_direction = -1.0
+
+[node name="TrafficCarsHighwaySouth" type="Node3D" parent="."]
+
+[node name="CarA" parent="TrafficCarsHighwaySouth" instance=ExtResource("15")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 0.1, -54)
+axis = 1
+min_pos = -10.0
+max_pos = 95.0
+speed = 6.5
+start_direction = -1.0
+
+[node name="CarB" parent="TrafficCarsHighwaySouth" instance=ExtResource("16")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 90, 0.1, -66)
+axis = 1
+min_pos = -10.0
+max_pos = 95.0
+speed = 5.5
 
 [node name="StreetB" type="Node3D" parent="."]
 

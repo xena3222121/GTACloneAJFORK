@@ -20,3 +20,6 @@ tools/autosave.log
 
 # Scratch files from debug/verification scripts (never meant to be committed)
 tools/tmp_*
+
+# Personal Claude Code settings (not shared with the team)
+.claude/settings.local.json

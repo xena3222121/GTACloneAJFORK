@@ -1,8 +1,9 @@
 extends AnimatableBody3D
 
 @export var speed: float = 6.0
-@export var min_z: float = -45.0
-@export var max_z: float = 45.0
+@export var axis: int = 0  # 0 = drives back and forth along Z (a north-south street), 1 = along X (an east-west street)
+@export var min_pos: float = -45.0
+@export var max_pos: float = 45.0
 @export var start_direction: float = 1.0
 @export var max_health: float = 100.0
 @export var blast_radius: float = 5.0
@@ -19,22 +20,38 @@ var health: float
 var destroyed := false
 
 func _ready() -> void:
+	# sync_to_physics (on by default for AnimatableBody3D) re-syncs the node's
+	# transform from the physics server every step, which was silently
+	# discarding our rotation changes each frame — the car kept moving but
+	# never actually turned to face its direction of travel.
+	sync_to_physics = false
 	direction = 1.0 if start_direction >= 0.0 else -1.0
-	rotation.y = 0.0 if direction > 0.0 else PI
+	_update_facing()
 	health = max_health
+
+func _update_facing() -> void:
+	if axis == 0:
+		rotation.y = 0.0 if direction > 0.0 else PI
+	else:
+		rotation.y = PI / 2.0 if direction > 0.0 else -PI / 2.0
 
 func _physics_process(delta: float) -> void:
 	if destroyed:
 		return
-	position.z += direction * speed * delta
-	if position.z >= max_z:
-		position.z = max_z
+	var pos: float = position.z if axis == 0 else position.x
+	pos += direction * speed * delta
+	if pos >= max_pos:
+		pos = max_pos
 		direction = -1.0
-		rotation.y = PI
-	elif position.z <= min_z:
-		position.z = min_z
+		_update_facing()
+	elif pos <= min_pos:
+		pos = min_pos
 		direction = 1.0
-		rotation.y = 0.0
+		_update_facing()
+	if axis == 0:
+		position.z = pos
+	else:
+		position.x = pos
 
 func take_damage(amount: float, _hit_point: Vector3 = Vector3.ZERO) -> void:
 	if destroyed:
