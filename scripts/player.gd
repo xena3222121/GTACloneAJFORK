@@ -67,17 +67,18 @@ const UPPER_BODY_BONES := [
 @onready var anim: AnimationPlayer = model.find_child("AnimationPlayer", true, false)
 @onready var anim_tree: AnimationTree = $AnimTree
 
-# The RightHand bone's local orientation is completely different between the
-# relaxed (Idle/Walk) pose and the Aim pose - not just a twist, but which
-# local axis points "forward" changes (measured: idle barrel-forward is the
-# bone's local +X, aim barrel-forward is local +Y). So the gun's attachment
-# can't use one fixed offset; it blends between two authored orientations
-# using the same aim_blend the animation tree already tracks.
+# The RightHand bone's local Y axis is "along the forearm" in both poses
+# (points down when the arm hangs relaxed, forward when raised to aim), so
+# both orientations below use it as the barrel axis. But the same secondary
+# (grip-roll) axis can't serve both: the one that keeps the barrel pointed
+# straight down at rest holds the gun upside-down once raised to aim, and
+# vice versa. So the gun's attachment blends between two authored
+# orientations using the same aim_blend the animation tree already tracks.
 const GUN_SCALE := 0.84
 const GUN_ORIGIN := Vector3(0, 0.22, 0.05)
 # Basis.slerp() requires pure (unscaled) rotation matrices, so scale is kept
 # separate here and reapplied after blending rather than baked into these.
-var gun_rot_idle := Basis(Vector3(1, 0, 0), Vector3(0, -1, 0), Vector3(0, 0, -1))
+var gun_rot_idle := Basis(Vector3(0, 1, 0), Vector3(-1, 0, 0), Vector3(0, 0, 1))
 var gun_rot_aim := Basis(Vector3(0, 1, 0), Vector3(1, 0, 0), Vector3(0, 0, -1))
 
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
