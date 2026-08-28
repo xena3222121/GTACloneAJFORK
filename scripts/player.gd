@@ -1,12 +1,14 @@
 extends CharacterBody3D
 
+enum Weapon { KNIFE, PISTOL, SHOTGUN, MAC10 }
+
 const WALK_SPEED := 5.0
 const SPRINT_SPEED := 8.5
 const JUMP_VELOCITY := 5.5
 const MOUSE_SENSITIVITY := 0.003
-const GUN_DAMAGE := 25.0
+const PISTOL_DAMAGE := 25.0
 const INTERACT_RANGE := 3.0
-const FIRE_COOLDOWN := 0.12
+const PISTOL_FIRE_COOLDOWN := 0.12
 const MUZZLE_FLASH_TIME := 0.08
 const MAX_HEALTH := 100.0
 # Verified by rendering a sweep of values, not assumed: the SpringArm3D
@@ -36,10 +38,34 @@ const PISTOL_ANIM_SOURCE := "res://assets/animations/UAL1_Standard.glb"
 # look wrong (pointing sideways/up) whenever those animations were active.
 const PISTOL_ANIMS := ["Pistol_Idle", "Pistol_Shoot", "Pistol_Reload", "Pistol_Aim_Neutral", "Idle", "Walk"]
 
-const MAG_SIZE := 12
+const PISTOL_MAG_SIZE := 12
 const STARTING_RESERVE_AMMO := 36
-const RELOAD_TIME := 1.6
+const PISTOL_RELOAD_TIME := 1.6
 const RECOIL_KICK := 0.05
+
+const MELEE_RANGE := 2.2
+const MELEE_DAMAGE := 35.0
+const MELEE_COOLDOWN := 0.6
+const MELEE_RECOIL_KICK := 0.12
+
+# The shotgun and Mac-10 both reuse the pistol's viewmodel and animations
+# (there's no separate weapon model in the project's assets) - each is given
+# a different tint on pickup as the only visual differentiator, and is
+# differentiated for real by its fire behavior/ammo pool instead.
+const SHOTGUN_PELLET_DAMAGE := 9.0
+const SHOTGUN_PELLET_COUNT := 8
+const SHOTGUN_SPREAD_DEGREES := 6.0
+const SHOTGUN_FIRE_COOLDOWN := 0.9
+const SHOTGUN_MAG_SIZE := 6
+const SHOTGUN_RELOAD_TIME := 2.2
+const SHOTGUN_PICKUP_AMMO := 16
+
+const MAC10_DAMAGE := 14.0
+const MAC10_FIRE_COOLDOWN := 0.08
+const MAC10_MAG_SIZE := 30
+const MAC10_RELOAD_TIME := 1.8
+const MAC10_PICKUP_AMMO := 60
+
 const RECOIL_RECOVERY := 9.0
 const TURN_SPEED := 12.0
 const AIM_TURN_SPEED := 20.0
@@ -119,8 +145,15 @@ var health := MAX_HEALTH
 var dead := false
 var death_cam_zooming := false
 var recoil_pitch := 0.0
-var ammo_in_mag := MAG_SIZE
-var reserve_ammo := STARTING_RESERVE_AMMO
+var current_weapon: int = Weapon.PISTOL
+var has_shotgun := false
+var has_mac10 := false
+var pistol_ammo_in_mag := PISTOL_MAG_SIZE
+var pistol_reserve_ammo := STARTING_RESERVE_AMMO
+var shotgun_ammo_in_mag := 0
+var shotgun_reserve_ammo := 0
+var mac10_ammo_in_mag := 0
+var mac10_reserve_ammo := 0
 var money := 0
 var reload_timer := 0.0
 var loco_blend := 0.0
@@ -311,11 +344,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		elif not driving and fire_cooldown <= 0.0 and reload_timer <= 0.0:
-			if ammo_in_mag > 0:
-				shoot()
-				fire_cooldown = FIRE_COOLDOWN
-			else:
-				_play_empty_click()
+			_try_fire()
 
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT:
 		aiming = event.pressed and not driving and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
@@ -324,6 +353,19 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and event.keycode == KEY_R:
 		if not driving:
 			reload()
+
+	if event is InputEventKey and event.pressed and event.keycode == KEY_1:
+		if not driving:
+			switch_weapon(Weapon.KNIFE)
+	if event is InputEventKey and event.pressed and event.keycode == KEY_2:
+		if not driving:
+			switch_weapon(Weapon.PISTOL)
+	if event is InputEventKey and event.pressed and event.keycode == KEY_3:
+		if not driving:
+			switch_weapon(Weapon.SHOTGUN)
+	if event is InputEventKey and event.pressed and event.keycode == KEY_4:
+		if not driving:
+			switch_weapon(Weapon.MAC10)
 
 	if event is InputEventKey and event.pressed and event.keycode == KEY_E:
 		if driving:
@@ -349,6 +391,13 @@ func _physics_process(delta: float) -> void:
 		global_position = driving.driver_seat.global_position
 		velocity = Vector3.ZERO
 		return
+
+	# Mac-10 is full-auto: keeps firing while held, unlike the click-to-fire
+	# pistol/shotgun/knife (handled in _unhandled_input on the press event).
+	if current_weapon == Weapon.MAC10 and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED \
+			and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) \
+			and fire_cooldown <= 0.0 and reload_timer <= 0.0:
+		_try_fire()
 
 	if not is_on_floor():
 		velocity.y -= gravity * delta
@@ -401,11 +450,129 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
+func _mag_size() -> int:
+	match current_weapon:
+		Weapon.SHOTGUN: return SHOTGUN_MAG_SIZE
+		Weapon.MAC10: return MAC10_MAG_SIZE
+		_: return PISTOL_MAG_SIZE
+
+func _fire_cooldown_time() -> float:
+	match current_weapon:
+		Weapon.SHOTGUN: return SHOTGUN_FIRE_COOLDOWN
+		Weapon.MAC10: return MAC10_FIRE_COOLDOWN
+		_: return PISTOL_FIRE_COOLDOWN
+
+func _reload_time_for_current() -> float:
+	match current_weapon:
+		Weapon.SHOTGUN: return SHOTGUN_RELOAD_TIME
+		Weapon.MAC10: return MAC10_RELOAD_TIME
+		_: return PISTOL_RELOAD_TIME
+
+func _current_ammo_in_mag() -> int:
+	match current_weapon:
+		Weapon.SHOTGUN: return shotgun_ammo_in_mag
+		Weapon.MAC10: return mac10_ammo_in_mag
+		_: return pistol_ammo_in_mag
+
+func _set_current_ammo_in_mag(value: int) -> void:
+	match current_weapon:
+		Weapon.SHOTGUN: shotgun_ammo_in_mag = value
+		Weapon.MAC10: mac10_ammo_in_mag = value
+		_: pistol_ammo_in_mag = value
+
+func _current_reserve_ammo() -> int:
+	match current_weapon:
+		Weapon.SHOTGUN: return shotgun_reserve_ammo
+		Weapon.MAC10: return mac10_reserve_ammo
+		_: return pistol_reserve_ammo
+
+func _set_current_reserve_ammo(value: int) -> void:
+	match current_weapon:
+		Weapon.SHOTGUN: shotgun_reserve_ammo = value
+		Weapon.MAC10: mac10_reserve_ammo = value
+		_: pistol_reserve_ammo = value
+
+func _has_weapon(weapon: int) -> bool:
+	match weapon:
+		Weapon.SHOTGUN: return has_shotgun
+		Weapon.MAC10: return has_mac10
+		_: return true
+
+func switch_weapon(weapon: int) -> void:
+	if weapon == current_weapon or not _has_weapon(weapon):
+		return
+	if reload_timer > 0.0:
+		return
+	current_weapon = weapon
+	var tint = null
+	match weapon:
+		Weapon.SHOTGUN: tint = Color(0.55, 0.4, 0.15)
+		Weapon.MAC10: tint = Color(0.15, 0.15, 0.18)
+	_tint_gun_viewmodel(tint)
+	gun_viewmodel.visible = weapon != Weapon.KNIFE
+	_update_ammo_label()
+	_update_reserve_ammo_label()
+
+func _tint_gun_viewmodel(color) -> void:
+	var meshes: Array = gun_viewmodel.find_children("*", "MeshInstance3D", true, false)
+	for m in meshes:
+		var mesh_inst: MeshInstance3D = m
+		if not mesh_inst.mesh:
+			continue
+		var mat: StandardMaterial3D = null
+		if color != null:
+			mat = StandardMaterial3D.new()
+			mat.albedo_color = color
+			mat.roughness = 0.5
+		for i in range(mesh_inst.mesh.get_surface_count()):
+			mesh_inst.set_surface_override_material(i, mat)
+
+# Dispatches the left-click / auto-fire action for whichever weapon is
+# currently equipped: melee for the knife (no ammo), otherwise fire if the
+# mag has rounds, otherwise a dry-fire click.
+func _try_fire() -> void:
+	if current_weapon == Weapon.KNIFE:
+		melee_attack()
+		fire_cooldown = MELEE_COOLDOWN
+		return
+	if _current_ammo_in_mag() > 0:
+		shoot()
+		fire_cooldown = _fire_cooldown_time()
+	else:
+		_play_empty_click()
+		fire_cooldown = _fire_cooldown_time()
+
+func _spread_direction(forward: Vector3, max_degrees: float) -> Vector3:
+	var basis := Basis.looking_at(forward, Vector3.UP) if forward != Vector3.UP and forward != -Vector3.UP else Basis()
+	var yaw_deg := randf_range(-max_degrees, max_degrees)
+	var pitch_deg := randf_range(-max_degrees, max_degrees)
+	var spread_basis := basis.rotated(basis.y, deg_to_rad(yaw_deg))
+	spread_basis = spread_basis.rotated(spread_basis.x, deg_to_rad(pitch_deg))
+	return -spread_basis.z.normalized()
+
+func _fire_ray(origin: Vector3, forward: Vector3, damage: float) -> void:
+	var query := PhysicsRayQueryParameters3D.create(origin, origin + forward * RAY_LENGTH)
+	query.exclude = [self.get_rid()]
+	var result: Dictionary = get_world_3d().direct_space_state.intersect_ray(query)
+
+	if result:
+		var point: Vector3 = result.position
+		var hit: Object = result.collider
+		var is_damageable: bool = hit and hit.has_method("take_damage")
+
+		var fx: Node3D = IMPACT_HIT.instantiate() if is_damageable else IMPACT_EFFECT.instantiate()
+		get_tree().current_scene.add_child(fx)
+		fx.global_position = point
+
+		if is_damageable:
+			hit.take_damage(damage, point)
+			crosshair.flash_hit()
+
 func shoot() -> void:
 	gunshot_player.play()
 	_flash_muzzle()
 
-	ammo_in_mag -= 1
+	_set_current_ammo_in_mag(_current_ammo_in_mag() - 1)
 	_update_ammo_label()
 
 	recoil_pitch += RECOIL_KICK
@@ -425,7 +592,103 @@ func shoot() -> void:
 	else:
 		origin = muzzle_point.global_position
 		forward = model.global_transform.basis.z.normalized()
-	var query := PhysicsRayQueryParameters3D.create(origin, origin + forward * RAY_LENGTH)
+
+	if current_weapon == Weapon.SHOTGUN:
+		for i in range(SHOTGUN_PELLET_COUNT):
+			_fire_ray(origin, _spread_direction(forward, SHOTGUN_SPREAD_DEGREES), SHOTGUN_PELLET_DAMAGE)
+	elif current_weapon == Weapon.MAC10:
+		_fire_ray(origin, forward, MAC10_DAMAGE)
+	else:
+		_fire_ray(origin, forward, PISTOL_DAMAGE)
+
+func reload() -> void:
+	if reload_timer > 0.0 or current_weapon == Weapon.KNIFE:
+		return
+	if _current_ammo_in_mag() >= _mag_size() or _current_reserve_ammo() <= 0:
+		return
+	reload_timer = _reload_time_for_current()
+	if has_reload_anim:
+		anim_tree["parameters/ReloadShot/request"] = AnimationNodeOneShot.ONE_SHOT_REQUEST_FIRE
+	await get_tree().create_timer(reload_timer).timeout
+	var needed: int = _mag_size() - _current_ammo_in_mag()
+	var taken: int = min(needed, _current_reserve_ammo())
+	_set_current_ammo_in_mag(_current_ammo_in_mag() + taken)
+	_set_current_reserve_ammo(_current_reserve_ammo() - taken)
+	_update_ammo_label()
+	_update_reserve_ammo_label()
+
+func _update_ammo_label() -> void:
+	if ammo_label:
+		ammo_label.text = "-- / --" if current_weapon == Weapon.KNIFE else "%d / %d" % [_current_ammo_in_mag(), _mag_size()]
+
+func _update_reserve_ammo_label() -> void:
+	if reserve_ammo_label:
+		reserve_ammo_label.text = "Knife" if current_weapon == Weapon.KNIFE else "Ammo: %d" % _current_reserve_ammo()
+
+func _update_money_label() -> void:
+	if money_label:
+		money_label.text = "$%d" % money
+
+func add_money(amount: int) -> void:
+	money += amount
+	_update_money_label()
+
+# weapon: "pistol" (default), "shotgun", or "mac10". Picking up a weapon for
+# the first time grants it and auto-equips it; later pickups just add ammo.
+func add_ammo(amount: int, weapon: String = "pistol") -> void:
+	match weapon:
+		"shotgun":
+			var first_pickup := not has_shotgun
+			has_shotgun = true
+			if first_pickup:
+				# Load the mag straight away so a freshly picked-up weapon is
+				# immediately ready to fire instead of needing a manual reload first.
+				var to_mag: int = min(amount, SHOTGUN_MAG_SIZE)
+				shotgun_ammo_in_mag = to_mag
+				shotgun_reserve_ammo += amount - to_mag
+				switch_weapon(Weapon.SHOTGUN)
+			else:
+				shotgun_reserve_ammo += amount
+		"mac10":
+			var first_pickup := not has_mac10
+			has_mac10 = true
+			if first_pickup:
+				var to_mag: int = min(amount, MAC10_MAG_SIZE)
+				mac10_ammo_in_mag = to_mag
+				mac10_reserve_ammo += amount - to_mag
+				switch_weapon(Weapon.MAC10)
+			else:
+				mac10_reserve_ammo += amount
+		_:
+			pistol_reserve_ammo += amount
+	_update_ammo_label()
+	_update_reserve_ammo_label()
+
+func _play_empty_click() -> void:
+	var stream := _make_click_sound()
+	gunshot_player.stream = stream
+	gunshot_player.play()
+	gunshot_player.stream = _make_gunshot_sound()
+
+# The knife (weapon slot 1) - no ammo cost, short range, fires via the same
+# left-click input as the guns (see _try_fire).
+func melee_attack() -> void:
+	var stream := _make_punch_sound()
+	gunshot_player.stream = stream
+	gunshot_player.play()
+	gunshot_player.stream = _make_gunshot_sound()
+
+	recoil_pitch += MELEE_RECOIL_KICK
+
+	var origin: Vector3
+	var forward: Vector3
+	if aiming:
+		origin = camera.global_position
+		forward = -camera.global_transform.basis.z.normalized()
+	else:
+		origin = muzzle_point.global_position
+		forward = model.global_transform.basis.z.normalized()
+	var query := PhysicsRayQueryParameters3D.create(origin, origin + forward * MELEE_RANGE)
 	query.exclude = [self.get_rid()]
 	var result: Dictionary = get_world_3d().direct_space_state.intersect_ray(query)
 
@@ -439,48 +702,8 @@ func shoot() -> void:
 		fx.global_position = point
 
 		if is_damageable:
-			hit.take_damage(GUN_DAMAGE, point)
+			hit.take_damage(MELEE_DAMAGE, point)
 			crosshair.flash_hit()
-
-func reload() -> void:
-	if reload_timer > 0.0 or ammo_in_mag >= MAG_SIZE or reserve_ammo <= 0:
-		return
-	reload_timer = RELOAD_TIME
-	if has_reload_anim:
-		anim_tree["parameters/ReloadShot/request"] = AnimationNodeOneShot.ONE_SHOT_REQUEST_FIRE
-	await get_tree().create_timer(RELOAD_TIME).timeout
-	var needed: int = MAG_SIZE - ammo_in_mag
-	var taken: int = min(needed, reserve_ammo)
-	ammo_in_mag += taken
-	reserve_ammo -= taken
-	_update_ammo_label()
-	_update_reserve_ammo_label()
-
-func _update_ammo_label() -> void:
-	if ammo_label:
-		ammo_label.text = "%d / %d" % [ammo_in_mag, MAG_SIZE]
-
-func _update_reserve_ammo_label() -> void:
-	if reserve_ammo_label:
-		reserve_ammo_label.text = "Ammo: %d" % reserve_ammo
-
-func _update_money_label() -> void:
-	if money_label:
-		money_label.text = "$%d" % money
-
-func add_money(amount: int) -> void:
-	money += amount
-	_update_money_label()
-
-func add_ammo(amount: int) -> void:
-	reserve_ammo += amount
-	_update_reserve_ammo_label()
-
-func _play_empty_click() -> void:
-	var stream := _make_click_sound()
-	gunshot_player.stream = stream
-	gunshot_player.play()
-	gunshot_player.stream = _make_gunshot_sound()
 
 func _flash_muzzle() -> void:
 	muzzle_flash.visible = true
@@ -508,6 +731,30 @@ func _make_gunshot_sound() -> AudioStreamWAV:
 		var envelope: float = pow(1.0 - t, 4.0)
 		var noise := rng.randf_range(-1.0, 1.0)
 		filtered = filtered * 0.3 + noise * 0.7
+		var sample: float = clamp(filtered * envelope, -1.0, 1.0)
+		data.encode_s16(i * 2, int(sample * 32767.0))
+	var stream := AudioStreamWAV.new()
+	stream.format = AudioStreamWAV.FORMAT_16_BITS
+	stream.mix_rate = mix_rate
+	stream.stereo = false
+	stream.data = data
+	return stream
+
+func _make_punch_sound() -> AudioStreamWAV:
+	var mix_rate := 22050
+	var duration := 0.09
+	var sample_count := int(mix_rate * duration)
+	var data := PackedByteArray()
+	data.resize(sample_count * 2)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 99
+	var filtered := 0.0
+	for i in range(sample_count):
+		var t := float(i) / sample_count
+		var envelope: float = pow(1.0 - t, 3.0)
+		var noise := rng.randf_range(-1.0, 1.0)
+		# Heavier low-pass than the gunshot's for a dull thud instead of a crack.
+		filtered = filtered * 0.75 + noise * 0.25
 		var sample: float = clamp(filtered * envelope, -1.0, 1.0)
 		data.encode_s16(i * 2, int(sample * 32767.0))
 	var stream := AudioStreamWAV.new()
