@@ -36,7 +36,7 @@ const PISTOL_ANIM_SOURCE := "res://assets/animations/UAL1_Standard.glb"
 # bundled Man_Idle/Man_Walk, which come from a differently-rigged pack whose
 # wrist rotation doesn't match — mixing them made the gun's fixed hand offset
 # look wrong (pointing sideways/up) whenever those animations were active.
-const PISTOL_ANIMS := ["Pistol_Idle", "Pistol_Shoot", "Pistol_Reload", "Pistol_Aim_Neutral", "Idle", "Walk"]
+const PISTOL_ANIMS := ["Pistol_Idle", "Pistol_Shoot", "Pistol_Reload", "Pistol_Aim_Neutral", "Idle", "Walk", "Punch_Cross"]
 
 const PISTOL_MAG_SIZE := 12
 const STARTING_RESERVE_AMMO := 36
@@ -45,7 +45,7 @@ const RECOIL_KICK := 0.05
 
 const MELEE_RANGE := 2.2
 const MELEE_DAMAGE := 35.0
-const MELEE_COOLDOWN := 0.6
+const MELEE_COOLDOWN := 0.85 # Punch_Cross is ~1s long; this lets the swing mostly play out before it can be re-triggered
 const MELEE_RECOIL_KICK := 0.12
 
 # The shotgun and Mac-10 both reuse the pistol's viewmodel and animations
@@ -160,6 +160,7 @@ var loco_blend := 0.0
 var aim_blend := 0.0
 var has_shoot_anim := false
 var has_reload_anim := false
+var has_punch_anim := false
 
 func _find_anim(keyword: String) -> String:
 	if not anim:
@@ -215,6 +216,7 @@ func _load_pistol_animations() -> void:
 func _setup_animation_tree() -> void:
 	has_shoot_anim = anim.has_animation("pistol/Pistol_Shoot")
 	has_reload_anim = anim.has_animation("pistol/Pistol_Reload")
+	has_punch_anim = anim.has_animation("pistol/Punch_Cross")
 
 	var bt := AnimationNodeBlendTree.new()
 
@@ -287,6 +289,21 @@ func _setup_animation_tree() -> void:
 		bt.connect_node("ReloadShot", 0, last_output)
 		bt.connect_node("ReloadShot", 1, "Reload")
 		last_output = "ReloadShot"
+
+	if has_punch_anim:
+		var n_punch := AnimationNodeAnimation.new()
+		n_punch.animation = "pistol/Punch_Cross"
+		bt.add_node("Punch", n_punch)
+		var punch_shot := AnimationNodeOneShot.new()
+		punch_shot.filter_enabled = true
+		for bone_name in UPPER_BODY_BONES:
+			punch_shot.set_filter_path(NodePath("%GeneralSkeleton:" + bone_name), true)
+		punch_shot.fadein_time = 0.03
+		punch_shot.fadeout_time = 0.2
+		bt.add_node("PunchShot", punch_shot)
+		bt.connect_node("PunchShot", 0, last_output)
+		bt.connect_node("PunchShot", 1, "Punch")
+		last_output = "PunchShot"
 
 	bt.connect_node("output", 0, last_output)
 
@@ -679,6 +696,9 @@ func melee_attack() -> void:
 	gunshot_player.stream = _make_gunshot_sound()
 
 	recoil_pitch += MELEE_RECOIL_KICK
+
+	if has_punch_anim:
+		anim_tree["parameters/PunchShot/request"] = AnimationNodeOneShot.ONE_SHOT_REQUEST_FIRE
 
 	var origin: Vector3
 	var forward: Vector3
