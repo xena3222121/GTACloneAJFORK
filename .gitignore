@@ -14,3 +14,6 @@ data_*/
 # System/editor files
 .DS_Store
 Thumbs.db
+
+# Local autosave log (machine-specific, not useful to share)
+tools/autosave.log
