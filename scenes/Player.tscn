@@ -36,7 +36,7 @@ bone_name = "RightHand"
 bone_idx = 23
 
 [node name="GunViewmodel" parent="Model/HumanArmature/GeneralSkeleton/BoneAttachment3D" instance=ExtResource("4")]
-transform = Transform3D(0.84, 0, 0, 0, 0.84, 0, 0, 0, 0.84, 0, 0.22, 0.05)
+transform = Transform3D(0.84, 0, 0, 0, -0.84, 0, 0, 0, -0.84, 0, 0.22, 0.05)
 
 [node name="MuzzlePoint" type="Marker3D" parent="Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/GunViewmodel"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.45, 0.45, 0)
