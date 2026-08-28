@@ -18,6 +18,7 @@
 [ext_resource type="PackedScene" uid="uid://fflhncgs1yq7" path="res://assets/buildings-realistic/House2.fbx" id="19"]
 [ext_resource type="PackedScene" path="res://scenes/TreeCommon2.tscn" id="20"]
 [ext_resource type="PackedScene" path="res://scenes/TreeCommon3.tscn" id="21"]
+[ext_resource type="PackedScene" path="res://scenes/Police.tscn" id="22"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
 sky_top_color = Color(0.3, 0.5, 0.85, 1)
@@ -66,6 +67,26 @@ size = Vector3(11.61, 9.54, 7.68)
 
 [sub_resource type="BoxMesh" id="BoxMesh_driveway"]
 size = Vector3(4.5, 0.15, 2.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_highway"]
+size = Vector3(110, 0.1, 24)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_highway"]
+albedo_color = Color(0.22, 0.22, 0.24, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_highway_sidewalk"]
+size = Vector3(110, 0.15, 1.8)
+
+[sub_resource type="BoxMesh" id="BoxMesh_highway_yellowline"]
+size = Vector3(110, 0.02, 0.15)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_whiteline"]
+shading_mode = 0
+albedo_color = Color(0.9, 0.9, 0.9, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_highway_whiteline"]
+size = Vector3(110, 0.02, 0.15)
+material = SubResource("StandardMaterial3D_whiteline")
 
 [node name="World" type="Node3D" unique_id=54692432]
 
@@ -531,6 +552,521 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.1, 34)
 
 [node name="NPC9" parent="NPCs" unique_id=1307993792 instance=ExtResource("7")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 37)
+
+[node name="Highway" type="Node3D" parent="."]
+
+[node name="Asphalt" type="MeshInstance3D" parent="Highway"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.05, 60)
+mesh = SubResource("BoxMesh_highway")
+surface_material_override/0 = SubResource("StandardMaterial3D_highway")
+
+[node name="SidewalkNorth" type="MeshInstance3D" parent="Highway"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.075, 72.9)
+mesh = SubResource("BoxMesh_highway_sidewalk")
+surface_material_override/0 = SubResource("StandardMaterial3D_sidewalk")
+
+[node name="SidewalkSouth" type="MeshInstance3D" parent="Highway"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.075, 47.1)
+mesh = SubResource("BoxMesh_highway_sidewalk")
+surface_material_override/0 = SubResource("StandardMaterial3D_sidewalk")
+
+[node name="CenterLineA" type="MeshInstance3D" parent="Highway"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.11, 59.85)
+mesh = SubResource("BoxMesh_highway_yellowline")
+surface_material_override/0 = SubResource("StandardMaterial3D_dash")
+
+[node name="CenterLineB" type="MeshInstance3D" parent="Highway"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.11, 60.15)
+mesh = SubResource("BoxMesh_highway_yellowline")
+surface_material_override/0 = SubResource("StandardMaterial3D_dash")
+
+[node name="LaneDividerS1" type="MeshInstance3D" parent="Highway"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.11, 52)
+mesh = SubResource("BoxMesh_highway_whiteline")
+
+[node name="LaneDividerS2" type="MeshInstance3D" parent="Highway"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.11, 56)
+mesh = SubResource("BoxMesh_highway_whiteline")
+
+[node name="LaneDividerN1" type="MeshInstance3D" parent="Highway"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.11, 64)
+mesh = SubResource("BoxMesh_highway_whiteline")
+
+[node name="LaneDividerN2" type="MeshInstance3D" parent="Highway"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.11, 68)
+mesh = SubResource("BoxMesh_highway_whiteline")
+
+[node name="StreetB" type="Node3D" parent="."]
+
+[node name="Road_n45" parent="StreetB" instance=ExtResource("6")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 60, 0.02, -45)
+
+[node name="Road_n39" parent="StreetB" instance=ExtResource("6")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 60, 0.02, -39)
+
+[node name="Road_n33" parent="StreetB" instance=ExtResource("6")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 60, 0.02, -33)
+
+[node name="Road_n27" parent="StreetB" instance=ExtResource("6")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 60, 0.02, -27)
+
+[node name="Road_n21" parent="StreetB" instance=ExtResource("6")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 60, 0.02, -21)
+
+[node name="Road_n15" parent="StreetB" instance=ExtResource("6")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 60, 0.02, -15)
+
+[node name="Road_n9" parent="StreetB" instance=ExtResource("6")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 60, 0.02, -9)
+
+[node name="Road_n3" parent="StreetB" instance=ExtResource("6")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 60, 0.02, -3)
+
+[node name="Road_p3" parent="StreetB" instance=ExtResource("6")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 60, 0.02, 3)
+
+[node name="Road_p9" parent="StreetB" instance=ExtResource("6")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 60, 0.02, 9)
+
+[node name="Road_p15" parent="StreetB" instance=ExtResource("6")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 60, 0.02, 15)
+
+[node name="Road_p21" parent="StreetB" instance=ExtResource("6")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 60, 0.02, 21)
+
+[node name="Road_p27" parent="StreetB" instance=ExtResource("6")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 60, 0.02, 27)
+
+[node name="Road_p33" parent="StreetB" instance=ExtResource("6")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 60, 0.02, 33)
+
+[node name="Road_p39" parent="StreetB" instance=ExtResource("6")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 60, 0.02, 39)
+
+[node name="Road_p45" parent="StreetB" instance=ExtResource("6")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 60, 0.02, 45)
+
+[node name="SidewalkEast" type="MeshInstance3D" parent="StreetB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 63.9, 0.075, 0)
+mesh = SubResource("BoxMesh_sidewalk")
+surface_material_override/0 = SubResource("StandardMaterial3D_sidewalk")
+
+[node name="SidewalkWest" type="MeshInstance3D" parent="StreetB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56.1, 0.075, 0)
+mesh = SubResource("BoxMesh_sidewalk")
+surface_material_override/0 = SubResource("StandardMaterial3D_sidewalk")
+
+[node name="CenterDash1" type="MeshInstance3D" parent="StreetB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0.03, -45)
+mesh = SubResource("BoxMesh_dash")
+surface_material_override/0 = SubResource("StandardMaterial3D_dash")
+
+[node name="CenterDash2" type="MeshInstance3D" parent="StreetB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0.03, -39)
+mesh = SubResource("BoxMesh_dash")
+surface_material_override/0 = SubResource("StandardMaterial3D_dash")
+
+[node name="CenterDash3" type="MeshInstance3D" parent="StreetB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0.03, -33)
+mesh = SubResource("BoxMesh_dash")
+surface_material_override/0 = SubResource("StandardMaterial3D_dash")
+
+[node name="CenterDash4" type="MeshInstance3D" parent="StreetB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0.03, -27)
+mesh = SubResource("BoxMesh_dash")
+surface_material_override/0 = SubResource("StandardMaterial3D_dash")
+
+[node name="CenterDash5" type="MeshInstance3D" parent="StreetB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0.03, -21)
+mesh = SubResource("BoxMesh_dash")
+surface_material_override/0 = SubResource("StandardMaterial3D_dash")
+
+[node name="CenterDash6" type="MeshInstance3D" parent="StreetB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0.03, -15)
+mesh = SubResource("BoxMesh_dash")
+surface_material_override/0 = SubResource("StandardMaterial3D_dash")
+
+[node name="CenterDash7" type="MeshInstance3D" parent="StreetB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0.03, -9)
+mesh = SubResource("BoxMesh_dash")
+surface_material_override/0 = SubResource("StandardMaterial3D_dash")
+
+[node name="CenterDash8" type="MeshInstance3D" parent="StreetB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0.03, -3)
+mesh = SubResource("BoxMesh_dash")
+surface_material_override/0 = SubResource("StandardMaterial3D_dash")
+
+[node name="CenterDash9" type="MeshInstance3D" parent="StreetB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0.03, 3)
+mesh = SubResource("BoxMesh_dash")
+surface_material_override/0 = SubResource("StandardMaterial3D_dash")
+
+[node name="CenterDash10" type="MeshInstance3D" parent="StreetB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0.03, 9)
+mesh = SubResource("BoxMesh_dash")
+surface_material_override/0 = SubResource("StandardMaterial3D_dash")
+
+[node name="CenterDash11" type="MeshInstance3D" parent="StreetB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0.03, 15)
+mesh = SubResource("BoxMesh_dash")
+surface_material_override/0 = SubResource("StandardMaterial3D_dash")
+
+[node name="CenterDash12" type="MeshInstance3D" parent="StreetB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0.03, 21)
+mesh = SubResource("BoxMesh_dash")
+surface_material_override/0 = SubResource("StandardMaterial3D_dash")
+
+[node name="CenterDash13" type="MeshInstance3D" parent="StreetB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0.03, 27)
+mesh = SubResource("BoxMesh_dash")
+surface_material_override/0 = SubResource("StandardMaterial3D_dash")
+
+[node name="CenterDash14" type="MeshInstance3D" parent="StreetB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0.03, 33)
+mesh = SubResource("BoxMesh_dash")
+surface_material_override/0 = SubResource("StandardMaterial3D_dash")
+
+[node name="CenterDash15" type="MeshInstance3D" parent="StreetB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0.03, 39)
+mesh = SubResource("BoxMesh_dash")
+surface_material_override/0 = SubResource("StandardMaterial3D_dash")
+
+[node name="CenterDash16" type="MeshInstance3D" parent="StreetB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0.03, 45)
+mesh = SubResource("BoxMesh_dash")
+surface_material_override/0 = SubResource("StandardMaterial3D_dash")
+
+
+[node name="HousesB" type="Node3D" parent="."]
+
+[node name="HouseE1" type="StaticBody3D" parent="HousesB"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 75.09, 0, -42)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HousesB/HouseE1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.22, 0)
+shape = SubResource("BoxShape3D_house1")
+
+[node name="Model" parent="HousesB/HouseE1" instance=ExtResource("18")]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
+
+[node name="HouseW1" type="StaticBody3D" parent="HousesB"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 44.91, 0, -42)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HousesB/HouseW1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.22, 0)
+shape = SubResource("BoxShape3D_house1")
+
+[node name="Model" parent="HousesB/HouseW1" instance=ExtResource("18")]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
+
+[node name="HouseE2" type="StaticBody3D" parent="HousesB"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 73.14, 0, -28)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HousesB/HouseE2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.77, 0)
+shape = SubResource("BoxShape3D_house2")
+
+[node name="Model" parent="HousesB/HouseE2" instance=ExtResource("19")]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
+
+[node name="HouseW2" type="StaticBody3D" parent="HousesB"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 46.86, 0, -28)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HousesB/HouseW2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.77, 0)
+shape = SubResource("BoxShape3D_house2")
+
+[node name="Model" parent="HousesB/HouseW2" instance=ExtResource("19")]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
+
+[node name="HouseE3" type="StaticBody3D" parent="HousesB"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 75.09, 0, -14)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HousesB/HouseE3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.22, 0)
+shape = SubResource("BoxShape3D_house1")
+
+[node name="Model" parent="HousesB/HouseE3" instance=ExtResource("18")]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
+
+[node name="HouseW3" type="StaticBody3D" parent="HousesB"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 44.91, 0, -14)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HousesB/HouseW3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.22, 0)
+shape = SubResource("BoxShape3D_house1")
+
+[node name="Model" parent="HousesB/HouseW3" instance=ExtResource("18")]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
+
+[node name="HouseE4" type="StaticBody3D" parent="HousesB"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 73.14, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HousesB/HouseE4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.77, 0)
+shape = SubResource("BoxShape3D_house2")
+
+[node name="Model" parent="HousesB/HouseE4" instance=ExtResource("19")]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
+
+[node name="HouseW4" type="StaticBody3D" parent="HousesB"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 46.86, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HousesB/HouseW4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.77, 0)
+shape = SubResource("BoxShape3D_house2")
+
+[node name="Model" parent="HousesB/HouseW4" instance=ExtResource("19")]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
+
+[node name="HouseE5" type="StaticBody3D" parent="HousesB"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 75.09, 0, 14)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HousesB/HouseE5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.22, 0)
+shape = SubResource("BoxShape3D_house1")
+
+[node name="Model" parent="HousesB/HouseE5" instance=ExtResource("18")]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
+
+[node name="HouseW5" type="StaticBody3D" parent="HousesB"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 44.91, 0, 14)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HousesB/HouseW5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.22, 0)
+shape = SubResource("BoxShape3D_house1")
+
+[node name="Model" parent="HousesB/HouseW5" instance=ExtResource("18")]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
+
+[node name="HouseE6" type="StaticBody3D" parent="HousesB"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 73.14, 0, 28)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HousesB/HouseE6"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.77, 0)
+shape = SubResource("BoxShape3D_house2")
+
+[node name="Model" parent="HousesB/HouseE6" instance=ExtResource("19")]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
+
+[node name="HouseW6" type="StaticBody3D" parent="HousesB"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 46.86, 0, 28)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HousesB/HouseW6"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.77, 0)
+shape = SubResource("BoxShape3D_house2")
+
+[node name="Model" parent="HousesB/HouseW6" instance=ExtResource("19")]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
+
+[node name="HouseE7" type="StaticBody3D" parent="HousesB"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 75.09, 0, 42)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HousesB/HouseE7"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.22, 0)
+shape = SubResource("BoxShape3D_house1")
+
+[node name="Model" parent="HousesB/HouseE7" instance=ExtResource("18")]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
+
+[node name="HouseW7" type="StaticBody3D" parent="HousesB"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 44.91, 0, 42)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HousesB/HouseW7"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.22, 0)
+shape = SubResource("BoxShape3D_house1")
+
+[node name="Model" parent="HousesB/HouseW7" instance=ExtResource("18")]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
+
+
+[node name="DrivewaysB" type="Node3D" parent="."]
+
+[node name="DrivewayE1" type="MeshInstance3D" parent="DrivewaysB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 67.05, 0.075, -42)
+mesh = SubResource("BoxMesh_driveway")
+surface_material_override/0 = SubResource("StandardMaterial3D_sidewalk")
+
+[node name="DrivewayE2" type="MeshInstance3D" parent="DrivewaysB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 67.05, 0.075, -28)
+mesh = SubResource("BoxMesh_driveway")
+surface_material_override/0 = SubResource("StandardMaterial3D_sidewalk")
+
+[node name="DrivewayE3" type="MeshInstance3D" parent="DrivewaysB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 67.05, 0.075, -14)
+mesh = SubResource("BoxMesh_driveway")
+surface_material_override/0 = SubResource("StandardMaterial3D_sidewalk")
+
+[node name="DrivewayE4" type="MeshInstance3D" parent="DrivewaysB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 67.05, 0.075, 0)
+mesh = SubResource("BoxMesh_driveway")
+surface_material_override/0 = SubResource("StandardMaterial3D_sidewalk")
+
+[node name="DrivewayE5" type="MeshInstance3D" parent="DrivewaysB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 67.05, 0.075, 14)
+mesh = SubResource("BoxMesh_driveway")
+surface_material_override/0 = SubResource("StandardMaterial3D_sidewalk")
+
+[node name="DrivewayE6" type="MeshInstance3D" parent="DrivewaysB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 67.05, 0.075, 28)
+mesh = SubResource("BoxMesh_driveway")
+surface_material_override/0 = SubResource("StandardMaterial3D_sidewalk")
+
+[node name="DrivewayE7" type="MeshInstance3D" parent="DrivewaysB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 67.05, 0.075, 42)
+mesh = SubResource("BoxMesh_driveway")
+surface_material_override/0 = SubResource("StandardMaterial3D_sidewalk")
+
+[node name="DrivewayW1" type="MeshInstance3D" parent="DrivewaysB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52.95, 0.075, -42)
+mesh = SubResource("BoxMesh_driveway")
+surface_material_override/0 = SubResource("StandardMaterial3D_sidewalk")
+
+[node name="DrivewayW2" type="MeshInstance3D" parent="DrivewaysB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52.95, 0.075, -28)
+mesh = SubResource("BoxMesh_driveway")
+surface_material_override/0 = SubResource("StandardMaterial3D_sidewalk")
+
+[node name="DrivewayW3" type="MeshInstance3D" parent="DrivewaysB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52.95, 0.075, -14)
+mesh = SubResource("BoxMesh_driveway")
+surface_material_override/0 = SubResource("StandardMaterial3D_sidewalk")
+
+[node name="DrivewayW4" type="MeshInstance3D" parent="DrivewaysB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52.95, 0.075, 0)
+mesh = SubResource("BoxMesh_driveway")
+surface_material_override/0 = SubResource("StandardMaterial3D_sidewalk")
+
+[node name="DrivewayW5" type="MeshInstance3D" parent="DrivewaysB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52.95, 0.075, 14)
+mesh = SubResource("BoxMesh_driveway")
+surface_material_override/0 = SubResource("StandardMaterial3D_sidewalk")
+
+[node name="DrivewayW6" type="MeshInstance3D" parent="DrivewaysB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52.95, 0.075, 28)
+mesh = SubResource("BoxMesh_driveway")
+surface_material_override/0 = SubResource("StandardMaterial3D_sidewalk")
+
+[node name="DrivewayW7" type="MeshInstance3D" parent="DrivewaysB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52.95, 0.075, 42)
+mesh = SubResource("BoxMesh_driveway")
+surface_material_override/0 = SubResource("StandardMaterial3D_sidewalk")
+
+
+[node name="ParkedCarsB" type="Node3D" parent="."]
+
+[node name="ParkedE1" parent="ParkedCarsB" instance=ExtResource("13")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 67.05, 0.03, -42)
+
+[node name="ParkedE2" parent="ParkedCarsB" instance=ExtResource("12")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 67.05, 0.03, -14)
+
+[node name="ParkedE3" parent="ParkedCarsB" instance=ExtResource("14")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 67.05, 0.03, 14)
+
+[node name="ParkedE4" parent="ParkedCarsB" instance=ExtResource("11")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 67.05, 0.03, 42)
+
+[node name="ParkedW1" parent="ParkedCarsB" instance=ExtResource("12")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 52.95, 0.03, -28)
+
+[node name="ParkedW2" parent="ParkedCarsB" instance=ExtResource("14")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 52.95, 0.03, 0)
+
+[node name="ParkedW3" parent="ParkedCarsB" instance=ExtResource("11")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 52.95, 0.03, 28)
+
+[node name="ParkedW4" parent="ParkedCarsB" instance=ExtResource("13")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 52.95, 0.03, 42)
+
+
+[node name="TrafficCarsB" type="Node3D" parent="."]
+
+[node name="TrafficCarA" parent="TrafficCarsB" instance=ExtResource("15")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 61.3, 0.1, -40)
+
+[node name="TrafficCarB" parent="TrafficCarsB" instance=ExtResource("16")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 58.7, 0.1, 40)
+speed = 5.0
+start_direction = -1.0
+
+
+[node name="TreesB" type="Node3D" parent="."]
+
+[node name="TreeE1" parent="TreesB" instance=ExtResource("17")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 66, 0, -35)
+
+[node name="TreeE2" parent="TreesB" instance=ExtResource("20")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 66, 0, -7)
+
+[node name="TreeE3" parent="TreesB" instance=ExtResource("21")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 66, 0, 7)
+
+[node name="TreeE4" parent="TreesB" instance=ExtResource("17")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 66, 0, 35)
+
+[node name="TreeW1" parent="TreesB" instance=ExtResource("20")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54, 0, -35)
+
+[node name="TreeW2" parent="TreesB" instance=ExtResource("21")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54, 0, -7)
+
+[node name="TreeW3" parent="TreesB" instance=ExtResource("17")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54, 0, 7)
+
+[node name="TreeW4" parent="TreesB" instance=ExtResource("20")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54, 0, 35)
+
+
+[node name="NPCsB" type="Node3D" parent="."]
+
+[node name="NPC1" parent="NPCsB" instance=ExtResource("7")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 63.9, 0.1, -22)
+
+[node name="NPC2" parent="NPCsB" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 63.9, 0.1, -2)
+
+[node name="NPC3" parent="NPCsB" instance=ExtResource("9")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 63.9, 0.1, 18)
+
+[node name="NPC4" parent="NPCsB" instance=ExtResource("10")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56.1, 0.1, -12)
+
+[node name="NPC5" parent="NPCsB" instance=ExtResource("7")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56.1, 0.1, 8)
+
+[node name="NPC6" parent="NPCsB" instance=ExtResource("9")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56.1, 0.1, 26)
+
+[node name="NPC7" parent="NPCsB" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 0.1, 34)
+
+[node name="NPC8" parent="NPCsB" instance=ExtResource("10")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 0.1, 34)
+
+[node name="NPC9" parent="NPCsB" instance=ExtResource("7")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0.1, 37)
+
+[node name="Player" parent="." instance=ExtResource("1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.9, 1, -27)
+
+[node name="Car" parent="." instance=ExtResource("2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, -24)
+
+
+[node name="Police" type="Node3D" parent="."]
+
+[node name="Police1" parent="Police" instance=ExtResource("22")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.9, 0.1, -35)
+
+[node name="Police2" parent="Police" instance=ExtResource("22")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.9, 0.1, 20)
+
+[node name="Police3" parent="Police" instance=ExtResource("22")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 63.9, 0.1, -10)
+
+[node name="Police4" parent="Police" instance=ExtResource("22")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0.1, 46)
 
 [node name="Player" parent="." unique_id=821898990 instance=ExtResource("1")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.9, 1, -27)

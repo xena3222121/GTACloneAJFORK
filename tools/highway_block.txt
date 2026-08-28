@@ -1,0 +1,62 @@
+[sub_resource type="BoxMesh" id="BoxMesh_highway"]
+size = Vector3(110, 0.1, 24)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_highway"]
+albedo_color = Color(0.22, 0.22, 0.24, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_highway_sidewalk"]
+size = Vector3(110, 0.15, 1.8)
+
+[sub_resource type="BoxMesh" id="BoxMesh_highway_yellowline"]
+size = Vector3(110, 0.02, 0.15)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_whiteline"]
+shading_mode = 0
+albedo_color = Color(0.9, 0.9, 0.9, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_highway_whiteline"]
+size = Vector3(110, 0.02, 0.15)
+material = SubResource("StandardMaterial3D_whiteline")
+
+[node name="Highway" type="Node3D" parent="."]
+
+[node name="Asphalt" type="MeshInstance3D" parent="Highway"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.05, 60)
+mesh = SubResource("BoxMesh_highway")
+surface_material_override/0 = SubResource("StandardMaterial3D_highway")
+
+[node name="SidewalkNorth" type="MeshInstance3D" parent="Highway"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.075, 72.9)
+mesh = SubResource("BoxMesh_highway_sidewalk")
+surface_material_override/0 = SubResource("StandardMaterial3D_sidewalk")
+
+[node name="SidewalkSouth" type="MeshInstance3D" parent="Highway"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.075, 47.1)
+mesh = SubResource("BoxMesh_highway_sidewalk")
+surface_material_override/0 = SubResource("StandardMaterial3D_sidewalk")
+
+[node name="CenterLineA" type="MeshInstance3D" parent="Highway"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.11, 59.85)
+mesh = SubResource("BoxMesh_highway_yellowline")
+surface_material_override/0 = SubResource("StandardMaterial3D_dash")
+
+[node name="CenterLineB" type="MeshInstance3D" parent="Highway"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.11, 60.15)
+mesh = SubResource("BoxMesh_highway_yellowline")
+surface_material_override/0 = SubResource("StandardMaterial3D_dash")
+
+[node name="LaneDividerS1" type="MeshInstance3D" parent="Highway"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.11, 52)
+mesh = SubResource("BoxMesh_highway_whiteline")
+
+[node name="LaneDividerS2" type="MeshInstance3D" parent="Highway"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.11, 56)
+mesh = SubResource("BoxMesh_highway_whiteline")
+
+[node name="LaneDividerN1" type="MeshInstance3D" parent="Highway"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.11, 64)
+mesh = SubResource("BoxMesh_highway_whiteline")
+
+[node name="LaneDividerN2" type="MeshInstance3D" parent="Highway"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.11, 68)
+mesh = SubResource("BoxMesh_highway_whiteline")

@@ -37,6 +37,7 @@ const PISTOL_ANIM_SOURCE := "res://assets/animations/UAL1_Standard.glb"
 const PISTOL_ANIMS := ["Pistol_Idle", "Pistol_Shoot", "Pistol_Reload", "Pistol_Aim_Neutral", "Idle", "Walk"]
 
 const MAG_SIZE := 12
+const STARTING_RESERVE_AMMO := 36
 const RELOAD_TIME := 1.6
 const RECOIL_KICK := 0.05
 const RECOIL_RECOVERY := 9.0
@@ -87,6 +88,8 @@ const UPPER_BODY_BONES := [
 @onready var health_bar: ProgressBar = $HUD/HealthBar
 @onready var restart_button: Button = $HUD/DeathScreen/ButtonRow/RestartButton
 @onready var quit_button: Button = $HUD/DeathScreen/ButtonRow/QuitButton
+@onready var money_label: Label = $HUD/MoneyLabel
+@onready var reserve_ammo_label: Label = $HUD/ReserveAmmoLabel
 
 # The RightHand bone's local Y axis is "along the forearm" in both poses
 # (points down when the arm hangs relaxed, forward when raised to aim), so
@@ -117,6 +120,8 @@ var dead := false
 var death_cam_zooming := false
 var recoil_pitch := 0.0
 var ammo_in_mag := MAG_SIZE
+var reserve_ammo := STARTING_RESERVE_AMMO
+var money := 0
 var reload_timer := 0.0
 var loco_blend := 0.0
 var aim_blend := 0.0
@@ -257,6 +262,7 @@ func _setup_animation_tree() -> void:
 	anim_tree.active = true
 
 func _ready() -> void:
+	add_to_group("player")
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	if anim:
 		_strip_armature_root_tracks()
@@ -277,6 +283,8 @@ func _ready() -> void:
 		_setup_animation_tree()
 	gunshot_player.stream = _make_gunshot_sound()
 	_update_ammo_label()
+	_update_reserve_ammo_label()
+	_update_money_label()
 	health_bar.max_value = MAX_HEALTH
 	health_bar.value = health
 	restart_button.pressed.connect(_on_restart_pressed)
@@ -435,18 +443,38 @@ func shoot() -> void:
 			crosshair.flash_hit()
 
 func reload() -> void:
-	if reload_timer > 0.0 or ammo_in_mag >= MAG_SIZE:
+	if reload_timer > 0.0 or ammo_in_mag >= MAG_SIZE or reserve_ammo <= 0:
 		return
 	reload_timer = RELOAD_TIME
 	if has_reload_anim:
 		anim_tree["parameters/ReloadShot/request"] = AnimationNodeOneShot.ONE_SHOT_REQUEST_FIRE
 	await get_tree().create_timer(RELOAD_TIME).timeout
-	ammo_in_mag = MAG_SIZE
+	var needed: int = MAG_SIZE - ammo_in_mag
+	var taken: int = min(needed, reserve_ammo)
+	ammo_in_mag += taken
+	reserve_ammo -= taken
 	_update_ammo_label()
+	_update_reserve_ammo_label()
 
 func _update_ammo_label() -> void:
 	if ammo_label:
 		ammo_label.text = "%d / %d" % [ammo_in_mag, MAG_SIZE]
+
+func _update_reserve_ammo_label() -> void:
+	if reserve_ammo_label:
+		reserve_ammo_label.text = "Ammo: %d" % reserve_ammo
+
+func _update_money_label() -> void:
+	if money_label:
+		money_label.text = "$%d" % money
+
+func add_money(amount: int) -> void:
+	money += amount
+	_update_money_label()
+
+func add_ammo(amount: int) -> void:
+	reserve_ammo += amount
+	_update_reserve_ammo_label()
 
 func _play_empty_click() -> void:
 	var stream := _make_click_sound()
