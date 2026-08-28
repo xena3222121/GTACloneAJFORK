@@ -3,7 +3,9 @@ extends StaticBody3D
 @export var max_health: float = 100.0
 @export var blast_radius: float = 5.0
 @export var blast_damage: float = 80.0
+@export var kill_radius: float = 2.5
 
+const INSTANT_KILL_DAMAGE := 99999.0
 const EXPLOSION := preload("res://scenes/Explosion.tscn")
 const SCORCH_MARK := preload("res://scenes/ScorchMark.tscn")
 const FIRE := preload("res://scenes/Fire.tscn")

@@ -8,6 +8,15 @@ const GUN_DAMAGE := 25.0
 const INTERACT_RANGE := 3.0
 const FIRE_COOLDOWN := 0.12
 const MUZZLE_FLASH_TIME := 0.08
+const MAX_HEALTH := 100.0
+# Positive spring_arm.rotation.x looks up (see _unhandled_input's mouse-look:
+# moving the mouse up increases camera_pitch, which feeds this directly) -
+# pushed well past the normal [-1.2, 0.8] gameplay clamp for a dramatic
+# straight-up-at-the-sky death cam.
+const DEATH_CAM_PITCH := 1.4
+const DEATH_CAM_PAN_TIME := 1.8
+const DEATH_TEXT_DELAY := 1.0
+const DEATH_TEXT_FADE_TIME := 0.8
 
 const IMPACT_EFFECT := preload("res://scenes/ImpactEffect.tscn")
 const IMPACT_HIT := preload("res://scenes/ImpactHit.tscn")
@@ -66,6 +75,7 @@ const UPPER_BODY_BONES := [
 @onready var collision: CollisionShape3D = $CollisionShape3D
 @onready var anim: AnimationPlayer = model.find_child("AnimationPlayer", true, false)
 @onready var anim_tree: AnimationTree = $AnimTree
+@onready var death_screen: Control = $HUD/DeathScreen
 
 # The RightHand bone's local Y axis is "along the forearm" in both poses
 # (points down when the arm hangs relaxed, forward when raised to aim), so
@@ -89,7 +99,10 @@ var fire_cooldown := 0.0
 var anim_idle := ""
 var anim_walk := ""
 var anim_aim := ""
+var anim_die := ""
 var aiming := false
+var health := MAX_HEALTH
+var dead := false
 var recoil_pitch := 0.0
 var ammo_in_mag := MAG_SIZE
 var reload_timer := 0.0
@@ -245,6 +258,7 @@ func _ready() -> void:
 		anim_idle = "pistol/Idle" if anim.has_animation("pistol/Idle") else _find_anim("idle")
 		anim_walk = "pistol/Walk" if anim.has_animation("pistol/Walk") else _find_anim("walk")
 		anim_aim = "pistol/Pistol_Aim_Neutral" if anim.has_animation("pistol/Pistol_Aim_Neutral") else anim_idle
+		anim_die = _find_anim("death")
 		_force_loop(anim_walk)
 		_force_loop(anim_aim)
 		_force_loop(anim_idle)
@@ -253,6 +267,9 @@ func _ready() -> void:
 	_update_ammo_label()
 
 func _unhandled_input(event: InputEvent) -> void:
+	if dead:
+		return
+
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		camera_pivot.rotate_y(-event.relative.x * MOUSE_SENSITIVITY)
 		camera_pitch = clamp(camera_pitch - event.relative.y * MOUSE_SENSITIVITY, -1.2, 0.8)
@@ -285,6 +302,12 @@ func _unhandled_input(event: InputEvent) -> void:
 			try_enter_vehicle()
 
 func _physics_process(delta: float) -> void:
+	if dead:
+		# Hand off spring_arm.rotation.x to the death-cam tween entirely -
+		# this line normally re-asserts it from camera_pitch every frame,
+		# which would fight the tween if it kept running.
+		return
+
 	fire_cooldown = max(0.0, fire_cooldown - delta)
 	recoil_pitch = lerp(recoil_pitch, 0.0, min(1.0, RECOIL_RECOVERY * delta))
 	spring_arm.rotation.x = camera_pitch + recoil_pitch
@@ -495,3 +518,39 @@ func exit_vehicle() -> void:
 	global_position = car.exit_point.global_position
 	camera.current = true
 	car.driver_exit()
+
+func take_damage(amount: float, _hit_point: Vector3 = Vector3.ZERO) -> void:
+	if dead:
+		return
+	health -= amount
+	if health <= 0.0:
+		die()
+
+func die() -> void:
+	if dead:
+		return
+	dead = true
+	collision.disabled = true
+
+	if anim:
+		# The AnimationTree normally drives every pose each frame; switch it
+		# off so a direct play() on the death clip isn't immediately
+		# overwritten, same as how NPCs (which have no blend tree at all)
+		# just play their death clip straight.
+		anim_tree.active = false
+		if anim_die != "":
+			anim.play(anim_die)
+
+	_play_death_camera()
+
+func _play_death_camera() -> void:
+	var tween := create_tween()
+	tween.tween_property(spring_arm, "rotation:x", DEATH_CAM_PITCH, DEATH_CAM_PAN_TIME).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	await get_tree().create_timer(DEATH_TEXT_DELAY).timeout
+	_show_death_text()
+
+func _show_death_text() -> void:
+	death_screen.visible = true
+	death_screen.modulate.a = 0.0
+	var tween := create_tween()
+	tween.tween_property(death_screen, "modulate:a", 1.0, DEATH_TEXT_FADE_TIME)
