@@ -1,35 +1,15 @@
-extends AnimatableBody3D
+extends StaticBody3D
 
-@export var speed: float = 6.0
-@export var min_z: float = -45.0
-@export var max_z: float = 45.0
-@export var start_direction: float = 1.0
 @export var max_health: float = 100.0
 
 const EXPLOSION := preload("res://scenes/Explosion.tscn")
 const SCORCH_MARK := preload("res://scenes/ScorchMark.tscn")
 
-var direction: float = 1.0
 var health: float
 var destroyed := false
 
 func _ready() -> void:
-	direction = 1.0 if start_direction >= 0.0 else -1.0
-	rotation.y = 0.0 if direction > 0.0 else PI
 	health = max_health
-
-func _physics_process(delta: float) -> void:
-	if destroyed:
-		return
-	position.z += direction * speed * delta
-	if position.z >= max_z:
-		position.z = max_z
-		direction = -1.0
-		rotation.y = PI
-	elif position.z <= min_z:
-		position.z = min_z
-		direction = 1.0
-		rotation.y = 0.0
 
 func take_damage(amount: float, _hit_point: Vector3 = Vector3.ZERO) -> void:
 	if destroyed:
