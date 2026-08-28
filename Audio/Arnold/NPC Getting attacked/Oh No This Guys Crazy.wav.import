@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://cw5jpqmcck6fv"
+path="res://.godot/imported/Oh No This Guys Crazy.wav-81a9cf91845267486c66770f5e8ccac7.sample"
+
+[deps]
+
+source_file="res://Audio/Arnold/NPC Getting attacked/Oh No This Guys Crazy.wav"
+dest_files=["res://.godot/imported/Oh No This Guys Crazy.wav-81a9cf91845267486c66770f5e8ccac7.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2
