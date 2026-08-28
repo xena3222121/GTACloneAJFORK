@@ -17,3 +17,6 @@ Thumbs.db
 
 # Local autosave log (machine-specific, not useful to share)
 tools/autosave.log
+
+# Scratch files from debug/verification scripts (never meant to be committed)
+tools/tmp_*
