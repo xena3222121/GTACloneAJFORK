@@ -28,10 +28,37 @@ var destroyed := false
 # body moves at all.
 var driver: Node3D = null
 var drive_speed := 0.0
+var engine_audio: AudioStreamPlayer3D
+
+# Same real recorded engine loop as car.gd/traffic_car.gd - a parked car
+# that gets stolen was silent while every other drivable car got real
+# engine audio this session.
+const ENGINE_LOOP_PATH := "res://Audio/Ambience/car_engine_loop.wav"
 
 func _ready() -> void:
 	health = max_health
 	add_to_group("parked_vehicles")
+	_setup_engine_audio()
+
+func _setup_engine_audio() -> void:
+	engine_audio = AudioStreamPlayer3D.new()
+	engine_audio.unit_size = 20.0
+	engine_audio.volume_db = -14.0
+	var stream: AudioStreamWAV = (load(ENGINE_LOOP_PATH) as AudioStreamWAV).duplicate()
+	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	engine_audio.stream = stream
+	add_child(engine_audio)
+
+func _update_engine_audio() -> void:
+	if destroyed or not driver:
+		if engine_audio.playing:
+			engine_audio.stop()
+		return
+	var speed_ratio: float = clamp(absf(drive_speed) / DRIVE_MAX_SPEED, 0.0, 1.0)
+	engine_audio.pitch_scale = lerp(0.8, 2.0, speed_ratio)
+	engine_audio.volume_db = lerp(-14.0, -6.0, speed_ratio)
+	if not engine_audio.playing:
+		engine_audio.play()
 
 func _get_or_create_marker(marker_name: String, local_pos: Vector3) -> Marker3D:
 	if has_node(marker_name):
@@ -50,6 +77,7 @@ func driver_exit() -> void:
 	drive_speed = 0.0
 
 func _physics_process(delta: float) -> void:
+	_update_engine_audio()
 	if destroyed or not driver:
 		return
 

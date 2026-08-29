@@ -152,6 +152,7 @@ const UPPER_BODY_BONES := [
 @onready var wanted_label: Label = $HUD/WantedLabel
 @onready var drugs_label: Label = $HUD/DrugsLabel
 @onready var interact_prompt_label: Label = $HUD/InteractPromptLabel
+@onready var drunk_overlay: ColorRect = $HUD/DrunkOverlay
 @onready var store_menu: Control = $HUD/StoreMenu
 @onready var buy_ammo_button: Button = $HUD/StoreMenu/Panel/VBox/BuyAmmoButton
 @onready var buy_shotgun_button: Button = $HUD/StoreMenu/Panel/VBox/BuyShotgunButton
@@ -203,6 +204,10 @@ var played_cops_incoming_line := false
 var death_cam_zooming := false
 var recoil_pitch := 0.0
 var current_weapon: int = Weapon.KNIFE
+# Alpha 0 means "stock outfit, no tint bought" - distinguishes that from a
+# legitimately dark purchased color when deciding whether to persist/reapply
+# an outfit on save/load.
+var outfit_tint := Color(0, 0, 0, 0)
 var has_shotgun := false
 var has_mac10 := false
 var pistol_ammo_in_mag := PISTOL_MAG_SIZE
@@ -214,6 +219,8 @@ var mac10_reserve_ammo := 0
 var money := 0
 var drugs := 0
 var drunk_timer := 0.0
+var drunk_sway_time := 0.0
+var drunk_pitch_sway := 0.0
 var menu_open := false
 var nearby_interactable: Node = null
 var current_npc: Node3D = null
@@ -497,8 +504,21 @@ func _physics_process(delta: float) -> void:
 	fire_cooldown = max(0.0, fire_cooldown - delta)
 	vehicle_hit_cooldown = max(0.0, vehicle_hit_cooldown - delta)
 	drunk_timer = max(0.0, drunk_timer - delta)
+	# Getting drunk (bar_drink.gd) used to be completely invisible to the
+	# player - it only quietly nudged one aggro-chance roll in npc.gd. A
+	# gentle camera sway (roll for the "tipsy" wobble, a little pitch drift)
+	# plus a HUD tint gives it an actual felt effect.
+	var drunk_target_roll: float = sin(drunk_sway_time * 1.3) * 0.06 if drunk_timer > 0.0 else 0.0
+	var drunk_target_pitch: float = sin(drunk_sway_time * 1.7) * 0.04 if drunk_timer > 0.0 else 0.0
+	if drunk_timer > 0.0:
+		drunk_sway_time += delta
+	spring_arm.rotation.z = lerp(spring_arm.rotation.z, drunk_target_roll, 3.0 * delta)
+	drunk_pitch_sway = lerp(drunk_pitch_sway, drunk_target_pitch, 3.0 * delta)
+	if drunk_overlay:
+		drunk_overlay.modulate.a = clamp(drunk_timer, 0.0, 3.0) / 3.0 * 0.3
+
 	recoil_pitch = lerp(recoil_pitch, 0.0, min(1.0, RECOIL_RECOVERY * delta))
-	spring_arm.rotation.x = camera_pitch + recoil_pitch
+	spring_arm.rotation.x = camera_pitch + recoil_pitch + drunk_pitch_sway
 	if reload_timer > 0.0:
 		reload_timer = max(0.0, reload_timer - delta)
 
@@ -990,6 +1010,7 @@ func _buy_black_outfit() -> void:
 # Purely cosmetic - same recursive material_override trick police.gd's
 # _tint_uniform() uses to fake a uniform on the shared civilian model.
 func _set_outfit_tint(color: Color) -> void:
+	outfit_tint = color
 	var mat := StandardMaterial3D.new()
 	mat.albedo_color = color
 	_tint_outfit_recursive(model, mat)
@@ -1304,6 +1325,13 @@ func die() -> void:
 		return
 	dead = true
 	collision.disabled = true
+
+	# A stray hit while browsing either menu (take_damage isn't gated by
+	# menu_open) used to leave it stuck on screen over the death screen
+	# until restart, since neither menu was ever force-closed here.
+	if menu_open:
+		close_store_menu()
+		close_npc_menu()
 
 	if anim:
 		# The AnimationTree normally drives every pose each frame; switch it

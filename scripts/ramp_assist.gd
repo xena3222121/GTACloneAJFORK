@@ -25,8 +25,9 @@ const RAMPS := [
 func _physics_process(_delta: float) -> void:
 	var vehicles := get_tree().get_nodes_in_group("vehicles")
 	vehicles.append_array(get_tree().get_nodes_in_group("traffic_cars"))
+	vehicles.append_array(get_tree().get_nodes_in_group("parked_vehicles"))
 	for v in vehicles:
-		if not is_instance_valid(v):
+		if not is_instance_valid(v) or v.get("destroyed") == true:
 			continue
 		var pos: Vector3 = v.global_position
 		for ramp in RAMPS:

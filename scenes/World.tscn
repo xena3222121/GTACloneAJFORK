@@ -1729,6 +1729,18 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 63.9, 0.1, -10)
 [node name="Police4" parent="Police" instance=ExtResource("22")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0.1, 46)
 
+[node name="Police5" parent="Police" instance=ExtResource("22")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 123.9, 0.1, -35)
+
+[node name="Police6" parent="Police" instance=ExtResource("22")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 116.1, 0.1, 20)
+
+[node name="Police7" parent="Police" instance=ExtResource("22")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 183.9, 0.1, -35)
+
+[node name="Police8" parent="Police" instance=ExtResource("22")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 176.1, 0.1, 20)
+
 [node name="ShotgunPickup" parent="." instance=ExtResource("23")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.4, -20)
 
@@ -2942,6 +2954,28 @@ outline_size = 12
 pixel_size = 0.08
 modulate = Color(0.75, 1, 0.6, 1)
 text = "Park"
+
+[node name="MapLabelMidtown" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 120, 15, 0)
+layers = 524288
+billboard = 1
+no_depth_test = true
+font_size = 64
+outline_size = 12
+pixel_size = 0.08
+modulate = Color(0.85, 0.85, 1, 1)
+text = "Midtown"
+
+[node name="MapLabelEastside" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 180, 15, 0)
+layers = 524288
+billboard = 1
+no_depth_test = true
+font_size = 64
+outline_size = 12
+pixel_size = 0.08
+modulate = Color(0.85, 0.85, 1, 1)
+text = "Eastside"
 
 [node name="GrassWest" type="MeshInstance3D" parent="Park"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.5, 0.025, 0)

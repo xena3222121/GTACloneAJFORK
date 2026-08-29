@@ -16,8 +16,21 @@ const LOAD_SPAWN_POSITION := Vector3(7.3, 1.0, 0.0)
 func has_save() -> bool:
 	return FileAccess.file_exists(SAVE_PATH)
 
+func _find_weed_plot(player: Node) -> Node:
+	return player.get_tree().get_first_node_in_group("weed_plot")
+
+# Not its own group - there's only ever one, and job_board.gd already finds
+# it the same way (filtering "civilians" by is_dealer) rather than adding a
+# dedicated group for a single node.
+func _find_dealer(player: Node) -> Node:
+	for npc in player.get_tree().get_nodes_in_group("civilians"):
+		if npc.get("is_dealer") == true:
+			return npc
+	return null
+
 func save_game(player: Node) -> void:
-	var weed := player.get_tree().get_first_node_in_group("weed_plot")
+	var weed := _find_weed_plot(player)
+	var dealer := _find_dealer(player)
 	var data := {
 		"money": player.money,
 		"drugs": player.drugs,
@@ -33,6 +46,8 @@ func save_game(player: Node) -> void:
 		"mac10_reserve_ammo": player.mac10_reserve_ammo,
 		"weed_state": weed.state if weed else 0,
 		"weed_planted_at": weed.planted_at if weed else 0,
+		"dealer_hired": dealer.hired if dealer else false,
+		"outfit_tint": player.outfit_tint.to_html(true),
 	}
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file:
@@ -70,10 +85,20 @@ func load_game(player: Node) -> bool:
 	player.mac10_reserve_ammo = data.get("mac10_reserve_ammo", player.mac10_reserve_ammo)
 	player.current_weapon = data.get("current_weapon", player.current_weapon)
 
-	var weed := player.get_tree().get_first_node_in_group("weed_plot")
+	var weed := _find_weed_plot(player)
 	if weed:
 		weed.state = data.get("weed_state", weed.state)
 		weed.planted_at = data.get("weed_planted_at", weed.planted_at)
+
+	var dealer := _find_dealer(player)
+	if dealer and data.get("dealer_hired", false):
+		dealer.hire()
+
+	var outfit_html: String = data.get("outfit_tint", "")
+	if outfit_html != "" and player.has_method("_set_outfit_tint"):
+		var tint := Color.html(outfit_html)
+		if tint.a > 0.0:
+			player._set_outfit_tint(tint)
 
 	player.global_position = LOAD_SPAWN_POSITION
 	return true
