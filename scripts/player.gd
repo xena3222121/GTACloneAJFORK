@@ -130,6 +130,7 @@ const UPPER_BODY_BONES := [
 @onready var restart_button: Button = $HUD/DeathScreen/ButtonRow/RestartButton
 @onready var quit_button: Button = $HUD/DeathScreen/ButtonRow/QuitButton
 @onready var money_label: Label = $HUD/MoneyLabel
+@onready var wanted_label: Label = $HUD/WantedLabel
 @onready var reserve_ammo_label: Label = $HUD/ReserveAmmoLabel
 
 # The RightHand bone's local Y axis is "along the forearm" in both poses
@@ -361,8 +362,14 @@ func _ready() -> void:
 	health_bar.value = health
 	restart_button.pressed.connect(_on_restart_pressed)
 	quit_button.pressed.connect(_on_quit_pressed)
+	WantedSystem.tier_changed.connect(_on_wanted_tier_changed)
+	_on_wanted_tier_changed(0)
+
+func _on_wanted_tier_changed(tier: int) -> void:
+	wanted_label.text = "★".repeat(tier)
 
 func _on_restart_pressed() -> void:
+	WantedSystem.reset()
 	get_tree().reload_current_scene()
 
 func _on_quit_pressed() -> void:

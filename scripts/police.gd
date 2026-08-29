@@ -17,6 +17,12 @@ const RAY_LENGTH := 60.0
 const MONEY_DROP_CHANCE := 0.4
 const AMMO_DROP_CHANCE := 0.4
 
+const DETECTION_RANGE := 14.0
+const LEASH_RADIUS := 30.0
+const GIVE_UP_TIME := 6.0
+const HIT_HEAT := 5.0
+const KILLED_HEAT := 35.0
+
 const BLOOD_POOL := preload("res://scenes/BloodPool.tscn")
 const IMPACT_EFFECT := preload("res://scenes/ImpactEffect.tscn")
 const MONEY_PICKUP := preload("res://scenes/MoneyPickup.tscn")
@@ -50,6 +56,7 @@ var health := MAX_HEALTH
 var dead := false
 var hostile := false
 var fire_cooldown := 0.0
+var lost_sight_timer := 0.0
 var player: Node3D = null
 
 var anim_idle := ""
@@ -86,6 +93,7 @@ func _force_loop(anim_name: String) -> void:
 		anim.get_animation(anim_name).loop_mode = Animation.LOOP_LINEAR
 
 func _ready() -> void:
+	add_to_group("police")
 	home_position = global_position
 	_pick_new_target()
 	player = get_tree().get_first_node_in_group("player")
@@ -134,8 +142,35 @@ func _physics_process(delta: float) -> void:
 		_process_hostile(delta)
 	else:
 		_process_wander(delta)
+		_check_proactive_detection()
 
 	move_and_slide()
+
+# A wandering cop only joins an already-in-progress incident it happens to
+# physically spot nearby (WantedSystem.heat > 0) - it doesn't go hostile
+# over a clean, quiet player just walking past. Direct alerts from a new
+# crime (see alert()) are what actually starts an incident.
+func _check_proactive_detection() -> void:
+	if not player or not is_instance_valid(player) or WantedSystem.heat <= 0.0:
+		return
+	var to_player := player.global_position - global_position
+	if to_player.length() <= DETECTION_RANGE and _has_line_of_sight(player.global_position):
+		hostile = true
+
+# Called by WantedSystem when a crime happens within this cop's alert
+# radius - skips the detection roll entirely, matching a real cop reacting
+# to a radio call rather than needing to personally witness anything.
+func alert(_source_position: Vector3) -> void:
+	if not dead:
+		hostile = true
+
+func _has_line_of_sight(target_pos: Vector3) -> bool:
+	var origin: Vector3 = global_position + Vector3(0, 1.4, 0)
+	var target: Vector3 = target_pos + Vector3(0, 1.0, 0)
+	var query := PhysicsRayQueryParameters3D.create(origin, target)
+	query.exclude = [self.get_rid()]
+	var result: Dictionary = get_world_3d().direct_space_state.intersect_ray(query)
+	return result.is_empty() or result.get("collider") == player
 
 func _process_wander(delta: float) -> void:
 	var to_target := target_position - global_position
@@ -161,6 +196,21 @@ func _process_hostile(delta: float) -> void:
 	var to_player := player.global_position - global_position
 	to_player.y = 0
 	var dist := to_player.length()
+
+	# Give up the chase once the player's actually gotten away with it -
+	# not the instant they duck behind cover, only once they've stayed lost
+	# AND put real distance between the cop and its post. Without the leash
+	# check a cop hiding just around a corner from home would give up almost
+	# immediately; without the sight check it'd never give up at all.
+	if dist <= ENGAGE_RANGE and _has_line_of_sight(player.global_position):
+		lost_sight_timer = 0.0
+		WantedSystem.report_sighting()
+	elif global_position.distance_to(home_position) > LEASH_RADIUS:
+		lost_sight_timer += delta
+		if lost_sight_timer >= GIVE_UP_TIME:
+			hostile = false
+			lost_sight_timer = 0.0
+			return
 
 	if dist > STOP_DISTANCE:
 		var dir := to_player.normalized()
@@ -208,6 +258,7 @@ func take_damage(amount: float, _hit_point: Vector3 = Vector3.ZERO) -> void:
 	if not hostile and player and player.has_method("play_cops_incoming_line"):
 		player.play_cops_incoming_line()
 	hostile = true
+	WantedSystem.add_heat(HIT_HEAT, global_position)
 	health -= amount
 	if health <= 0.0:
 		die()
@@ -224,6 +275,7 @@ func die() -> void:
 	_play(anim_die)
 	_spawn_blood_pool()
 	_maybe_drop_loot()
+	WantedSystem.add_heat(KILLED_HEAT, global_position)
 
 func _spawn_blood_pool() -> void:
 	var pool: Node3D = BLOOD_POOL.instantiate()

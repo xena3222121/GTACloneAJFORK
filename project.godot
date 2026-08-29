@@ -19,6 +19,10 @@ run/main_scene="res://scenes/World.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
 
+[autoload]
+
+WantedSystem="*res://scripts/wanted_system.gd"
+
 [physics]
 
 3d/default_gravity=12.0

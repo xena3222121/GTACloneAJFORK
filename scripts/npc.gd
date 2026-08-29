@@ -6,6 +6,7 @@ const ARRIVE_DIST := 0.6
 const IDLE_TIME_MIN := 1.5
 const IDLE_TIME_MAX := 4.0
 const MAX_HEALTH := 150.0
+const KILLED_HEAT := 18.0
 
 const BLOOD_POOL := preload("res://scenes/BloodPool.tscn")
 
@@ -130,6 +131,7 @@ func die() -> void:
 	collision.disabled = true
 	_play(anim_die)
 	_spawn_blood_pool()
+	WantedSystem.add_heat(KILLED_HEAT, global_position)
 
 func _spawn_blood_pool() -> void:
 	var pool: Node3D = BLOOD_POOL.instantiate()
