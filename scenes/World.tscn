@@ -34,6 +34,7 @@
 [ext_resource type="PackedScene" path="res://scenes/TrafficCar_D.tscn" id="35"]
 [ext_resource type="PackedScene" path="res://scenes/TrafficCar_E.tscn" id="36"]
 [ext_resource type="Script" path="res://scripts/save_point.gd" id="37"]
+[ext_resource type="Script" path="res://scripts/job_board.gd" id="38"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
 sky_top_color = Color(0.3, 0.5, 0.85, 1)
@@ -1557,6 +1558,16 @@ script = ExtResource("37")
 shape = SubResource("SphereShape3D_interact")
 
 [node name="Mesh" type="MeshInstance3D" parent="HouseInterior/SavePoint"]
+mesh = SubResource("BoxMesh_counter")
+
+[node name="JobBoard" type="Area3D" parent="HouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1, 4)
+script = ExtResource("38")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HouseInterior/JobBoard"]
+shape = SubResource("SphereShape3D_interact")
+
+[node name="Mesh" type="MeshInstance3D" parent="HouseInterior/JobBoard"]
 mesh = SubResource("BoxMesh_counter")
 
 [node name="StoreInterior" type="Node3D" parent="."]
