@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://c8yiuc3pwhs15"
+path="res://.godot/imported/Oh my fucking god bro here comes the fucking police.wav-16ed30147749e90816c6ef1022153d06.sample"
+
+[deps]
+
+source_file="res://Audio/Arnold/Player Cops Incoming/Oh my fucking god bro here comes the fucking police.wav"
+dest_files=["res://.godot/imported/Oh my fucking god bro here comes the fucking police.wav-16ed30147749e90816c6ef1022153d06.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2
