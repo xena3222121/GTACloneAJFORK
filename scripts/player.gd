@@ -6,6 +6,8 @@ const WALK_SPEED := 5.0
 const SPRINT_SPEED := 8.5
 const JUMP_VELOCITY := 5.5
 const MOUSE_SENSITIVITY := 0.003
+const JOY_LOOK_SENSITIVITY := 3.0
+const JOY_DEADZONE := 0.2
 const PISTOL_DAMAGE := 25.0
 const INTERACT_RANGE := 3.0
 const PISTOL_FIRE_COOLDOWN := 0.12
@@ -149,6 +151,11 @@ var camera_pitch := 0.0
 var driving: Car = null
 var fire_cooldown := 0.0
 var vehicle_hit_cooldown := 0.0
+var joy_fire_prev := false
+var joy_reload_prev := false
+var joy_interact_prev := false
+var joy_dpad_left_prev := false
+var joy_dpad_right_prev := false
 
 var anim_idle := ""
 var anim_walk := ""
@@ -419,6 +426,22 @@ func _physics_process(delta: float) -> void:
 	if reload_timer > 0.0:
 		reload_timer = max(0.0, reload_timer - delta)
 
+	# Right stick look and the vehicle-interact button both need to keep
+	# working while driving too (mirroring mouse-look, which runs from
+	# _unhandled_input and isn't gated by this function's early return
+	# below), so they're polled here rather than down with fire/reload/etc.
+	if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+		camera_pivot.rotate_y(-_joy_axis(JOY_AXIS_RIGHT_X) * JOY_LOOK_SENSITIVITY * delta)
+		camera_pitch = clamp(camera_pitch - _joy_axis(JOY_AXIS_RIGHT_Y) * JOY_LOOK_SENSITIVITY * delta, -1.2, 0.8)
+
+	var joy_interact_down := Input.is_joy_button_pressed(0, JOY_BUTTON_Y)
+	if joy_interact_down and not joy_interact_prev:
+		if driving:
+			exit_vehicle()
+		else:
+			try_enter_vehicle()
+	joy_interact_prev = joy_interact_down
+
 	if driving:
 		# Follow the car's driver seat while inside it; the car handles its own physics.
 		global_position = driving.driver_seat.global_position
@@ -426,16 +449,40 @@ func _physics_process(delta: float) -> void:
 		return
 
 	# Mac-10 is full-auto: keeps firing while held, unlike the click-to-fire
-	# pistol/shotgun/knife (handled in _unhandled_input on the press event).
-	if current_weapon == Weapon.MAC10 and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED \
-			and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) \
-			and fire_cooldown <= 0.0 and reload_timer <= 0.0:
+	# pistol/shotgun/knife (handled in _unhandled_input on the press event,
+	# and below for the controller's edge-triggered equivalent).
+	var joy_fire_down := Input.is_joy_button_pressed(0, JOY_BUTTON_RIGHT_SHOULDER)
+	if current_weapon == Weapon.MAC10 and fire_cooldown <= 0.0 and reload_timer <= 0.0 \
+			and ((Input.mouse_mode == Input.MOUSE_MODE_CAPTURED and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)) \
+				or joy_fire_down):
 		_try_fire()
+	elif joy_fire_down and not joy_fire_prev and fire_cooldown <= 0.0 and reload_timer <= 0.0:
+		_try_fire()
+	joy_fire_prev = joy_fire_down
+
+	if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+		aiming = Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT) or Input.is_joy_button_pressed(0, JOY_BUTTON_LEFT_SHOULDER)
+		crosshair.aiming = aiming
+
+	var joy_reload_down := Input.is_joy_button_pressed(0, JOY_BUTTON_X)
+	if joy_reload_down and not joy_reload_prev:
+		reload()
+	joy_reload_prev = joy_reload_down
+
+	var joy_dpad_left_down := Input.is_joy_button_pressed(0, JOY_BUTTON_DPAD_LEFT)
+	if joy_dpad_left_down and not joy_dpad_left_prev:
+		_cycle_weapon(-1)
+	joy_dpad_left_prev = joy_dpad_left_down
+
+	var joy_dpad_right_down := Input.is_joy_button_pressed(0, JOY_BUTTON_DPAD_RIGHT)
+	if joy_dpad_right_down and not joy_dpad_right_prev:
+		_cycle_weapon(1)
+	joy_dpad_right_prev = joy_dpad_right_down
 
 	if not is_on_floor():
 		velocity.y -= gravity * delta
 
-	if Input.is_key_pressed(KEY_SPACE) and is_on_floor():
+	if (Input.is_key_pressed(KEY_SPACE) or Input.is_joy_button_pressed(0, JOY_BUTTON_A)) and is_on_floor():
 		velocity.y = JUMP_VELOCITY
 
 	var input_dir := Vector2.ZERO
@@ -447,9 +494,11 @@ func _physics_process(delta: float) -> void:
 		input_dir.x -= 1
 	if Input.is_key_pressed(KEY_D):
 		input_dir.x += 1
-	input_dir = input_dir.normalized()
+	input_dir.x += _joy_axis(JOY_AXIS_LEFT_X)
+	input_dir.y += _joy_axis(JOY_AXIS_LEFT_Y)
+	input_dir = input_dir.normalized() if input_dir.length() > 1.0 else input_dir
 
-	var speed := SPRINT_SPEED if Input.is_key_pressed(KEY_SHIFT) else WALK_SPEED
+	var speed := SPRINT_SPEED if (Input.is_key_pressed(KEY_SHIFT) or Input.is_joy_button_pressed(0, JOY_BUTTON_LEFT_STICK)) else WALK_SPEED
 	var forward := camera_pivot.global_transform.basis.z
 	var right := camera_pivot.global_transform.basis.x
 	var move_dir := (right * input_dir.x + forward * input_dir.y)
@@ -561,6 +610,25 @@ func _has_weapon(weapon: int) -> bool:
 		Weapon.SHOTGUN: return has_shotgun
 		Weapon.MAC10: return has_mac10
 		_: return true
+
+# PS4/Xbox-style gamepad, device 0 only - this is a single-player game with
+# no split-screen/second-controller concept anywhere else in the codebase.
+func _joy_axis(axis: JoyAxis) -> float:
+	var v := Input.get_joy_axis(0, axis)
+	return v if absf(v) > JOY_DEADZONE else 0.0
+
+const WEAPON_ORDER := [Weapon.KNIFE, Weapon.PISTOL, Weapon.SHOTGUN, Weapon.MAC10]
+
+func _cycle_weapon(direction: int) -> void:
+	if driving:
+		return
+	var idx := WEAPON_ORDER.find(current_weapon)
+	for i in range(1, WEAPON_ORDER.size() + 1):
+		var next_idx := ((idx + direction * i) % WEAPON_ORDER.size() + WEAPON_ORDER.size()) % WEAPON_ORDER.size()
+		var candidate: int = WEAPON_ORDER[next_idx]
+		if _has_weapon(candidate):
+			switch_weapon(candidate)
+			return
 
 func switch_weapon(weapon: int) -> void:
 	if weapon == current_weapon or not _has_weapon(weapon):

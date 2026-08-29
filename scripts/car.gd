@@ -121,11 +121,25 @@ func _physics_process(delta: float) -> void:
 		brake = 1.0
 		return
 
+	# Gamepad driving deliberately avoids the analog trigger axes - Godot's
+	# reported idle/pressed range for JOY_AXIS_TRIGGER_LEFT/RIGHT isn't
+	# consistent across controllers/drivers, and getting that wrong could
+	# mean a car that silently creeps forward on its own. The left stick
+	# (X for steer, Y for throttle) uses the regular -1..1 axis range every
+	# controller reports consistently, so it can't misfire the same way.
+	var joy_x := Input.get_joy_axis(0, JOY_AXIS_LEFT_X)
+	var joy_y := Input.get_joy_axis(0, JOY_AXIS_LEFT_Y)
+	if absf(joy_x) < 0.2:
+		joy_x = 0.0
+	if absf(joy_y) < 0.2:
+		joy_y = 0.0
+
 	var throttle_input := 0.0
 	if Input.is_key_pressed(KEY_W):
 		throttle_input += 1.0
 	if Input.is_key_pressed(KEY_S):
 		throttle_input -= 1.0
+	throttle_input = clamp(throttle_input - joy_y, -1.0, 1.0)
 	engine_force = throttle_input * MAX_ENGINE_FORCE
 
 	var steer_input := 0.0
@@ -133,7 +147,8 @@ func _physics_process(delta: float) -> void:
 		steer_input += 1.0
 	if Input.is_key_pressed(KEY_D):
 		steer_input -= 1.0
+	steer_input = clamp(steer_input - joy_x, -1.0, 1.0)
 	steer_target = steer_input * MAX_STEER
 	steering = move_toward(steering, steer_target, STEER_SPEED * delta)
 
-	brake = MAX_BRAKE_FORCE if Input.is_key_pressed(KEY_SPACE) else 0.0
+	brake = MAX_BRAKE_FORCE if (Input.is_key_pressed(KEY_SPACE) or Input.is_joy_button_pressed(0, JOY_BUTTON_A)) else 0.0
