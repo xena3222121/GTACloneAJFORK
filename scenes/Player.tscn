@@ -82,6 +82,8 @@ fov = 65.0
 
 [node name="GunshotPlayer" type="AudioStreamPlayer" parent="." unique_id=1075549777]
 
+[node name="VoiceLinePlayer" type="AudioStreamPlayer" parent="."]
+
 [node name="HUD" type="CanvasLayer" parent="." unique_id=197224588]
 
 [node name="Crosshair" type="Control" parent="HUD" unique_id=1954263301]

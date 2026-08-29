@@ -205,6 +205,8 @@ func take_damage(amount: float, _hit_point: Vector3 = Vector3.ZERO) -> void:
 	if dead:
 		return
 	_play_hit_audio()
+	if not hostile and player and player.has_method("play_cops_incoming_line"):
+		player.play_cops_incoming_line()
 	hostile = true
 	health -= amount
 	if health <= 0.0:

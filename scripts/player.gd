@@ -28,6 +28,13 @@ const DEATH_TEXT_FADE_TIME := 0.8
 const DEATH_CAM_ZOOM_SPEED := 2.5
 const DEATH_CAM_ZOOM_MAX := 300.0
 
+const COPS_INCOMING_LINE := "res://Audio/Arnold/Player Cops Incoming/Oh my fucking god bro here comes the fucking police.wav"
+const PLAYER_KILL_LINES := [
+	"res://Audio/Arnold/Player Shot Someone/Oh my fucking god I shot that guys dick clean off.wav",
+	"res://Audio/Arnold/Player Shot Someone/Fuck bro I shot you right in the dick my bad bro.wav",
+]
+const PLAYER_KILL_LINE_CHANCE := 0.6
+
 const IMPACT_EFFECT := preload("res://scenes/ImpactEffect.tscn")
 const IMPACT_HIT := preload("res://scenes/ImpactHit.tscn")
 const PISTOL_ANIM_SOURCE := "res://assets/animations/UAL1_Standard.glb"
@@ -104,6 +111,7 @@ const UPPER_BODY_BONES := [
 @onready var muzzle_flash: MeshInstance3D = $Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/GunViewmodel/MuzzlePoint/MuzzleFlash
 @onready var muzzle_light: OmniLight3D = $Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/GunViewmodel/MuzzlePoint/MuzzleLight
 @onready var gunshot_player: AudioStreamPlayer = $GunshotPlayer
+@onready var voice_line_player: AudioStreamPlayer = $VoiceLinePlayer
 @onready var crosshair: Control = $HUD/Crosshair
 @onready var ammo_label: Label = $HUD/AmmoLabel
 @onready var model: Node3D = $Model
@@ -143,6 +151,7 @@ var anim_die := ""
 var aiming := false
 var health := MAX_HEALTH
 var dead := false
+var played_cops_incoming_line := false
 var death_cam_zooming := false
 var recoil_pitch := 0.0
 var current_weapon: int = Weapon.PISTOL
@@ -588,6 +597,7 @@ func _fire_ray(origin: Vector3, forward: Vector3, damage: float) -> void:
 		if is_damageable:
 			hit.take_damage(damage, point)
 			crosshair.flash_hit()
+			_maybe_play_kill_line(hit, is_person)
 
 func shoot() -> void:
 	gunshot_player.play()
@@ -729,6 +739,7 @@ func melee_attack() -> void:
 		if is_damageable:
 			hit.take_damage(MELEE_DAMAGE, point)
 			crosshair.flash_hit()
+			_maybe_play_kill_line(hit, is_person)
 
 func _flash_muzzle() -> void:
 	muzzle_flash.visible = true
@@ -840,6 +851,27 @@ func exit_vehicle() -> void:
 	global_position = car.exit_point.global_position
 	camera.current = true
 	car.driver_exit()
+
+func play_cops_incoming_line() -> void:
+	if played_cops_incoming_line:
+		return
+	played_cops_incoming_line = true
+	voice_line_player.stream = load(COPS_INCOMING_LINE)
+	voice_line_player.play()
+
+# Called right after landing a killing blow on an NPC/Police (never on
+# cars/objects) - random pick, chance-gated so it doesn't fire on every
+# single kill, and skipped if a voice line is already playing so it can't
+# cut itself (or the cops-incoming line) off mid-sentence.
+func _maybe_play_kill_line(hit: Object, is_person: bool) -> void:
+	if not is_person or voice_line_player.playing:
+		return
+	if not ("dead" in hit) or not hit.dead:
+		return
+	if randf() > PLAYER_KILL_LINE_CHANCE:
+		return
+	voice_line_player.stream = load(PLAYER_KILL_LINES[randi() % PLAYER_KILL_LINES.size()])
+	voice_line_player.play()
 
 func take_damage(amount: float, _hit_point: Vector3 = Vector3.ZERO) -> void:
 	if dead:
