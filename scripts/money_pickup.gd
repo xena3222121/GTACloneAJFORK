@@ -1,7 +1,7 @@
 extends Area3D
 
-const AMOUNT_MIN := 10
-const AMOUNT_MAX := 50
+const AMOUNT_MIN := 15
+const AMOUNT_MAX := 65
 
 @onready var mesh: MeshInstance3D = $Mesh
 

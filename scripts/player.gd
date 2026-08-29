@@ -18,6 +18,20 @@ const VEHICLE_HIT_DAMAGE_PER_SPEED := 4.0
 const VEHICLE_HIT_MAX_DAMAGE := 80.0
 const VEHICLE_HIT_KNOCKBACK := 6.0
 const VEHICLE_HIT_COOLDOWN := 0.6
+
+const SELL_RANGE := 3.0
+const SELL_PRICE_MIN := 15
+const SELL_PRICE_MAX := 45
+const SNITCH_CHANCE := 0.15
+const SNITCH_HEAT := 20.0
+
+const AMMO_PRICE := 20
+const AMMO_BUY_AMOUNT := 60
+const SHOTGUN_PRICE := 50
+const SHOTGUN_BUY_AMOUNT := 16
+const MAC10_PRICE := 80
+const MAC10_BUY_AMOUNT := 90
+const OUTFIT_PRICE := 30
 # Verified by rendering a sweep of values, not assumed: the SpringArm3D
 # orbits the character rather than doing a true free-look, so pitch stops
 # framing cleanly past the normal gameplay clamp range in either direction.
@@ -131,6 +145,15 @@ const UPPER_BODY_BONES := [
 @onready var quit_button: Button = $HUD/DeathScreen/ButtonRow/QuitButton
 @onready var money_label: Label = $HUD/MoneyLabel
 @onready var wanted_label: Label = $HUD/WantedLabel
+@onready var drugs_label: Label = $HUD/DrugsLabel
+@onready var interact_prompt_label: Label = $HUD/InteractPromptLabel
+@onready var store_menu: Control = $HUD/StoreMenu
+@onready var buy_ammo_button: Button = $HUD/StoreMenu/Panel/VBox/BuyAmmoButton
+@onready var buy_shotgun_button: Button = $HUD/StoreMenu/Panel/VBox/BuyShotgunButton
+@onready var buy_mac10_button: Button = $HUD/StoreMenu/Panel/VBox/BuyMac10Button
+@onready var buy_red_outfit_button: Button = $HUD/StoreMenu/Panel/VBox/BuyRedOutfitButton
+@onready var buy_black_outfit_button: Button = $HUD/StoreMenu/Panel/VBox/BuyBlackOutfitButton
+@onready var close_store_button: Button = $HUD/StoreMenu/Panel/VBox/CloseStoreButton
 @onready var reserve_ammo_label: Label = $HUD/ReserveAmmoLabel
 
 # The RightHand bone's local Y axis is "along the forearm" in both poses
@@ -178,6 +201,12 @@ var shotgun_reserve_ammo := 0
 var mac10_ammo_in_mag := 0
 var mac10_reserve_ammo := 0
 var money := 0
+var drugs := 0
+var drunk_timer := 0.0
+var menu_open := false
+var nearby_interactable: Node = null
+var current_interior: Node = null
+var exterior_return_position := Vector3.ZERO
 var reload_timer := 0.0
 var loco_blend := 0.0
 var aim_blend := 0.0
@@ -364,6 +393,12 @@ func _ready() -> void:
 	quit_button.pressed.connect(_on_quit_pressed)
 	WantedSystem.tier_changed.connect(_on_wanted_tier_changed)
 	_on_wanted_tier_changed(0)
+	buy_ammo_button.pressed.connect(_buy_ammo)
+	buy_shotgun_button.pressed.connect(_buy_shotgun)
+	buy_mac10_button.pressed.connect(_buy_mac10)
+	buy_red_outfit_button.pressed.connect(_buy_red_outfit)
+	buy_black_outfit_button.pressed.connect(_buy_black_outfit)
+	close_store_button.pressed.connect(close_store_menu)
 
 func _on_wanted_tier_changed(tier: int) -> void:
 	wanted_label.text = "★".repeat(tier)
@@ -414,10 +449,19 @@ func _unhandled_input(event: InputEvent) -> void:
 			switch_weapon(Weapon.MAC10)
 
 	if event is InputEventKey and event.pressed and event.keycode == KEY_E:
-		if driving:
-			exit_vehicle()
-		else:
-			try_enter_vehicle()
+		_interact()
+
+func _interact() -> void:
+	if menu_open:
+		return
+	if current_interior:
+		exit_building()
+	elif driving:
+		exit_vehicle()
+	elif nearby_interactable:
+		nearby_interactable.interact(self)
+	elif not try_enter_vehicle():
+		try_sell_drugs_to_nearby_npc()
 
 func _physics_process(delta: float) -> void:
 	if dead:
@@ -426,8 +470,12 @@ func _physics_process(delta: float) -> void:
 		# which would fight the tween if it kept running.
 		return
 
+	if menu_open:
+		return
+
 	fire_cooldown = max(0.0, fire_cooldown - delta)
 	vehicle_hit_cooldown = max(0.0, vehicle_hit_cooldown - delta)
+	drunk_timer = max(0.0, drunk_timer - delta)
 	recoil_pitch = lerp(recoil_pitch, 0.0, min(1.0, RECOIL_RECOVERY * delta))
 	spring_arm.rotation.x = camera_pitch + recoil_pitch
 	if reload_timer > 0.0:
@@ -443,11 +491,14 @@ func _physics_process(delta: float) -> void:
 
 	var joy_interact_down := Input.is_joy_button_pressed(0, JOY_BUTTON_Y)
 	if joy_interact_down and not joy_interact_prev:
-		if driving:
-			exit_vehicle()
-		else:
-			try_enter_vehicle()
+		_interact()
 	joy_interact_prev = joy_interact_down
+
+	if nearby_interactable:
+		interact_prompt_label.text = nearby_interactable.prompt_text
+		interact_prompt_label.visible = true
+	else:
+		interact_prompt_label.visible = false
 
 	if driving:
 		# Follow the car's driver seat while inside it; the car handles its own physics.
@@ -777,6 +828,126 @@ func add_money(amount: int) -> void:
 	money += amount
 	_update_money_label()
 
+func _update_drugs_label() -> void:
+	if drugs_label:
+		drugs_label.visible = drugs > 0
+		drugs_label.text = "Drugs: %d" % drugs
+
+func add_drugs(amount: int) -> void:
+	drugs += amount
+	_update_drugs_label()
+
+func get_drunk(duration: float) -> void:
+	drunk_timer = duration
+
+# Called by any Area3D-based interactable (building_entrance.gd,
+# cook_station.gd, store_counter.gd, register.gd, bar_drink.gd) on
+# body_entered/exited - "last one entered wins" is fine here since none of
+# their trigger volumes are meant to overlap.
+func set_nearby_interactable(interactable: Node) -> void:
+	nearby_interactable = interactable
+
+func clear_nearby_interactable(interactable: Node) -> void:
+	if nearby_interactable == interactable:
+		nearby_interactable = null
+
+# Interiors physically live far away in World.tscn (see the *Interior
+# groups) rather than being a separate scene or a hide/show toggle on the
+# whole exterior - same "just teleport, keep the one Player node alive"
+# spirit as the existing vehicle enter/exit, so money/ammo/health/etc. all
+# carry over automatically with no save-state plumbing needed.
+func enter_building(entrance: Node, exterior_position: Vector3) -> void:
+	if current_interior or driving:
+		return
+	current_interior = entrance
+	exterior_return_position = exterior_position
+	var spawn: Marker3D = entrance.get_interior_spawn()
+	global_position = spawn.global_position
+	rotation.y = spawn.rotation.y
+	velocity = Vector3.ZERO
+	nearby_interactable = null
+	interact_prompt_label.visible = false
+
+func exit_building() -> void:
+	if not current_interior:
+		return
+	global_position = exterior_return_position
+	velocity = Vector3.ZERO
+	current_interior = null
+
+func open_store_menu() -> void:
+	menu_open = true
+	store_menu.visible = true
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+
+func close_store_menu() -> void:
+	menu_open = false
+	store_menu.visible = false
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+func _buy_ammo() -> void:
+	if money >= AMMO_PRICE:
+		money -= AMMO_PRICE
+		add_ammo(AMMO_BUY_AMOUNT, "pistol")
+		_update_money_label()
+
+func _buy_shotgun() -> void:
+	if money >= SHOTGUN_PRICE:
+		money -= SHOTGUN_PRICE
+		add_ammo(SHOTGUN_BUY_AMOUNT, "shotgun")
+		_update_money_label()
+
+func _buy_mac10() -> void:
+	if money >= MAC10_PRICE:
+		money -= MAC10_PRICE
+		add_ammo(MAC10_BUY_AMOUNT, "mac10")
+		_update_money_label()
+
+func _buy_red_outfit() -> void:
+	if money >= OUTFIT_PRICE:
+		money -= OUTFIT_PRICE
+		_set_outfit_tint(Color(0.55, 0.12, 0.1))
+		_update_money_label()
+
+func _buy_black_outfit() -> void:
+	if money >= OUTFIT_PRICE:
+		money -= OUTFIT_PRICE
+		_set_outfit_tint(Color(0.08, 0.08, 0.09))
+		_update_money_label()
+
+# Purely cosmetic - same recursive material_override trick police.gd's
+# _tint_uniform() uses to fake a uniform on the shared civilian model.
+func _set_outfit_tint(color: Color) -> void:
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = color
+	_tint_outfit_recursive(model, mat)
+
+func _tint_outfit_recursive(node: Node, mat: Material) -> void:
+	if node is MeshInstance3D:
+		(node as MeshInstance3D).material_override = mat
+	for child in node.get_children():
+		_tint_outfit_recursive(child, mat)
+
+func try_sell_drugs_to_nearby_npc() -> void:
+	if drugs <= 0:
+		return
+	var nearest: Node3D = null
+	var nearest_dist := SELL_RANGE
+	for npc in get_tree().get_nodes_in_group("civilians"):
+		if not is_instance_valid(npc) or npc.dead:
+			continue
+		var dist: float = global_position.distance_to(npc.global_position)
+		if dist < nearest_dist:
+			nearest = npc
+			nearest_dist = dist
+	if not nearest:
+		return
+	drugs -= 1
+	_update_drugs_label()
+	add_money(randi_range(SELL_PRICE_MIN, SELL_PRICE_MAX))
+	if randf() < SNITCH_CHANCE:
+		WantedSystem.add_heat(SNITCH_HEAT, global_position)
+
 # weapon: "pistol" (default), "shotgun", or "mac10". Picking up a weapon for
 # the first time grants it and auto-equips it; later pickups just add ammo.
 func add_ammo(amount: int, weapon: String = "pistol") -> void:
@@ -934,7 +1105,7 @@ func _make_click_sound() -> AudioStreamWAV:
 	stream.data = data
 	return stream
 
-func try_enter_vehicle() -> void:
+func try_enter_vehicle() -> bool:
 	var nearest: Car = null
 	var nearest_dist := INTERACT_RANGE
 	for car in get_tree().get_nodes_in_group("vehicles"):
@@ -944,6 +1115,8 @@ func try_enter_vehicle() -> void:
 			nearest_dist = dist
 	if nearest:
 		enter_vehicle(nearest)
+		return true
+	return false
 
 func enter_vehicle(car: Car) -> void:
 	driving = car

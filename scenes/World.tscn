@@ -22,6 +22,14 @@
 [ext_resource type="PackedScene" path="res://scenes/ShotgunPickup.tscn" id="23"]
 [ext_resource type="PackedScene" path="res://scenes/Mac10Pickup.tscn" id="24"]
 [ext_resource type="PackedScene" uid="uid://34uvudk5qyr8" path="res://assets/roads/road-crossroad.glb" id="25"]
+[ext_resource type="PackedScene" uid="uid://j4ux4jxduqte" path="res://assets/city-kit/building-a.glb" id="26"]
+[ext_resource type="PackedScene" uid="uid://dqxvfds3kxypx" path="res://assets/city-kit/building-b.glb" id="27"]
+[ext_resource type="PackedScene" uid="uid://ca333lkj7gjx2" path="res://assets/city-kit/building-c.glb" id="28"]
+[ext_resource type="Script" path="res://scripts/building_entrance.gd" id="29"]
+[ext_resource type="Script" path="res://scripts/cook_station.gd" id="30"]
+[ext_resource type="Script" path="res://scripts/store_counter.gd" id="31"]
+[ext_resource type="Script" path="res://scripts/register.gd" id="32"]
+[ext_resource type="Script" path="res://scripts/bar_drink.gd" id="33"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
 sky_top_color = Color(0.3, 0.5, 0.85, 1)
@@ -130,6 +138,52 @@ material = SubResource("StandardMaterial3D_fence")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_fence"]
 size = Vector3(4, 1.1, 0.08)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_room_floor"]
+albedo_color = Color(0.24, 0.22, 0.2, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_room_floor"]
+size = Vector3(12, 0.2, 12)
+material = SubResource("StandardMaterial3D_room_floor")
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_room_floor"]
+size = Vector3(12, 0.2, 12)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_room_wall"]
+albedo_color = Color(0.58, 0.55, 0.5, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_room_wall_ns"]
+size = Vector3(12, 3.5, 0.3)
+material = SubResource("StandardMaterial3D_room_wall")
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_room_wall_ns"]
+size = Vector3(12, 3.5, 0.3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_room_wall_ew"]
+size = Vector3(0.3, 3.5, 12)
+material = SubResource("StandardMaterial3D_room_wall")
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_room_wall_ew"]
+size = Vector3(0.3, 3.5, 12)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_counter"]
+albedo_color = Color(0.32, 0.22, 0.14, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_counter"]
+size = Vector3(2, 1, 0.8)
+material = SubResource("StandardMaterial3D_counter")
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_shop_a"]
+size = Vector3(4.42, 6.47, 4.7)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_shop_b"]
+size = Vector3(4.85, 6.47, 4.7)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_shop_c"]
+size = Vector3(4.42, 4.47, 5.45)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_interact"]
+radius = 1.8
 
 [node name="World" type="Node3D" unique_id=54692432]
 
@@ -1312,3 +1366,327 @@ shape = SubResource("BoxShape3D_fence")
 
 [node name="Mesh" type="MeshInstance3D" parent="Park/FenceEast2"]
 mesh = SubResource("BoxMesh_fence")
+
+[node name="HouseEntrance" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.3, 1, 0)
+script = ExtResource("29")
+interior_spawn_path = NodePath("%HouseSpawn")
+prompt_text = "Press E to enter your house"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HouseEntrance"]
+shape = SubResource("SphereShape3D_interact")
+
+[node name="Shops" type="Node3D" parent="."]
+
+[node name="GeneralStore" type="StaticBody3D" parent="Shops"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35, 0, -20)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Shops/GeneralStore"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.235, 0)
+shape = SubResource("BoxShape3D_shop_a")
+
+[node name="Model" parent="Shops/GeneralStore" instance=ExtResource("26")]
+transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 0, 0)
+
+[node name="Entrance" type="Area3D" parent="Shops/GeneralStore"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.8, 1, 0)
+script = ExtResource("29")
+interior_spawn_path = NodePath("%StoreSpawn")
+prompt_text = "Press E to enter the store"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Shops/GeneralStore/Entrance"]
+shape = SubResource("SphereShape3D_interact")
+
+[node name="ConvenienceStore" type="StaticBody3D" parent="Shops"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Shops/ConvenienceStore"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.235, 0)
+shape = SubResource("BoxShape3D_shop_b")
+
+[node name="Model" parent="Shops/ConvenienceStore" instance=ExtResource("27")]
+transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 0, 0)
+
+[node name="Entrance" type="Area3D" parent="Shops/ConvenienceStore"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 1, 0)
+script = ExtResource("29")
+interior_spawn_path = NodePath("%ConvenienceSpawn")
+prompt_text = "Press E to enter the store"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Shops/ConvenienceStore/Entrance"]
+shape = SubResource("SphereShape3D_interact")
+
+[node name="Bar" type="StaticBody3D" parent="Shops"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35, 0, 20)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Shops/Bar"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.235, 0)
+shape = SubResource("BoxShape3D_shop_c")
+
+[node name="Model" parent="Shops/Bar" instance=ExtResource("28")]
+transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 0, 0)
+
+[node name="Entrance" type="Area3D" parent="Shops/Bar"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.8, 1, 0)
+script = ExtResource("29")
+interior_spawn_path = NodePath("%BarSpawn")
+prompt_text = "Press E to enter the bar"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Shops/Bar/Entrance"]
+shape = SubResource("SphereShape3D_interact")
+
+[node name="HouseInterior" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1000, 0, 0)
+
+[node name="Floor" type="StaticBody3D" parent="HouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HouseInterior/Floor"]
+shape = SubResource("BoxShape3D_room_floor")
+
+[node name="Mesh" type="MeshInstance3D" parent="HouseInterior/Floor"]
+mesh = SubResource("BoxMesh_room_floor")
+
+[node name="WallN" type="StaticBody3D" parent="HouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, -6)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HouseInterior/WallN"]
+shape = SubResource("BoxShape3D_room_wall_ns")
+
+[node name="Mesh" type="MeshInstance3D" parent="HouseInterior/WallN"]
+mesh = SubResource("BoxMesh_room_wall_ns")
+
+[node name="WallS" type="StaticBody3D" parent="HouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 6)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HouseInterior/WallS"]
+shape = SubResource("BoxShape3D_room_wall_ns")
+
+[node name="Mesh" type="MeshInstance3D" parent="HouseInterior/WallS"]
+mesh = SubResource("BoxMesh_room_wall_ns")
+
+[node name="WallE" type="StaticBody3D" parent="HouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.75, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HouseInterior/WallE"]
+shape = SubResource("BoxShape3D_room_wall_ew")
+
+[node name="Mesh" type="MeshInstance3D" parent="HouseInterior/WallE"]
+mesh = SubResource("BoxMesh_room_wall_ew")
+
+[node name="WallW" type="StaticBody3D" parent="HouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 1.75, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HouseInterior/WallW"]
+shape = SubResource("BoxShape3D_room_wall_ew")
+
+[node name="Mesh" type="MeshInstance3D" parent="HouseInterior/WallW"]
+mesh = SubResource("BoxMesh_room_wall_ew")
+
+[node name="HouseSpawn" type="Marker3D" parent="HouseInterior"]
+unique_name_in_owner = true
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.1, 4)
+
+[node name="CookStation" type="Area3D" parent="HouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -4.5)
+script = ExtResource("30")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HouseInterior/CookStation"]
+shape = SubResource("SphereShape3D_interact")
+
+[node name="Mesh" type="MeshInstance3D" parent="HouseInterior/CookStation"]
+mesh = SubResource("BoxMesh_counter")
+
+[node name="StoreInterior" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1060, 0, 0)
+
+[node name="Floor" type="StaticBody3D" parent="StoreInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StoreInterior/Floor"]
+shape = SubResource("BoxShape3D_room_floor")
+
+[node name="Mesh" type="MeshInstance3D" parent="StoreInterior/Floor"]
+mesh = SubResource("BoxMesh_room_floor")
+
+[node name="WallN" type="StaticBody3D" parent="StoreInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, -6)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StoreInterior/WallN"]
+shape = SubResource("BoxShape3D_room_wall_ns")
+
+[node name="Mesh" type="MeshInstance3D" parent="StoreInterior/WallN"]
+mesh = SubResource("BoxMesh_room_wall_ns")
+
+[node name="WallS" type="StaticBody3D" parent="StoreInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 6)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StoreInterior/WallS"]
+shape = SubResource("BoxShape3D_room_wall_ns")
+
+[node name="Mesh" type="MeshInstance3D" parent="StoreInterior/WallS"]
+mesh = SubResource("BoxMesh_room_wall_ns")
+
+[node name="WallE" type="StaticBody3D" parent="StoreInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.75, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StoreInterior/WallE"]
+shape = SubResource("BoxShape3D_room_wall_ew")
+
+[node name="Mesh" type="MeshInstance3D" parent="StoreInterior/WallE"]
+mesh = SubResource("BoxMesh_room_wall_ew")
+
+[node name="WallW" type="StaticBody3D" parent="StoreInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 1.75, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StoreInterior/WallW"]
+shape = SubResource("BoxShape3D_room_wall_ew")
+
+[node name="Mesh" type="MeshInstance3D" parent="StoreInterior/WallW"]
+mesh = SubResource("BoxMesh_room_wall_ew")
+
+[node name="StoreSpawn" type="Marker3D" parent="StoreInterior"]
+unique_name_in_owner = true
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.1, 4)
+
+[node name="StoreCounter" type="Area3D" parent="StoreInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -4.5)
+script = ExtResource("31")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StoreInterior/StoreCounter"]
+shape = SubResource("SphereShape3D_interact")
+
+[node name="Mesh" type="MeshInstance3D" parent="StoreInterior/StoreCounter"]
+mesh = SubResource("BoxMesh_counter")
+
+[node name="ConvenienceInterior" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1120, 0, 0)
+
+[node name="Floor" type="StaticBody3D" parent="ConvenienceInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ConvenienceInterior/Floor"]
+shape = SubResource("BoxShape3D_room_floor")
+
+[node name="Mesh" type="MeshInstance3D" parent="ConvenienceInterior/Floor"]
+mesh = SubResource("BoxMesh_room_floor")
+
+[node name="WallN" type="StaticBody3D" parent="ConvenienceInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, -6)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ConvenienceInterior/WallN"]
+shape = SubResource("BoxShape3D_room_wall_ns")
+
+[node name="Mesh" type="MeshInstance3D" parent="ConvenienceInterior/WallN"]
+mesh = SubResource("BoxMesh_room_wall_ns")
+
+[node name="WallS" type="StaticBody3D" parent="ConvenienceInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 6)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ConvenienceInterior/WallS"]
+shape = SubResource("BoxShape3D_room_wall_ns")
+
+[node name="Mesh" type="MeshInstance3D" parent="ConvenienceInterior/WallS"]
+mesh = SubResource("BoxMesh_room_wall_ns")
+
+[node name="WallE" type="StaticBody3D" parent="ConvenienceInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.75, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ConvenienceInterior/WallE"]
+shape = SubResource("BoxShape3D_room_wall_ew")
+
+[node name="Mesh" type="MeshInstance3D" parent="ConvenienceInterior/WallE"]
+mesh = SubResource("BoxMesh_room_wall_ew")
+
+[node name="WallW" type="StaticBody3D" parent="ConvenienceInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 1.75, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ConvenienceInterior/WallW"]
+shape = SubResource("BoxShape3D_room_wall_ew")
+
+[node name="Mesh" type="MeshInstance3D" parent="ConvenienceInterior/WallW"]
+mesh = SubResource("BoxMesh_room_wall_ew")
+
+[node name="ConvenienceSpawn" type="Marker3D" parent="ConvenienceInterior"]
+unique_name_in_owner = true
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.1, 4)
+
+[node name="Register" type="Area3D" parent="ConvenienceInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -4.5)
+script = ExtResource("32")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ConvenienceInterior/Register"]
+shape = SubResource("SphereShape3D_interact")
+
+[node name="Mesh" type="MeshInstance3D" parent="ConvenienceInterior/Register"]
+mesh = SubResource("BoxMesh_counter")
+
+[node name="BarInterior" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1180, 0, 0)
+
+[node name="Floor" type="StaticBody3D" parent="BarInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BarInterior/Floor"]
+shape = SubResource("BoxShape3D_room_floor")
+
+[node name="Mesh" type="MeshInstance3D" parent="BarInterior/Floor"]
+mesh = SubResource("BoxMesh_room_floor")
+
+[node name="WallN" type="StaticBody3D" parent="BarInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, -6)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BarInterior/WallN"]
+shape = SubResource("BoxShape3D_room_wall_ns")
+
+[node name="Mesh" type="MeshInstance3D" parent="BarInterior/WallN"]
+mesh = SubResource("BoxMesh_room_wall_ns")
+
+[node name="WallS" type="StaticBody3D" parent="BarInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 6)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BarInterior/WallS"]
+shape = SubResource("BoxShape3D_room_wall_ns")
+
+[node name="Mesh" type="MeshInstance3D" parent="BarInterior/WallS"]
+mesh = SubResource("BoxMesh_room_wall_ns")
+
+[node name="WallE" type="StaticBody3D" parent="BarInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.75, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BarInterior/WallE"]
+shape = SubResource("BoxShape3D_room_wall_ew")
+
+[node name="Mesh" type="MeshInstance3D" parent="BarInterior/WallE"]
+mesh = SubResource("BoxMesh_room_wall_ew")
+
+[node name="WallW" type="StaticBody3D" parent="BarInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 1.75, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BarInterior/WallW"]
+shape = SubResource("BoxShape3D_room_wall_ew")
+
+[node name="Mesh" type="MeshInstance3D" parent="BarInterior/WallW"]
+mesh = SubResource("BoxMesh_room_wall_ew")
+
+[node name="BarSpawn" type="Marker3D" parent="BarInterior"]
+unique_name_in_owner = true
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.1, 4)
+
+[node name="BarDrink" type="Area3D" parent="BarInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -4.5)
+script = ExtResource("33")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BarInterior/BarDrink"]
+shape = SubResource("SphereShape3D_interact")
+
+[node name="Mesh" type="MeshInstance3D" parent="BarInterior/BarDrink"]
+mesh = SubResource("BoxMesh_counter")
+
+[node name="Patron1" parent="BarInterior" instance=ExtResource("7")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.1, -1)
+is_bar_patron = true
+
+[node name="Patron2" parent="BarInterior" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.1, 1)
+is_bar_patron = true

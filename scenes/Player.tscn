@@ -243,3 +243,133 @@ custom_minimum_size = Vector2(140, 50)
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
 text = "Quit"
+
+[node name="DrugsLabel" type="Label" parent="HUD"]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -170.0
+offset_top = -163.0
+offset_right = -20.0
+offset_bottom = -130.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.78, 0.45, 0.95, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 22
+text = ""
+horizontal_alignment = 2
+vertical_alignment = 1
+visible = false
+
+[node name="InteractPromptLabel" type="Label" parent="HUD"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -220.0
+offset_top = -160.0
+offset_right = 220.0
+offset_bottom = -128.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 1, 1, 0.95)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 24
+text = ""
+horizontal_alignment = 1
+vertical_alignment = 1
+visible = false
+
+[node name="StoreMenu" type="Control" parent="HUD"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Dim" type="ColorRect" parent="HUD/StoreMenu"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.6)
+
+[node name="Panel" type="Panel" parent="HUD/StoreMenu"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -160.0
+offset_top = -220.0
+offset_right = 160.0
+offset_bottom = 220.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="HUD/StoreMenu/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="HUD/StoreMenu/Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "General Store"
+horizontal_alignment = 1
+
+[node name="BuyAmmoButton" type="Button" parent="HUD/StoreMenu/Panel/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 40)
+theme_override_font_sizes/font_size = 18
+text = "Pistol Ammo - $20"
+
+[node name="BuyShotgunButton" type="Button" parent="HUD/StoreMenu/Panel/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 40)
+theme_override_font_sizes/font_size = 18
+text = "Shotgun - $50"
+
+[node name="BuyMac10Button" type="Button" parent="HUD/StoreMenu/Panel/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 40)
+theme_override_font_sizes/font_size = 18
+text = "Mac-10 - $80"
+
+[node name="BuyRedOutfitButton" type="Button" parent="HUD/StoreMenu/Panel/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 40)
+theme_override_font_sizes/font_size = 18
+text = "Red Outfit - $30"
+
+[node name="BuyBlackOutfitButton" type="Button" parent="HUD/StoreMenu/Panel/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 40)
+theme_override_font_sizes/font_size = 18
+text = "Black Outfit - $30"
+
+[node name="CloseStoreButton" type="Button" parent="HUD/StoreMenu/Panel/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 40)
+theme_override_font_sizes/font_size = 18
+text = "Close"

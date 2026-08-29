@@ -7,8 +7,18 @@ const IDLE_TIME_MIN := 1.5
 const IDLE_TIME_MAX := 4.0
 const MAX_HEALTH := 150.0
 const KILLED_HEAT := 18.0
+const MONEY_DROP_CHANCE := 0.5
+
+const MELEE_RANGE := 1.5
+const MELEE_DAMAGE := 8.0
+const MELEE_COOLDOWN := 1.0
+const CHASE_SPEED := 2.2
+const PATRON_AGGRO_CHECK_INTERVAL := 2.0
+const PATRON_AGGRO_RANGE := 4.0
+const PATRON_AGGRO_CHANCE := 0.35
 
 const BLOOD_POOL := preload("res://scenes/BloodPool.tscn")
+const MONEY_PICKUP := preload("res://scenes/MoneyPickup.tscn")
 
 const HIT_AUDIO_CLIPS := [
 	"res://Audio/Arnold/NPC Getting attacked/ahhhhhhhh.wav",
@@ -29,6 +39,15 @@ var target_position: Vector3
 var idle_timer := 0.0
 var health := MAX_HEALTH
 var dead := false
+
+# Only ever set true on the couple of NPC instances placed inside the bar
+# (see World.tscn's BarInterior) - a regular street civilian never fights
+# back, this is purely opt-in per-instance.
+@export var is_bar_patron := false
+var hostile := false
+var attack_cooldown := 0.0
+var patron_aggro_timer := 0.0
+var player: Node3D = null
 
 var anim_idle := ""
 var anim_walk := ""
@@ -66,6 +85,7 @@ func _force_loop(anim_name: String) -> void:
 		anim.get_animation(anim_name).loop_mode = Animation.LOOP_LINEAR
 
 func _ready() -> void:
+	add_to_group("civilians")
 	home_position = global_position
 	_pick_new_target()
 	if anim:
@@ -86,11 +106,23 @@ func _physics_process(delta: float) -> void:
 	if dead:
 		return
 
+	attack_cooldown = max(0.0, attack_cooldown - delta)
+
 	if not is_on_floor():
 		velocity.y -= gravity * delta
 	else:
 		velocity.y = 0.0
 
+	if hostile and player and is_instance_valid(player):
+		_process_hostile(delta)
+	else:
+		_process_wander(delta)
+		if is_bar_patron:
+			_check_patron_aggro(delta)
+
+	move_and_slide()
+
+func _process_wander(delta: float) -> void:
 	var to_target := target_position - global_position
 	to_target.y = 0
 
@@ -110,7 +142,46 @@ func _physics_process(delta: float) -> void:
 		model.rotation.y = lerp_angle(model.rotation.y, target_yaw, 8.0 * delta)
 		_play(anim_walk)
 
-	move_and_slide()
+# A drunk player standing near a bar patron has a periodic chance to set
+# this specific NPC hostile - checked on a timer rather than every frame so
+# aggro doesn't become a near-certain instant reaction to walking up.
+func _check_patron_aggro(delta: float) -> void:
+	patron_aggro_timer -= delta
+	if patron_aggro_timer > 0.0:
+		return
+	patron_aggro_timer = PATRON_AGGRO_CHECK_INTERVAL
+	var p := get_tree().get_first_node_in_group("player")
+	if not p or not is_instance_valid(p):
+		return
+	if float(p.get("drunk_timer")) <= 0.0:
+		return
+	if global_position.distance_to(p.global_position) > PATRON_AGGRO_RANGE:
+		return
+	if randf() < PATRON_AGGRO_CHANCE:
+		player = p
+		hostile = true
+
+func _process_hostile(delta: float) -> void:
+	var to_player := player.global_position - global_position
+	to_player.y = 0
+	var dist := to_player.length()
+
+	if dist > MELEE_RANGE:
+		var dir := to_player.normalized()
+		velocity.x = dir.x * CHASE_SPEED
+		velocity.z = dir.z * CHASE_SPEED
+		_play(anim_walk)
+	else:
+		velocity.x = 0.0
+		velocity.z = 0.0
+		if attack_cooldown <= 0.0:
+			attack_cooldown = MELEE_COOLDOWN
+			if player.has_method("take_damage"):
+				player.take_damage(MELEE_DAMAGE, global_position)
+
+	if to_player.length() > 0.01:
+		var target_yaw := atan2(to_player.x, to_player.z)
+		model.rotation.y = lerp_angle(model.rotation.y, target_yaw, 8.0 * delta)
 
 func take_damage(amount: float, _hit_point: Vector3 = Vector3.ZERO) -> void:
 	if dead:
@@ -131,7 +202,14 @@ func die() -> void:
 	collision.disabled = true
 	_play(anim_die)
 	_spawn_blood_pool()
+	_maybe_drop_money()
 	WantedSystem.add_heat(KILLED_HEAT, global_position)
+
+func _maybe_drop_money() -> void:
+	if randf() < MONEY_DROP_CHANCE:
+		var money: Node3D = MONEY_PICKUP.instantiate()
+		get_tree().current_scene.add_child(money)
+		money.global_position = Vector3(global_position.x, 0.3, global_position.z)
 
 func _spawn_blood_pool() -> void:
 	var pool: Node3D = BLOOD_POOL.instantiate()
