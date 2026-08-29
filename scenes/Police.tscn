@@ -52,7 +52,8 @@ unit_size = 12.0
 
 [node name="SirenAudio" type="AudioStreamPlayer3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
-unit_size = 22.0
+unit_size = 16.0
+volume_db = -8.0
 autoplay = false
 
 [node name="Cap" type="MeshInstance3D" parent="."]

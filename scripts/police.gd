@@ -379,7 +379,7 @@ func _make_siren_sound() -> AudioStreamWAV:
 		var lfo: float = (sin(t / duration * TAU) + 1.0) / 2.0
 		var freq: float = lerp(650.0, 1000.0, lfo)
 		phase += freq / mix_rate * TAU
-		var sample: float = sin(phase) * 0.55
+		var sample: float = sin(phase) * 0.35
 		data.encode_s16(i * 2, int(sample * 32767.0))
 	var stream := AudioStreamWAV.new()
 	stream.format = AudioStreamWAV.FORMAT_16_BITS

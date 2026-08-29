@@ -6,7 +6,7 @@ const ARRIVE_DIST := 0.6
 const IDLE_TIME_MIN := 1.5
 const IDLE_TIME_MAX := 4.0
 const MAX_HEALTH := 150.0
-const KILLED_HEAT := 18.0
+const KILLED_HEAT := 7.0 # was 18 - two casual civilian kills (a normal way to farm cash now that they drop money) stacked past the first wanted tier almost immediately
 const MONEY_DROP_CHANCE := 0.5
 
 const MELEE_RANGE := 1.5

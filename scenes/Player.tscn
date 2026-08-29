@@ -68,10 +68,10 @@ bone_idx = 23
 
 [node name="GunViewmodel" parent="Model/HumanArmature/GeneralSkeleton/BoneAttachment3D" instance=ExtResource("4")]
 transform = Transform3D(0.84, 0, 0, 0, -0.84, 0, 0, 0, -0.84, 0, 0.22, 0.05)
+visible = false
 
 [node name="KnifeViewmodel" type="Node3D" parent="Model/HumanArmature/GeneralSkeleton/BoneAttachment3D"]
 transform = Transform3D(0.84, 0, 0, 0, -0.84, 0, 0, 0, -0.84, 0, 0.22, 0.05)
-visible = false
 
 [node name="Handle" type="MeshInstance3D" parent="Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/KnifeViewmodel"]
 mesh = SubResource("BoxMesh_knife_handle")
