@@ -1,7 +1,36 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
-<rect width="128" height="128" rx="20" fill="#2b3a55"/>
-<rect x="24" y="70" width="80" height="28" rx="4" fill="#d8443c"/>
-<circle cx="40" cy="98" r="10" fill="#111"/>
-<circle cx="88" cy="98" r="10" fill="#111"/>
-<rect x="40" y="50" width="48" height="24" rx="4" fill="#e0a63c"/>
+  <defs>
+    <radialGradient id="bgGrad" cx="35%" cy="30%" r="85%">
+      <stop offset="0%" stop-color="#241033"/>
+      <stop offset="100%" stop-color="#0a0710"/>
+    </radialGradient>
+    <linearGradient id="chromeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#eef3f7"/>
+      <stop offset="50%" stop-color="#93a4b8"/>
+      <stop offset="100%" stop-color="#2b3542"/>
+    </linearGradient>
+    <radialGradient id="flashGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fff1e0"/>
+      <stop offset="35%" stop-color="#ff8a3d"/>
+      <stop offset="100%" stop-color="#ff3d7f"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="128" height="128" rx="26" fill="url(#bgGrad)"/>
+  <rect x="2" y="2" width="124" height="124" rx="24" fill="none" stroke="#35e8ff" stroke-opacity="0.25" stroke-width="2"/>
+
+  <g transform="translate(64,64) scale(0.78) rotate(-28) translate(-64,-64)">
+    <polygon points="128,54 117.5,57.5 114,68 110.5,57.5 100,54 110.5,50.5 114,40 117.5,50.5" fill="url(#flashGrad)"/>
+    <circle cx="114" cy="54" r="7" fill="#fff1e0"/>
+
+    <rect x="46" y="100" width="16" height="8" rx="2" fill="#2b3542"/>
+    <polygon points="44,62 68,62 62,104 46,100" fill="url(#chromeGrad)"/>
+    <circle cx="54" cy="72" r="10" fill="none" stroke="#2b3542" stroke-width="5"/>
+    <rect x="52" y="68" width="4" height="9" rx="2" fill="#2b3542"/>
+    <rect x="42" y="60" width="26" height="10" fill="url(#chromeGrad)"/>
+    <rect x="38" y="46" width="66" height="16" rx="5" fill="url(#chromeGrad)"/>
+    <rect x="40" y="41" width="8" height="6" rx="2" fill="#93a4b8"/>
+    <rect x="98" y="49" width="14" height="10" rx="3" fill="#2b3542"/>
+    <rect x="40" y="47.2" width="60" height="2.2" rx="1.1" fill="#35e8ff"/>
+  </g>
 </svg>
