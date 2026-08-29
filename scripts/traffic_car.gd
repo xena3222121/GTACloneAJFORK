@@ -20,6 +20,7 @@ var health: float
 var destroyed := false
 
 func _ready() -> void:
+	add_to_group("traffic_cars")
 	# sync_to_physics (on by default for AnimatableBody3D) re-syncs the node's
 	# transform from the physics server every step, which was silently
 	# discarding our rotation changes each frame — the car kept moving but

@@ -11,6 +11,11 @@ const INTERACT_RANGE := 3.0
 const PISTOL_FIRE_COOLDOWN := 0.12
 const MUZZLE_FLASH_TIME := 0.08
 const MAX_HEALTH := 100.0
+const VEHICLE_HIT_MIN_SPEED := 2.0
+const VEHICLE_HIT_DAMAGE_PER_SPEED := 4.0
+const VEHICLE_HIT_MAX_DAMAGE := 80.0
+const VEHICLE_HIT_KNOCKBACK := 6.0
+const VEHICLE_HIT_COOLDOWN := 0.6
 # Verified by rendering a sweep of values, not assumed: the SpringArm3D
 # orbits the character rather than doing a true free-look, so pitch stops
 # framing cleanly past the normal gameplay clamp range in either direction.
@@ -143,6 +148,7 @@ var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var camera_pitch := 0.0
 var driving: Car = null
 var fire_cooldown := 0.0
+var vehicle_hit_cooldown := 0.0
 
 var anim_idle := ""
 var anim_walk := ""
@@ -407,6 +413,7 @@ func _physics_process(delta: float) -> void:
 		return
 
 	fire_cooldown = max(0.0, fire_cooldown - delta)
+	vehicle_hit_cooldown = max(0.0, vehicle_hit_cooldown - delta)
 	recoil_pitch = lerp(recoil_pitch, 0.0, min(1.0, RECOIL_RECOVERY * delta))
 	spring_arm.rotation.x = camera_pitch + recoil_pitch
 	if reload_timer > 0.0:
@@ -475,6 +482,37 @@ func _physics_process(delta: float) -> void:
 	gun_viewmodel.transform.origin = GUN_ORIGIN
 
 	move_and_slide()
+	_check_vehicle_collisions()
+
+# Cars never used to check for the player at all (no contact_monitor, no
+# body_entered signal on any of car.gd/traffic_car.gd/parked_car.gd), so
+# getting run over did nothing. Doing this on the player's side instead
+# means it works against every vehicle type for free via move_and_slide's
+# own collision results, with no changes needed to the car scripts beyond
+# tagging traffic cars into a group to identify them here.
+func _check_vehicle_collisions() -> void:
+	if vehicle_hit_cooldown > 0.0:
+		return
+	for i in range(get_slide_collision_count()):
+		var collision := get_slide_collision(i)
+		var collider: Object = collision.get_collider()
+		if not collider:
+			continue
+		var car_speed := 0.0
+		if collider.is_in_group("vehicles"):
+			car_speed = collider.linear_velocity.length()
+		elif collider.is_in_group("traffic_cars"):
+			car_speed = collider.speed
+		else:
+			continue
+		if car_speed < VEHICLE_HIT_MIN_SPEED:
+			continue
+		vehicle_hit_cooldown = VEHICLE_HIT_COOLDOWN
+		take_damage(clamp(car_speed * VEHICLE_HIT_DAMAGE_PER_SPEED, 0.0, VEHICLE_HIT_MAX_DAMAGE))
+		var away: Vector3 = global_position - collider.global_position
+		away.y = 0.0
+		velocity += (away.normalized() if away.length() > 0.01 else -collision.get_normal()) * VEHICLE_HIT_KNOCKBACK
+		break
 
 func _mag_size() -> int:
 	match current_weapon:
