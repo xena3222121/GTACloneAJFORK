@@ -17,6 +17,12 @@ const PATRON_AGGRO_CHECK_INTERVAL := 2.0
 const PATRON_AGGRO_RANGE := 4.0
 const PATRON_AGGRO_CHANCE := 0.35
 
+const VEHICLE_HIT_MIN_SPEED := 2.0
+const VEHICLE_HIT_DAMAGE_PER_SPEED := 4.0
+const VEHICLE_HIT_MAX_DAMAGE := 80.0
+const VEHICLE_HIT_KNOCKBACK := 6.0
+const VEHICLE_HIT_COOLDOWN := 0.6
+
 const BLOOD_POOL := preload("res://scenes/BloodPool.tscn")
 const MONEY_PICKUP := preload("res://scenes/MoneyPickup.tscn")
 
@@ -48,6 +54,7 @@ var hostile := false
 var attack_cooldown := 0.0
 var patron_aggro_timer := 0.0
 var player: Node3D = null
+var vehicle_hit_cooldown := 0.0
 
 var anim_idle := ""
 var anim_walk := ""
@@ -107,6 +114,7 @@ func _physics_process(delta: float) -> void:
 		return
 
 	attack_cooldown = max(0.0, attack_cooldown - delta)
+	vehicle_hit_cooldown = max(0.0, vehicle_hit_cooldown - delta)
 
 	if not is_on_floor():
 		velocity.y -= gravity * delta
@@ -121,6 +129,36 @@ func _physics_process(delta: float) -> void:
 			_check_patron_aggro(delta)
 
 	move_and_slide()
+	_check_vehicle_collisions()
+
+# Same technique as player.gd's car-collision check - cars never look for
+# pedestrians themselves, so this runs from the pedestrian's own
+# move_and_slide() results instead.
+func _check_vehicle_collisions() -> void:
+	if vehicle_hit_cooldown > 0.0:
+		return
+	for i in range(get_slide_collision_count()):
+		var collision := get_slide_collision(i)
+		var collider: Object = collision.get_collider()
+		if not collider:
+			continue
+		var car_speed := 0.0
+		if collider.is_in_group("vehicles"):
+			car_speed = collider.linear_velocity.length()
+		elif collider.is_in_group("traffic_cars"):
+			car_speed = collider.speed
+		else:
+			continue
+		if car_speed < VEHICLE_HIT_MIN_SPEED:
+			continue
+		vehicle_hit_cooldown = VEHICLE_HIT_COOLDOWN
+		take_damage(clamp(car_speed * VEHICLE_HIT_DAMAGE_PER_SPEED, 0.0, VEHICLE_HIT_MAX_DAMAGE))
+		if dead:
+			return
+		var away: Vector3 = global_position - collider.global_position
+		away.y = 0.0
+		velocity += (away.normalized() if away.length() > 0.01 else -collision.get_normal()) * VEHICLE_HIT_KNOCKBACK
+		break
 
 func _process_wander(delta: float) -> void:
 	var to_target := target_position - global_position

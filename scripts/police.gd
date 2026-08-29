@@ -23,6 +23,12 @@ const GIVE_UP_TIME := 6.0
 const HIT_HEAT := 5.0
 const KILLED_HEAT := 35.0
 
+const VEHICLE_HIT_MIN_SPEED := 2.0
+const VEHICLE_HIT_DAMAGE_PER_SPEED := 4.0
+const VEHICLE_HIT_MAX_DAMAGE := 80.0
+const VEHICLE_HIT_KNOCKBACK := 6.0
+const VEHICLE_HIT_COOLDOWN := 0.6
+
 const BLOOD_POOL := preload("res://scenes/BloodPool.tscn")
 const IMPACT_EFFECT := preload("res://scenes/ImpactEffect.tscn")
 const MONEY_PICKUP := preload("res://scenes/MoneyPickup.tscn")
@@ -47,6 +53,7 @@ const HIT_AUDIO_CLIPS := [
 @onready var anim: AnimationPlayer = model.find_child("AnimationPlayer", true, false)
 @onready var hit_audio: AudioStreamPlayer3D = $HitAudio
 @onready var gunshot_audio: AudioStreamPlayer3D = $GunshotAudio
+@onready var siren_audio: AudioStreamPlayer3D = $SirenAudio
 
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var home_position: Vector3
@@ -57,6 +64,7 @@ var dead := false
 var hostile := false
 var fire_cooldown := 0.0
 var lost_sight_timer := 0.0
+var vehicle_hit_cooldown := 0.0
 var player: Node3D = null
 
 var anim_idle := ""
@@ -132,6 +140,13 @@ func _physics_process(delta: float) -> void:
 		return
 
 	fire_cooldown = max(0.0, fire_cooldown - delta)
+	vehicle_hit_cooldown = max(0.0, vehicle_hit_cooldown - delta)
+
+	if hostile and not siren_audio.playing:
+		siren_audio.stream = _make_siren_sound()
+		siren_audio.play()
+	elif not hostile and siren_audio.playing:
+		siren_audio.stop()
 
 	if not is_on_floor():
 		velocity.y -= gravity * delta
@@ -145,6 +160,33 @@ func _physics_process(delta: float) -> void:
 		_check_proactive_detection()
 
 	move_and_slide()
+	_check_vehicle_collisions()
+
+func _check_vehicle_collisions() -> void:
+	if vehicle_hit_cooldown > 0.0:
+		return
+	for i in range(get_slide_collision_count()):
+		var collision := get_slide_collision(i)
+		var collider: Object = collision.get_collider()
+		if not collider:
+			continue
+		var car_speed := 0.0
+		if collider.is_in_group("vehicles"):
+			car_speed = collider.linear_velocity.length()
+		elif collider.is_in_group("traffic_cars"):
+			car_speed = collider.speed
+		else:
+			continue
+		if car_speed < VEHICLE_HIT_MIN_SPEED:
+			continue
+		vehicle_hit_cooldown = VEHICLE_HIT_COOLDOWN
+		take_damage(clamp(car_speed * VEHICLE_HIT_DAMAGE_PER_SPEED, 0.0, VEHICLE_HIT_MAX_DAMAGE))
+		if dead:
+			return
+		var away: Vector3 = global_position - collider.global_position
+		away.y = 0.0
+		velocity += (away.normalized() if away.length() > 0.01 else -collision.get_normal()) * VEHICLE_HIT_KNOCKBACK
+		break
 
 # A wandering cop only joins an already-in-progress incident it happens to
 # physically spot nearby (WantedSystem.heat > 0) - it doesn't go hostile
@@ -272,6 +314,7 @@ func _play_hit_audio() -> void:
 func die() -> void:
 	dead = true
 	collision.disabled = true
+	siren_audio.stop()
 	_play(anim_die)
 	_spawn_blood_pool()
 	_maybe_drop_loot()
@@ -318,4 +361,31 @@ func _make_gunshot_sound() -> AudioStreamWAV:
 	stream.mix_rate = mix_rate
 	stream.stereo = false
 	stream.data = data
+	return stream
+
+# Same procedural-synthesis approach as the gunshot above rather than a
+# real audio asset. A phase accumulator (not naive sin(freq*t) with a
+# changing freq, which clicks/pops) gives a continuous "wee-oo" wail that
+# loops seamlessly while hostile.
+func _make_siren_sound() -> AudioStreamWAV:
+	var mix_rate := 22050
+	var duration := 2.4
+	var sample_count := int(mix_rate * duration)
+	var data := PackedByteArray()
+	data.resize(sample_count * 2)
+	var phase := 0.0
+	for i in range(sample_count):
+		var t := float(i) / mix_rate
+		var lfo: float = (sin(t / duration * TAU) + 1.0) / 2.0
+		var freq: float = lerp(650.0, 1000.0, lfo)
+		phase += freq / mix_rate * TAU
+		var sample: float = sin(phase) * 0.55
+		data.encode_s16(i * 2, int(sample * 32767.0))
+	var stream := AudioStreamWAV.new()
+	stream.format = AudioStreamWAV.FORMAT_16_BITS
+	stream.mix_rate = mix_rate
+	stream.stereo = false
+	stream.data = data
+	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	stream.loop_end = sample_count
 	return stream

@@ -73,7 +73,8 @@ const STARTING_RESERVE_AMMO := 36
 const PISTOL_RELOAD_TIME := 1.6
 const RECOIL_KICK := 0.05
 
-const MELEE_RANGE := 2.2
+const MELEE_RANGE := 2.6
+const MELEE_HITBOX_RADIUS := 1.3
 const MELEE_DAMAGE := 90.0 # 2 solid hits kill anything (Police=120hp, NPC=150hp) - a knife needing 4-5 hits while standing next to an armed enemy wasn't a real weapon
 const MELEE_COOLDOWN := 0.85 # Punch_Cross is ~1s long; this lets the swing mostly play out before it can be re-triggered
 const MELEE_RECOIL_KICK := 0.12
@@ -1006,32 +1007,54 @@ func melee_attack() -> void:
 	if has_punch_anim:
 		anim_tree["parameters/PunchShot/request"] = AnimationNodeOneShot.ONE_SHOT_REQUEST_FIRE
 
-	var origin: Vector3
-	var forward: Vector3
-	if aiming:
-		origin = camera.global_position
-		forward = -camera.global_transform.basis.z.normalized()
-	else:
-		origin = muzzle_point.global_position
-		forward = model.global_transform.basis.z.normalized()
-	var query := PhysicsRayQueryParameters3D.create(origin, origin + forward * MELEE_RANGE)
-	query.exclude = [self.get_rid()]
-	var result: Dictionary = get_world_3d().direct_space_state.intersect_ray(query)
+	# Always swings toward where the camera/crosshair is actually pointing,
+	# unlike hip-fire's character-facing fallback (fine for guns at range,
+	# but at knife range even a small facing/look mismatch was an outright
+	# whiff). A sphere-shape query centered in front of the player instead
+	# of a hairline ray is the actual "bigger hitbox" - it catches anything
+	# overlapping a real volume rather than needing to land one exact pixel.
+	#
+	# The origin has to be the player's own body (muzzle_point), not the
+	# camera: this is a third-person over-the-shoulder camera pulled back
+	# several units behind the player by the SpringArm, so a cast from
+	# camera.global_position at only MELEE_RANGE barely reaches the
+	# player's own position, let alone an adjacent enemy - confirmed by
+	# direct measurement, not assumed. The camera is still what supplies
+	# the aim *direction*, matching the crosshair.
+	var origin: Vector3 = muzzle_point.global_position
+	var forward: Vector3 = -camera.global_transform.basis.z.normalized()
 
-	if result:
-		var point: Vector3 = result.position
-		var hit: Object = result.collider
-		var is_damageable: bool = hit and hit.has_method("take_damage")
-		var is_person: bool = is_damageable and hit is CharacterBody3D
+	var space_state := get_world_3d().direct_space_state
+	var shape := SphereShape3D.new()
+	shape.radius = MELEE_HITBOX_RADIUS
+	var query := PhysicsShapeQueryParameters3D.new()
+	query.shape = shape
+	query.transform = Transform3D(Basis(), origin + forward * MELEE_RANGE)
+	query.collide_with_bodies = true
+	query.collide_with_areas = false
+	query.exclude = [self.get_rid()]
+
+	var hit: Object = null
+	var hit_dist := INF
+	for result in space_state.intersect_shape(query, 8):
+		var collider: Object = result.get("collider")
+		if collider and collider.has_method("take_damage"):
+			var dist: float = origin.distance_to((collider as Node3D).global_position)
+			if dist < hit_dist:
+				hit_dist = dist
+				hit = collider
+
+	if hit:
+		var point: Vector3 = (hit as Node3D).global_position
+		var is_person: bool = hit is CharacterBody3D
 
 		var fx: Node3D = IMPACT_HIT.instantiate() if is_person else IMPACT_EFFECT.instantiate()
 		get_tree().current_scene.add_child(fx)
 		fx.global_position = point
 
-		if is_damageable:
-			hit.take_damage(MELEE_DAMAGE, point)
-			crosshair.flash_hit()
-			_maybe_play_kill_line(hit, is_person)
+		hit.take_damage(MELEE_DAMAGE, point)
+		crosshair.flash_hit()
+		_maybe_play_kill_line(hit, is_person)
 
 func _flash_muzzle() -> void:
 	muzzle_flash.visible = true
