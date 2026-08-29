@@ -388,9 +388,14 @@ func _ready() -> void:
 		_force_loop(anim_idle)
 		_setup_animation_tree()
 	gunshot_player.stream = _make_gunshot_sound()
+	if SaveSystem.has_save():
+		SaveSystem.load_game(self)
+		gun_viewmodel.visible = current_weapon != Weapon.KNIFE
+		knife_viewmodel.visible = current_weapon == Weapon.KNIFE
 	_update_ammo_label()
 	_update_reserve_ammo_label()
 	_update_money_label()
+	_update_drugs_label()
 	health_bar.max_value = MAX_HEALTH
 	health_bar.value = health
 	restart_button.pressed.connect(_on_restart_pressed)

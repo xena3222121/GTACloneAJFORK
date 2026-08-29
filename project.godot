@@ -22,6 +22,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 WantedSystem="*res://scripts/wanted_system.gd"
+SaveSystem="*res://scripts/save_system.gd"
 
 [physics]
 
