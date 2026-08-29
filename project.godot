@@ -26,6 +26,7 @@ SaveSystem="*res://scripts/save_system.gd"
 CityAmbience="*res://scripts/city_ambience.gd"
 DayNightCycle="*res://scripts/day_night_cycle.gd"
 Weather="*res://scripts/weather.gd"
+RampAssist="*res://scripts/ramp_assist.gd"
 
 [physics]
 

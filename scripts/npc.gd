@@ -45,6 +45,16 @@ const CHATTER_CHECK_INTERVAL := 6.0
 const CHATTER_RANGE := 5.0
 const CHATTER_CHANCE := 0.12
 
+# A dealer NPC (see is_dealer below) auto-sells the player's drugs for them
+# once hired, on the same real-time-interval/undercover-risk terms as
+# selling in person - just passive instead of "walk up and press E" each time.
+const HIRE_COST := 200
+const DEALER_SELL_INTERVAL := 45.0
+const DEALER_SELL_PRICE_MIN := 15
+const DEALER_SELL_PRICE_MAX := 45
+const DEALER_SNITCH_CHANCE := 0.10
+const DEALER_SNITCH_HEAT := 20.0
+
 @onready var collision: CollisionShape3D = $CollisionShape3D
 @onready var model: Node3D = $Model
 @onready var anim: AnimationPlayer = model.find_child("AnimationPlayer", true, false)
@@ -63,6 +73,14 @@ var dead := false
 @export var is_bar_patron := false
 var hostile := false
 var attack_cooldown := 0.0
+
+# Only meaningful when is_dealer is true (an opt-in per-instance flag, same
+# pattern as is_bar_patron above) - a hireable civilian who, once paid,
+# quietly sells the player's drugs for them over time instead of the player
+# walking it to a stranger themselves.
+@export var is_dealer := false
+var hired := false
+var dealer_sell_timer := 0.0
 var patron_aggro_timer := 0.0
 var player: Node3D = null
 var vehicle_hit_cooldown := 0.0
@@ -139,6 +157,9 @@ func _ready() -> void:
 	interact_zone.body_entered.connect(_on_interact_zone_entered)
 	interact_zone.body_exited.connect(_on_interact_zone_exited)
 
+	if is_dealer:
+		prompt_text = "Press E to talk to the dealer"
+
 func _pick_new_target() -> void:
 	var angle := randf() * TAU
 	var dist := randf() * WANDER_RADIUS
@@ -147,6 +168,9 @@ func _pick_new_target() -> void:
 func _physics_process(delta: float) -> void:
 	if dead:
 		return
+
+	if is_dealer and hired:
+		_process_dealer(delta)
 
 	attack_cooldown = max(0.0, attack_cooldown - delta)
 	vehicle_hit_cooldown = max(0.0, vehicle_hit_cooldown - delta)
@@ -263,6 +287,30 @@ func _on_interact_zone_exited(body: Node3D) -> void:
 func interact(player: Node3D) -> void:
 	if player.has_method("open_npc_menu"):
 		player.open_npc_menu(self)
+
+# Called by player.gd's _on_npc_hire_pressed after it's already deducted
+# HIRE_COST - this NPC doesn't need to know the price, just that it's paid.
+func hire() -> void:
+	hired = true
+	dealer_sell_timer = DEALER_SELL_INTERVAL
+	prompt_text = "Your dealer - selling for you"
+
+# Passive income once hired: periodically sells one unit of the player's
+# drugs on their behalf, same price range and undercover-buyer risk as
+# selling in person (see player.gd's _sell_drugs_to) - just without the
+# player having to walk up to anyone themselves.
+func _process_dealer(delta: float) -> void:
+	dealer_sell_timer -= delta
+	if dealer_sell_timer > 0.0:
+		return
+	dealer_sell_timer = DEALER_SELL_INTERVAL
+	var player := get_tree().get_first_node_in_group("player")
+	if not player or not is_instance_valid(player) or player.get("drugs") == null or player.drugs <= 0:
+		return
+	player.add_drugs(-1)
+	player.add_money(randi_range(DEALER_SELL_PRICE_MIN, DEALER_SELL_PRICE_MAX))
+	if randf() < DEALER_SNITCH_CHANCE:
+		WantedSystem.add_heat(DEALER_SNITCH_HEAT, global_position)
 
 # Reuses the ambient-chatter clip pool (see CHATTER_AUDIO_CLIPS) - only one
 # line exists to draw from right now, same limitation as the ambient bark.

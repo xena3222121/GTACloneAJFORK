@@ -164,6 +164,7 @@ const UPPER_BODY_BONES := [
 @onready var npc_menu_title: Label = $HUD/NPCMenu/Panel/VBox/Title
 @onready var talk_button: Button = $HUD/NPCMenu/Panel/VBox/TalkButton
 @onready var sell_drugs_button: Button = $HUD/NPCMenu/Panel/VBox/SellDrugsButton
+@onready var hire_button: Button = $HUD/NPCMenu/Panel/VBox/HireButton
 @onready var close_npc_button: Button = $HUD/NPCMenu/Panel/VBox/CloseNPCButton
 
 # The RightHand bone's local Y axis is "along the forearm" in both poses
@@ -417,6 +418,7 @@ func _ready() -> void:
 	close_store_button.pressed.connect(close_store_menu)
 	talk_button.pressed.connect(_on_npc_talk_pressed)
 	sell_drugs_button.pressed.connect(_on_npc_sell_pressed)
+	hire_button.pressed.connect(_on_npc_hire_pressed)
 	close_npc_button.pressed.connect(close_npc_menu)
 
 func _on_wanted_tier_changed(tier: int) -> void:
@@ -913,7 +915,22 @@ func open_npc_menu(npc: Node3D) -> void:
 	current_npc = npc
 	menu_open = true
 	npc_menu_title.text = npc.name
+	var is_dealer: bool = npc.get("is_dealer") == true
+	var hired: bool = npc.get("hired") == true
+	# The dealer is someone you hire to sell FOR you, not a regular
+	# civilian - talking/selling to them directly doesn't fit, so they get
+	# a dedicated single-button menu instead of the normal talk/sell one.
+	talk_button.visible = not is_dealer
+	sell_drugs_button.visible = not is_dealer
 	sell_drugs_button.disabled = drugs <= 0
+	hire_button.visible = is_dealer
+	if is_dealer:
+		if hired:
+			hire_button.text = "Already hired - selling for you"
+			hire_button.disabled = true
+		else:
+			hire_button.text = "Hire - $200"
+			hire_button.disabled = money < 200
 	npc_menu.visible = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
@@ -931,6 +948,13 @@ func _on_npc_talk_pressed() -> void:
 func _on_npc_sell_pressed() -> void:
 	if current_npc and is_instance_valid(current_npc):
 		_sell_drugs_to(current_npc)
+	close_npc_menu()
+
+func _on_npc_hire_pressed() -> void:
+	if current_npc and is_instance_valid(current_npc) and current_npc.has_method("hire") and money >= 200:
+		money -= 200
+		_update_money_label()
+		current_npc.hire()
 	close_npc_menu()
 
 func _buy_ammo() -> void:

@@ -153,31 +153,31 @@ size = Vector3(110, 1.0, 0.25)
 
 [sub_resource type="BoxMesh" id="BoxMesh_guardrail_seg11"]
 material = SubResource("StandardMaterial3D_guardrail")
-size = Vector3(11, 1.0, 0.25)
+size = Vector3(7, 1.0, 0.25)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_guardrail_seg11"]
-size = Vector3(11, 1.0, 0.25)
+size = Vector3(7, 1.0, 0.25)
 
 [sub_resource type="BoxMesh" id="BoxMesh_guardrail_seg52"]
 material = SubResource("StandardMaterial3D_guardrail")
-size = Vector3(52, 1.0, 0.25)
+size = Vector3(32, 1.0, 0.25)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_guardrail_seg52"]
-size = Vector3(52, 1.0, 0.25)
+size = Vector3(32, 1.0, 0.25)
 
 [sub_resource type="BoxMesh" id="BoxMesh_guardrail_seg31"]
 material = SubResource("StandardMaterial3D_guardrail")
-size = Vector3(31, 1.0, 0.25)
+size = Vector3(21, 1.0, 0.25)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_guardrail_seg31"]
-size = Vector3(31, 1.0, 0.25)
+size = Vector3(21, 1.0, 0.25)
 
 [sub_resource type="BoxMesh" id="BoxMesh_ramp"]
 material = SubResource("StandardMaterial3D_highway")
-size = Vector3(8.0, 0.5, 30.594)
+size = Vector3(28.0, 0.15, 40.448)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ramp"]
-size = Vector3(8.0, 0.5, 30.594)
+size = Vector3(28.0, 0.15, 40.448)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_whiteline"]
 shading_mode = 0
@@ -846,16 +846,6 @@ shape = SubResource("BoxShape3D_guardrail")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.5, 73.9)
 mesh = SubResource("BoxMesh_guardrail")
 
-[node name="GuardrailSouthA" type="StaticBody3D" parent="Highway"]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Highway/GuardrailSouthA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.5, 0.5, 46.1)
-shape = SubResource("BoxShape3D_guardrail_seg11")
-
-[node name="Mesh" type="MeshInstance3D" parent="Highway/GuardrailSouthA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.5, 0.5, 46.1)
-mesh = SubResource("BoxMesh_guardrail_seg11")
-
 [node name="GuardrailSouthB" type="StaticBody3D" parent="Highway"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Highway/GuardrailSouthB"]
@@ -869,11 +859,11 @@ mesh = SubResource("BoxMesh_guardrail_seg52")
 [node name="GuardrailSouthC" type="StaticBody3D" parent="Highway"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Highway/GuardrailSouthC"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 79.5, 0.5, 46.1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 84.5, 0.5, 46.1)
 shape = SubResource("BoxShape3D_guardrail_seg31")
 
 [node name="Mesh" type="MeshInstance3D" parent="Highway/GuardrailSouthC"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 79.5, 0.5, 46.1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 84.5, 0.5, 46.1)
 mesh = SubResource("BoxMesh_guardrail_seg31")
 
 [node name="Asphalt" type="MeshInstance3D" parent="Highway"]
@@ -974,16 +964,6 @@ shape = SubResource("BoxShape3D_guardrail")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.5, -73.9)
 mesh = SubResource("BoxMesh_guardrail")
 
-[node name="GuardrailInnerA" type="StaticBody3D" parent="HighwaySouth"]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="HighwaySouth/GuardrailInnerA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.5, 0.5, -46.1)
-shape = SubResource("BoxShape3D_guardrail_seg11")
-
-[node name="Mesh" type="MeshInstance3D" parent="HighwaySouth/GuardrailInnerA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.5, 0.5, -46.1)
-mesh = SubResource("BoxMesh_guardrail_seg11")
-
 [node name="GuardrailInnerB" type="StaticBody3D" parent="HighwaySouth"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HighwaySouth/GuardrailInnerB"]
@@ -997,11 +977,11 @@ mesh = SubResource("BoxMesh_guardrail_seg52")
 [node name="GuardrailInnerC" type="StaticBody3D" parent="HighwaySouth"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HighwaySouth/GuardrailInnerC"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 79.5, 0.5, -46.1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 84.5, 0.5, -46.1)
 shape = SubResource("BoxShape3D_guardrail_seg31")
 
 [node name="Mesh" type="MeshInstance3D" parent="HighwaySouth/GuardrailInnerC"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 79.5, 0.5, -46.1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 84.5, 0.5, -46.1)
 mesh = SubResource("BoxMesh_guardrail_seg31")
 
 [node name="Asphalt" type="MeshInstance3D" parent="HighwaySouth"]
@@ -1145,41 +1125,41 @@ speed = 5.5
 [node name="RampNorthA" type="StaticBody3D" parent="HighwayRamps"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRamps/RampNorthA"]
-transform = Transform3D(1, 0, 0, 0, 0.9806, 0.1961, 0, -0.1961, 0.9806, 0, 3, 33)
+transform = Transform3D(1, 0, 0, 0, 0.98894, 0.14834, 0, -0.14834, 0.98894, 0, 3, 28)
 shape = SubResource("BoxShape3D_ramp")
 
 [node name="Mesh" type="MeshInstance3D" parent="HighwayRamps/RampNorthA"]
-transform = Transform3D(1, 0, 0, 0, 0.9806, 0.1961, 0, -0.1961, 0.9806, 0, 3, 33)
+transform = Transform3D(1, 0, 0, 0, 0.98894, 0.14834, 0, -0.14834, 0.98894, 0, 3, 28)
 mesh = SubResource("BoxMesh_ramp")
 
 [node name="RampNorthB" type="StaticBody3D" parent="HighwayRamps"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRamps/RampNorthB"]
-transform = Transform3D(1, 0, 0, 0, 0.9806, 0.1961, 0, -0.1961, 0.9806, 60, 3, 33)
+transform = Transform3D(1, 0, 0, 0, 0.98894, 0.14834, 0, -0.14834, 0.98894, 60, 3, 28)
 shape = SubResource("BoxShape3D_ramp")
 
 [node name="Mesh" type="MeshInstance3D" parent="HighwayRamps/RampNorthB"]
-transform = Transform3D(1, 0, 0, 0, 0.9806, 0.1961, 0, -0.1961, 0.9806, 60, 3, 33)
+transform = Transform3D(1, 0, 0, 0, 0.98894, 0.14834, 0, -0.14834, 0.98894, 60, 3, 28)
 mesh = SubResource("BoxMesh_ramp")
 
 [node name="RampSouthA" type="StaticBody3D" parent="HighwayRamps"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRamps/RampSouthA"]
-transform = Transform3D(1, 0, 0, 0, -0.9806, 0.1961, 0, -0.1961, -0.9806, 0, 3, -33)
+transform = Transform3D(1, 0, 0, 0, -0.98894, 0.14834, 0, -0.14834, -0.98894, 0, 3, -28)
 shape = SubResource("BoxShape3D_ramp")
 
 [node name="Mesh" type="MeshInstance3D" parent="HighwayRamps/RampSouthA"]
-transform = Transform3D(1, 0, 0, 0, -0.9806, 0.1961, 0, -0.1961, -0.9806, 0, 3, -33)
+transform = Transform3D(1, 0, 0, 0, -0.98894, 0.14834, 0, -0.14834, -0.98894, 0, 3, -28)
 mesh = SubResource("BoxMesh_ramp")
 
 [node name="RampSouthB" type="StaticBody3D" parent="HighwayRamps"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRamps/RampSouthB"]
-transform = Transform3D(1, 0, 0, 0, -0.9806, 0.1961, 0, -0.1961, -0.9806, 60, 3, -33)
+transform = Transform3D(1, 0, 0, 0, -0.98894, 0.14834, 0, -0.14834, -0.98894, 60, 3, -28)
 shape = SubResource("BoxShape3D_ramp")
 
 [node name="Mesh" type="MeshInstance3D" parent="HighwayRamps/RampSouthB"]
-transform = Transform3D(1, 0, 0, 0, -0.9806, 0.1961, 0, -0.1961, -0.9806, 60, 3, -33)
+transform = Transform3D(1, 0, 0, 0, -0.98894, 0.14834, 0, -0.14834, -0.98894, 60, 3, -28)
 mesh = SubResource("BoxMesh_ramp")
 
 [node name="HighwayPylons" type="Node3D" parent="."]
@@ -3240,6 +3220,10 @@ shape = SubResource("SphereShape3D_interact")
 
 [node name="Mesh" type="MeshInstance3D" parent="HouseInterior/WeedPlot"]
 mesh = SubResource("BoxMesh_counter")
+
+[node name="Dealer" parent="HouseInterior" instance=ExtResource("7")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0.1, -4.5)
+is_dealer = true
 
 [node name="StoreInterior" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1060, 0, 0)
