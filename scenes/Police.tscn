@@ -32,6 +32,14 @@ emission_energy_multiplier = 0.6
 material = SubResource("StandardMaterial3D_badge")
 size = Vector3(0.09, 0.11, 0.02)
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_belt"]
+albedo_color = Color(0.04, 0.04, 0.05, 1)
+roughness = 0.6
+
+[sub_resource type="BoxMesh" id="BoxMesh_belt"]
+material = SubResource("StandardMaterial3D_belt")
+size = Vector3(0.42, 0.09, 0.26)
+
 [node name="Police" type="CharacterBody3D"]
 script = ExtResource("1")
 
@@ -50,6 +58,10 @@ unit_size = 8.0
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
 unit_size = 12.0
 
+[node name="VoiceAudio" type="AudioStreamPlayer3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
+unit_size = 10.0
+
 [node name="SirenAudio" type="AudioStreamPlayer3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
 unit_size = 16.0
@@ -67,3 +79,7 @@ mesh = SubResource("BoxMesh_cap_brim")
 [node name="Badge" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.14, 1.35, 0.16)
 mesh = SubResource("BoxMesh_badge")
+
+[node name="Belt" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.98, 0)
+mesh = SubResource("BoxMesh_belt")

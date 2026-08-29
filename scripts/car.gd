@@ -23,11 +23,47 @@ var driver: Node3D = null
 var steer_target := 0.0
 var health: float
 var destroyed := false
+var engine_audio: AudioStreamPlayer3D
 
 func _ready() -> void:
 	add_to_group("vehicles")
 	camera.current = false
 	health = max_health
+	_setup_engine_audio()
+
+# City streets were dead silent otherwise - every moving car (player's and
+# traffic's alike) gets a real recorded engine loop (see
+# Audio/Ambience/ATTRIBUTION.md - CC BY 4.0, qubodup), pitched and mixed
+# based on actual speed each frame (see _update_engine_audio). A first pass
+# here used a synthesized sawtooth loop, but it read as a crude bass rumble
+# rather than an engine, so it was swapped for a real recording.
+const ENGINE_LOOP_PATH := "res://Audio/Ambience/car_engine_loop.wav"
+
+func _setup_engine_audio() -> void:
+	engine_audio = AudioStreamPlayer3D.new()
+	engine_audio.unit_size = 20.0
+	engine_audio.volume_db = -14.0
+	var stream: AudioStreamWAV = load(ENGINE_LOOP_PATH)
+	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	engine_audio.stream = stream
+	add_child(engine_audio)
+
+# Only plays while actually being driven - both because a parked car with
+# its engine off should be silent, and because a real Godot quirk found via
+# playtesting: a child AudioStreamPlayer3D on a SLEEPING RigidBody3D (which
+# this is, once parked and still) can't sustain playback at all - it starts
+# and gets cut within the same frame, over and over. Gating on `driver`
+# sidesteps that entirely rather than fighting the engine's sleep state.
+func _update_engine_audio() -> void:
+	if destroyed or not driver:
+		if engine_audio.playing:
+			engine_audio.stop()
+		return
+	var speed_ratio: float = clamp(linear_velocity.length() / 20.0, 0.0, 1.0)
+	engine_audio.pitch_scale = lerp(0.8, 2.0, speed_ratio)
+	engine_audio.volume_db = lerp(-14.0, -6.0, speed_ratio)
+	if not engine_audio.playing:
+		engine_audio.play()
 
 func driver_enter(who: Node3D) -> void:
 	driver = who
@@ -114,6 +150,7 @@ func _spawn_fire() -> void:
 	fire.position = Vector3(0, 0.6, 0)
 
 func _physics_process(delta: float) -> void:
+	_update_engine_audio()
 	if destroyed:
 		return
 	if not driver:

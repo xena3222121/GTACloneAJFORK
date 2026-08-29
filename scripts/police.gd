@@ -22,6 +22,7 @@ const LEASH_RADIUS := 22.0 # was 30 - cops should back off sooner once you've ac
 const GIVE_UP_TIME := 4.0 # was 6
 const HIT_HEAT := 5.0
 const KILLED_HEAT := 35.0
+const INVESTIGATE_GIVE_UP_TIME := 10.0
 
 const VEHICLE_HIT_MIN_SPEED := 2.0
 const VEHICLE_HIT_DAMAGE_PER_SPEED := 4.0
@@ -48,12 +49,21 @@ const HIT_AUDIO_CLIPS := [
 	"res://Audio/Arnold/NPC Getting attacked/OMG Shot in D.wav",
 ]
 
+# Played once, the moment a cop actually spots/engages the player (see
+# _engage below) - AJ's own recorded lines, not the synthesized gunshot/siren.
+const SEES_PLAYER_AUDIO_CLIPS := [
+	"res://Audio/Arnold/Police Sees Player/This is the police Show me your hands.wav",
+	"res://Audio/Arnold/Police Sees Player/Hey you stop right there.wav",
+	"res://Audio/Arnold/Police Sees Player/Stop resisting Comply now.wav",
+]
+
 @onready var collision: CollisionShape3D = $CollisionShape3D
 @onready var model: Node3D = $Model
 @onready var anim: AnimationPlayer = model.find_child("AnimationPlayer", true, false)
 @onready var hit_audio: AudioStreamPlayer3D = $HitAudio
 @onready var gunshot_audio: AudioStreamPlayer3D = $GunshotAudio
 @onready var siren_audio: AudioStreamPlayer3D = $SirenAudio
+@onready var voice_audio: AudioStreamPlayer3D = $VoiceAudio
 
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var home_position: Vector3
@@ -62,6 +72,9 @@ var idle_timer := 0.0
 var health := MAX_HEALTH
 var dead := false
 var hostile := false
+var alerted := false
+var alert_target := Vector3.ZERO
+var investigate_timer := 0.0
 var fire_cooldown := 0.0
 var lost_sight_timer := 0.0
 var vehicle_hit_cooldown := 0.0
@@ -104,7 +117,14 @@ func _ready() -> void:
 	add_to_group("police")
 	home_position = global_position
 	_pick_new_target()
-	player = get_tree().get_first_node_in_group("player")
+	# Deferred rather than looked up directly here: the 4 hand-placed police
+	# in World.tscn are declared BEFORE the Player node, so their _ready()
+	# runs first - looking the player up right now would silently grab
+	# nothing (Player hasn't added itself to the "player" group yet),
+	# leaving `player` null for the rest of the game. Reinforcement cops
+	# (spawned later at runtime by WantedSystem) never hit this, which is
+	# why the bug wasn't obvious - only the original 4 were ever affected.
+	call_deferred("_resolve_player")
 	if anim:
 		_strip_armature_root_tracks()
 		anim_idle = _find_anim("idle")
@@ -117,18 +137,46 @@ func _ready() -> void:
 	_tint_uniform()
 
 # No dedicated police model exists, so the generic civilian character is
-# tinted dark navy (like a uniform) to read as "police" at a glance -
-# same recursive material_override trick used for charred car wrecks.
+# tinted to read as "police" at a glance. The shared model (Male_LongSleeve)
+# is a single mesh with named surfaces (Skin/Eyes/Hair/TieTexture/Shirt/
+# Pants/Details) rather than separate submeshes - a blanket
+# material_override was recoloring the WHOLE mesh navy, wiping out the
+# face/skin/hair along with the clothes (this is why cops looked like a flat
+# solid-color blob instead of a person in a uniform). Overriding only the
+# named clothing surfaces keeps skin/eyes/hair looking like an actual face.
 func _tint_uniform() -> void:
-	var uniform := StandardMaterial3D.new()
-	uniform.albedo_color = Color(0.08, 0.11, 0.22)
-	_tint_recursive(model, uniform)
+	var shirt := StandardMaterial3D.new()
+	shirt.albedo_color = Color(0.08, 0.11, 0.22)
+	var pants := StandardMaterial3D.new()
+	pants.albedo_color = Color(0.05, 0.05, 0.07)
+	_tint_surfaces(model, {"Shirt": shirt, "Pants": pants, "Details": pants})
 
-func _tint_recursive(node: Node, mat: Material) -> void:
+func _tint_surfaces(node: Node, by_surface_name: Dictionary) -> void:
 	if node is MeshInstance3D:
-		(node as MeshInstance3D).material_override = mat
+		var mi := node as MeshInstance3D
+		var mesh := mi.mesh
+		if mesh:
+			for i in range(mesh.get_surface_count()):
+				var surface_name: String = mesh.surface_get_name(i)
+				if by_surface_name.has(surface_name):
+					mi.set_surface_override_material(i, by_surface_name[surface_name])
 	for child in node.get_children():
-		_tint_recursive(child, mat)
+		_tint_surfaces(child, by_surface_name)
+
+# Every path that flips a cop from not-hostile to hostile (proactive spot,
+# radio-alert-with-LOS, spotting the player while investigating, or getting
+# shot) routes through here so the "sees you" voice line only ever plays
+# once per engagement, not every frame hostile stays true.
+func _engage() -> void:
+	if hostile:
+		return
+	hostile = true
+	alerted = false
+	voice_audio.stream = load(SEES_PLAYER_AUDIO_CLIPS[randi() % SEES_PLAYER_AUDIO_CLIPS.size()])
+	voice_audio.play()
+
+func _resolve_player() -> void:
+	player = get_tree().get_first_node_in_group("player")
 
 func _pick_new_target() -> void:
 	var angle := randf() * TAU
@@ -155,6 +203,8 @@ func _physics_process(delta: float) -> void:
 
 	if hostile and player and is_instance_valid(player):
 		_process_hostile(delta)
+	elif alerted and player and is_instance_valid(player):
+		_process_investigate(delta)
 	else:
 		_process_wander(delta)
 		_check_proactive_detection()
@@ -197,14 +247,26 @@ func _check_proactive_detection() -> void:
 		return
 	var to_player := player.global_position - global_position
 	if to_player.length() <= DETECTION_RANGE and _has_line_of_sight(player.global_position):
-		hostile = true
+		_engage()
 
 # Called by WantedSystem when a crime happens within this cop's alert
-# radius - skips the detection roll entirely, matching a real cop reacting
-# to a radio call rather than needing to personally witness anything.
-func alert(_source_position: Vector3) -> void:
-	if not dead:
-		hostile = true
+# radius. AJ asked for cops to have to actually SEE the player before
+# engaging rather than insta-aggroing the moment a crime happens nearby -
+# so this only grants instant hostility if the cop already has a clean shot
+# at the player right now; otherwise it just sends the cop to go check out
+# where the report came from ("alerted"/investigating), same as a real cop
+# responding to a radio call but still needing eyes-on before opening fire.
+func alert(source_position: Vector3) -> void:
+	if dead or hostile:
+		return
+	if player and is_instance_valid(player) \
+			and global_position.distance_to(player.global_position) <= ENGAGE_RANGE \
+			and _has_line_of_sight(player.global_position):
+		_engage()
+	else:
+		alerted = true
+		alert_target = source_position
+		investigate_timer = INVESTIGATE_GIVE_UP_TIME
 
 func _has_line_of_sight(target_pos: Vector3) -> bool:
 	var origin: Vector3 = global_position + Vector3(0, 1.4, 0)
@@ -233,6 +295,45 @@ func _process_wander(delta: float) -> void:
 		var target_yaw := atan2(dir.x, dir.z)
 		model.rotation.y = lerp_angle(model.rotation.y, target_yaw, TURN_SPEED * delta)
 		_play(anim_walk)
+
+# Heading toward wherever a reported crime happened, not yet actually
+# engaging - drops into full _process_hostile the instant it gets a real
+# line of sight on the player, and gives up (back to normal wandering) if it
+# either reaches the reported spot or spends too long looking without
+# spotting anyone.
+func _process_investigate(delta: float) -> void:
+	investigate_timer -= delta
+
+	var to_player := player.global_position - global_position
+	to_player.y = 0
+	if to_player.length() <= DETECTION_RANGE and _has_line_of_sight(player.global_position):
+		_engage()
+		return
+
+	if investigate_timer <= 0.0:
+		alerted = false
+		_pick_new_target()
+		return
+
+	var to_target := alert_target - global_position
+	to_target.y = 0
+	if to_target.length() < ARRIVE_DIST:
+		# Arrived at the reported spot without spotting anyone - stand and
+		# keep looking (still checking LOS above every frame) until
+		# investigate_timer runs out, rather than giving up the instant it
+		# arrives. Found via playtesting: alert_target can equal the cop's
+		# own current position (e.g. a crime reported right on top of it),
+		# which used to make it give up the very same frame it got alerted.
+		velocity.x = 0.0
+		velocity.z = 0.0
+		return
+
+	var dir := to_target.normalized()
+	velocity.x = dir.x * WALK_SPEED
+	velocity.z = dir.z * WALK_SPEED
+	var target_yaw := atan2(dir.x, dir.z)
+	model.rotation.y = lerp_angle(model.rotation.y, target_yaw, TURN_SPEED * delta)
+	_play(anim_walk)
 
 func _process_hostile(delta: float) -> void:
 	var to_player := player.global_position - global_position
@@ -299,7 +400,7 @@ func take_damage(amount: float, _hit_point: Vector3 = Vector3.ZERO) -> void:
 	_play_hit_audio()
 	if not hostile and player and player.has_method("play_cops_incoming_line"):
 		player.play_cops_incoming_line()
-	hostile = true
+	_engage()
 	WantedSystem.add_heat(HIT_HEAT, global_position)
 	health -= amount
 	if health <= 0.0:

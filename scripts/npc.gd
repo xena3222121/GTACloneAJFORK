@@ -34,6 +34,17 @@ const HIT_AUDIO_CLIPS := [
 	"res://Audio/Arnold/NPC Getting attacked/OMG Shot in D.wav",
 ]
 
+# Background "city chatter" - only one line exists to draw from right now
+# (this project's "Random Lines" folder), so this will sound repetitive
+# until more get recorded and added here. The system itself (proximity +
+# cooldown + random chance) is the actual point of this pass.
+const CHATTER_AUDIO_CLIPS := [
+	"res://Audio/Arnold/Random Lines/I havent felt this sad and pathetic since band camp.wav",
+]
+const CHATTER_CHECK_INTERVAL := 6.0
+const CHATTER_RANGE := 5.0
+const CHATTER_CHANCE := 0.12
+
 @onready var collision: CollisionShape3D = $CollisionShape3D
 @onready var model: Node3D = $Model
 @onready var anim: AnimationPlayer = model.find_child("AnimationPlayer", true, false)
@@ -56,6 +67,10 @@ var patron_aggro_timer := 0.0
 var player: Node3D = null
 var vehicle_hit_cooldown := 0.0
 var eject_stun_timer := 0.0
+var chatter_audio: AudioStreamPlayer3D
+var chatter_timer := 0.0
+var interact_zone: Area3D
+var prompt_text := "Press E to talk"
 
 var anim_idle := ""
 var anim_walk := ""
@@ -104,6 +119,25 @@ func _ready() -> void:
 		_force_loop(anim_idle)
 		_force_loop(anim_walk)
 	_play(anim_idle)
+	chatter_audio = AudioStreamPlayer3D.new()
+	chatter_audio.unit_size = 8.0
+	add_child(chatter_audio)
+	chatter_timer = randf_range(0.0, CHATTER_CHECK_INTERVAL)
+
+	# Lets the player walk up to any civilian and press E to get a talk/sell
+	# menu (see player.gd's open_npc_menu) instead of the old blind "E sells
+	# drugs to whoever's nearest" behavior - that fallback still exists
+	# (try_sell_drugs_to_nearby_npc) for the thin gap between this zone's
+	# radius and SELL_RANGE, but this is now the primary path.
+	interact_zone = Area3D.new()
+	var shape := SphereShape3D.new()
+	shape.radius = 2.2
+	var coll := CollisionShape3D.new()
+	coll.shape = shape
+	interact_zone.add_child(coll)
+	add_child(interact_zone)
+	interact_zone.body_entered.connect(_on_interact_zone_entered)
+	interact_zone.body_exited.connect(_on_interact_zone_exited)
 
 func _pick_new_target() -> void:
 	var angle := randf() * TAU
@@ -136,6 +170,7 @@ func _physics_process(delta: float) -> void:
 		_process_hostile(delta)
 	else:
 		_process_wander(delta)
+		_check_ambient_chatter(delta)
 		if is_bar_patron:
 			_check_patron_aggro(delta)
 
@@ -215,6 +250,46 @@ func _check_patron_aggro(delta: float) -> void:
 		player = p
 		hostile = true
 
+func _on_interact_zone_entered(body: Node3D) -> void:
+	if dead:
+		return
+	if body.has_method("set_nearby_interactable"):
+		body.set_nearby_interactable(self)
+
+func _on_interact_zone_exited(body: Node3D) -> void:
+	if body.has_method("clear_nearby_interactable"):
+		body.clear_nearby_interactable(self)
+
+func interact(player: Node3D) -> void:
+	if player.has_method("open_npc_menu"):
+		player.open_npc_menu(self)
+
+# Reuses the ambient-chatter clip pool (see CHATTER_AUDIO_CLIPS) - only one
+# line exists to draw from right now, same limitation as the ambient bark.
+func say_hello() -> void:
+	if chatter_audio.playing:
+		return
+	chatter_audio.stream = load(CHATTER_AUDIO_CLIPS[randi() % CHATTER_AUDIO_CLIPS.size()])
+	chatter_audio.play()
+
+# Occasional background bark when the player's standing near a peaceful
+# civilian - checked on a timer (not every frame) so it can't spam.
+func _check_ambient_chatter(delta: float) -> void:
+	chatter_timer -= delta
+	if chatter_timer > 0.0:
+		return
+	chatter_timer = CHATTER_CHECK_INTERVAL
+	if chatter_audio.playing:
+		return
+	var p := get_tree().get_first_node_in_group("player")
+	if not p or not is_instance_valid(p):
+		return
+	if global_position.distance_to(p.global_position) > CHATTER_RANGE:
+		return
+	if randf() < CHATTER_CHANCE:
+		chatter_audio.stream = load(CHATTER_AUDIO_CLIPS[randi() % CHATTER_AUDIO_CLIPS.size()])
+		chatter_audio.play()
+
 func _process_hostile(delta: float) -> void:
 	var to_player := player.global_position - global_position
 	to_player.y = 0
@@ -254,6 +329,10 @@ func _play_hit_audio() -> void:
 func die() -> void:
 	dead = true
 	collision.disabled = true
+	interact_zone.monitoring = false
+	var p := get_tree().get_first_node_in_group("player")
+	if p and p.get("nearby_interactable") == self:
+		p.clear_nearby_interactable(self)
 	_play(anim_die)
 	_spawn_blood_pool()
 	_maybe_drop_money()

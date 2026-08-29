@@ -17,6 +17,7 @@ func has_save() -> bool:
 	return FileAccess.file_exists(SAVE_PATH)
 
 func save_game(player: Node) -> void:
+	var weed := player.get_tree().get_first_node_in_group("weed_plot")
 	var data := {
 		"money": player.money,
 		"drugs": player.drugs,
@@ -30,6 +31,8 @@ func save_game(player: Node) -> void:
 		"shotgun_reserve_ammo": player.shotgun_reserve_ammo,
 		"mac10_ammo_in_mag": player.mac10_ammo_in_mag,
 		"mac10_reserve_ammo": player.mac10_reserve_ammo,
+		"weed_state": weed.state if weed else 0,
+		"weed_planted_at": weed.planted_at if weed else 0,
 	}
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file:
@@ -66,5 +69,11 @@ func load_game(player: Node) -> bool:
 	player.mac10_ammo_in_mag = data.get("mac10_ammo_in_mag", player.mac10_ammo_in_mag)
 	player.mac10_reserve_ammo = data.get("mac10_reserve_ammo", player.mac10_reserve_ammo)
 	player.current_weapon = data.get("current_weapon", player.current_weapon)
+
+	var weed := player.get_tree().get_first_node_in_group("weed_plot")
+	if weed:
+		weed.state = data.get("weed_state", weed.state)
+		weed.planted_at = data.get("weed_planted_at", weed.planted_at)
+
 	player.global_position = LOAD_SPAWN_POSITION
 	return true

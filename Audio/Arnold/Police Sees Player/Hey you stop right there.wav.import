@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://b1nkebtbj736w"
+path="res://.godot/imported/Hey you stop right there.wav-d1d3ff40e12f589ace0a9da50dac4a3a.sample"
+
+[deps]
+
+source_file="res://Audio/Arnold/Police Sees Player/Hey you stop right there.wav"
+dest_files=["res://.godot/imported/Hey you stop right there.wav-d1d3ff40e12f589ace0a9da50dac4a3a.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

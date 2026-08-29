@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://cpb75njr1ryam" path="res://scripts/crosshair.gd" id="2"]
 [ext_resource type="PackedScene" uid="uid://c7w5mx7vjnnbm" path="res://assets/characters-realistic/Male_Suit.fbx" id="3"]
 [ext_resource type="PackedScene" uid="uid://copmsowv8ofgy" path="res://assets/weapons/Pistol_2.glb" id="4"]
+[ext_resource type="Script" path="res://scripts/minimap_camera.gd" id="5"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
 radius = 0.4
@@ -20,6 +21,25 @@ billboard_mode = 1
 [sub_resource type="QuadMesh" id="QuadMesh_MuzzleFlash"]
 material = SubResource("StandardMaterial3D_MuzzleFlash")
 size = Vector2(0.06, 0.06)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_Rain"]
+shading_mode = 0
+albedo_color = Color(0.75, 0.8, 0.9, 0.55)
+transparency = 1
+billboard_mode = 1
+
+[sub_resource type="QuadMesh" id="QuadMesh_Rain"]
+material = SubResource("StandardMaterial3D_Rain")
+size = Vector2(0.02, 0.4)
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_Rain"]
+direction = Vector3(0, -1, 0)
+spread = 3.0
+gravity = Vector3(0, -4.0, 0)
+initial_velocity_min = 14.0
+initial_velocity_max = 18.0
+emission_shape = 1
+emission_box_extents = Vector3(12, 0.5, 12)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_bg"]
 bg_color = Color(0.1, 0.1, 0.1, 0.75)
@@ -98,6 +118,14 @@ active = false
 [node name="CameraPivot" type="Node3D" parent="." unique_id=896001639]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.65, 0)
 
+[node name="Rain" type="GPUParticles3D" parent="CameraPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 0)
+emitting = false
+amount = 300
+lifetime = 1.5
+process_material = SubResource("ParticleProcessMaterial_Rain")
+draw_pass_1 = SubResource("QuadMesh_Rain")
+
 [node name="SpringArm3D" type="SpringArm3D" parent="CameraPivot" unique_id=507115352]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0, 0)
 collision_mask = 0
@@ -107,6 +135,7 @@ margin = 0.3
 [node name="Camera3D" type="Camera3D" parent="CameraPivot/SpringArm3D" unique_id=356839857]
 current = true
 fov = 65.0
+cull_mask = 524287
 
 [node name="GunshotPlayer" type="AudioStreamPlayer" parent="." unique_id=1075549777]
 
@@ -203,6 +232,47 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 5
 theme_override_font_sizes/font_size = 28
 text = ""
+
+[node name="Minimap" type="Control" parent="HUD"]
+layout_mode = 3
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -200.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = 200.0
+grow_horizontal = 0
+
+[node name="Border" type="ColorRect" parent="HUD/Minimap"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.55)
+
+[node name="ViewportContainer" type="SubViewportContainer" parent="HUD/Minimap"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 3.0
+offset_top = 3.0
+offset_right = -3.0
+offset_bottom = -3.0
+grow_horizontal = 2
+grow_vertical = 2
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="HUD/Minimap/ViewportContainer"]
+transparent_bg = true
+own_world_3d = false
+size = Vector2i(300, 300)
+
+[node name="MinimapCamera" type="Camera3D" parent="HUD/Minimap/ViewportContainer/SubViewport"]
+script = ExtResource("5")
 
 [node name="DeathScreen" type="Control" parent="HUD"]
 visible = false
@@ -397,6 +467,76 @@ theme_override_font_sizes/font_size = 18
 text = "Black Outfit - $30"
 
 [node name="CloseStoreButton" type="Button" parent="HUD/StoreMenu/Panel/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 40)
+theme_override_font_sizes/font_size = 18
+text = "Close"
+
+[node name="NPCMenu" type="Control" parent="HUD"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Dim" type="ColorRect" parent="HUD/NPCMenu"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.6)
+
+[node name="Panel" type="Panel" parent="HUD/NPCMenu"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -140.0
+offset_top = -140.0
+offset_right = 140.0
+offset_bottom = 140.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="HUD/NPCMenu/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="HUD/NPCMenu/Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "Local"
+horizontal_alignment = 1
+
+[node name="TalkButton" type="Button" parent="HUD/NPCMenu/Panel/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 40)
+theme_override_font_sizes/font_size = 18
+text = "Talk"
+
+[node name="SellDrugsButton" type="Button" parent="HUD/NPCMenu/Panel/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 40)
+theme_override_font_sizes/font_size = 18
+text = "Sell Drugs"
+
+[node name="CloseNPCButton" type="Button" parent="HUD/NPCMenu/Panel/VBox"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 40)
 theme_override_font_sizes/font_size = 18

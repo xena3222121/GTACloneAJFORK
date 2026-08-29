@@ -22,7 +22,7 @@ const VEHICLE_HIT_COOLDOWN := 0.6
 const SELL_RANGE := 3.0
 const SELL_PRICE_MIN := 15
 const SELL_PRICE_MAX := 45
-const SNITCH_CHANCE := 0.15
+const SNITCH_CHANCE := 0.10 # was 0.15 - AJ asked for a flat 10% undercover-buyer chance
 const SNITCH_HEAT := 20.0
 
 const AMMO_PRICE := 20
@@ -130,6 +130,7 @@ const UPPER_BODY_BONES := [
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var spring_arm: SpringArm3D = $CameraPivot/SpringArm3D
 @onready var camera: Camera3D = $CameraPivot/SpringArm3D/Camera3D
+@onready var rain: GPUParticles3D = $CameraPivot/Rain
 @onready var gun_viewmodel: Node3D = $Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/GunViewmodel
 @onready var knife_viewmodel: Node3D = $Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/KnifeViewmodel
 @onready var muzzle_point: Marker3D = $Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/GunViewmodel/MuzzlePoint
@@ -159,6 +160,11 @@ const UPPER_BODY_BONES := [
 @onready var buy_black_outfit_button: Button = $HUD/StoreMenu/Panel/VBox/BuyBlackOutfitButton
 @onready var close_store_button: Button = $HUD/StoreMenu/Panel/VBox/CloseStoreButton
 @onready var reserve_ammo_label: Label = $HUD/ReserveAmmoLabel
+@onready var npc_menu: Control = $HUD/NPCMenu
+@onready var npc_menu_title: Label = $HUD/NPCMenu/Panel/VBox/Title
+@onready var talk_button: Button = $HUD/NPCMenu/Panel/VBox/TalkButton
+@onready var sell_drugs_button: Button = $HUD/NPCMenu/Panel/VBox/SellDrugsButton
+@onready var close_npc_button: Button = $HUD/NPCMenu/Panel/VBox/CloseNPCButton
 
 # The RightHand bone's local Y axis is "along the forearm" in both poses
 # (points down when the arm hangs relaxed, forward when raised to aim), so
@@ -209,6 +215,7 @@ var drugs := 0
 var drunk_timer := 0.0
 var menu_open := false
 var nearby_interactable: Node = null
+var current_npc: Node3D = null
 var current_interior: Node = null
 var exterior_return_position := Vector3.ZERO
 var reload_timer := 0.0
@@ -408,6 +415,9 @@ func _ready() -> void:
 	buy_red_outfit_button.pressed.connect(_buy_red_outfit)
 	buy_black_outfit_button.pressed.connect(_buy_black_outfit)
 	close_store_button.pressed.connect(close_store_menu)
+	talk_button.pressed.connect(_on_npc_talk_pressed)
+	sell_drugs_button.pressed.connect(_on_npc_sell_pressed)
+	close_npc_button.pressed.connect(close_npc_menu)
 
 func _on_wanted_tier_changed(tier: int) -> void:
 	wanted_label.text = "★".repeat(tier)
@@ -899,6 +909,30 @@ func close_store_menu() -> void:
 	store_menu.visible = false
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
+func open_npc_menu(npc: Node3D) -> void:
+	current_npc = npc
+	menu_open = true
+	npc_menu_title.text = npc.name
+	sell_drugs_button.disabled = drugs <= 0
+	npc_menu.visible = true
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+
+func close_npc_menu() -> void:
+	current_npc = null
+	menu_open = false
+	npc_menu.visible = false
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+func _on_npc_talk_pressed() -> void:
+	if current_npc and is_instance_valid(current_npc) and current_npc.has_method("say_hello"):
+		current_npc.say_hello()
+	close_npc_menu()
+
+func _on_npc_sell_pressed() -> void:
+	if current_npc and is_instance_valid(current_npc):
+		_sell_drugs_to(current_npc)
+	close_npc_menu()
+
 func _buy_ammo() -> void:
 	if money >= AMMO_PRICE:
 		money -= AMMO_PRICE
@@ -955,6 +989,13 @@ func try_sell_drugs_to_nearby_npc() -> void:
 			nearest = npc
 			nearest_dist = dist
 	if not nearest:
+		return
+	_sell_drugs_to(nearest)
+
+# Shared by the blind nearest-NPC fallback above and the explicit "Sell
+# Drugs" button in the NPC talk menu - same undercover-buyer risk either way.
+func _sell_drugs_to(npc: Node3D) -> void:
+	if drugs <= 0 or npc.get("dead") == true:
 		return
 	drugs -= 1
 	_update_drugs_label()
@@ -1039,15 +1080,30 @@ func melee_attack() -> void:
 	query.collide_with_areas = false
 	query.exclude = [self.get_rid()]
 
+	# Prefer a person (CharacterBody3D - Player/NPC/Police) over any inanimate
+	# object even if it's farther away. Picking whichever's merely CLOSEST let
+	# a car parked between the player and their actual target eat the knife
+	# hit instead - one solid stab was enough to blow the car up, and its
+	# blast radius then killed the person who was never actually hit.
 	var hit: Object = null
 	var hit_dist := INF
+	var hit_is_person := false
 	for result in space_state.intersect_shape(query, 8):
 		var collider: Object = result.get("collider")
-		if collider and collider.has_method("take_damage"):
-			var dist: float = origin.distance_to((collider as Node3D).global_position)
-			if dist < hit_dist:
-				hit_dist = dist
-				hit = collider
+		if not collider or not collider.has_method("take_damage"):
+			continue
+		var is_person: bool = collider is CharacterBody3D
+		if hit_is_person and not is_person:
+			continue
+		var dist: float = origin.distance_to((collider as Node3D).global_position)
+		if is_person and not hit_is_person:
+			hit = collider
+			hit_dist = dist
+			hit_is_person = true
+			continue
+		if dist < hit_dist:
+			hit_dist = dist
+			hit = collider
 
 	if hit:
 		var point: Vector3 = (hit as Node3D).global_position
@@ -1261,3 +1317,4 @@ func _show_death_text() -> void:
 func _process(delta: float) -> void:
 	if death_cam_zooming:
 		spring_arm.spring_length = min(spring_arm.spring_length + DEATH_CAM_ZOOM_SPEED * delta, DEATH_CAM_ZOOM_MAX)
+	rain.emitting = Weather.is_raining()
