@@ -12,15 +12,20 @@ extends Node
 signal tier_changed(tier: int)
 
 const MAX_HEAT := 100.0
-const DECAY_RATE := 6.0
+const DECAY_RATE := 9.0 # was 6 - heat (and with it, the reinforcement spawner below) used to linger too long after the player actually stopped causing trouble
 const DECAY_GRACE := 4.0
 const TIER_THRESHOLDS := [25.0, 55.0, 85.0]
 const BASE_ALERT_RADIUS := 14.0
 const TIER_ALERT_RADIUS_BONUS := 8.0
 
 const POLICE_SCENE := preload("res://scenes/Police.tscn")
-const SPAWN_COOLDOWN := 7.0
-const MAX_SPAWNED := 6
+# Reinforcements were too aggressive: spawning off any nonzero heat (a single
+# grazing hit was enough), every 7s, up to 6 at once. Now requires real,
+# sustained heat before backup gets called at all, arrives far less often,
+# and caps much lower.
+const MIN_SPAWN_HEAT := 20.0
+const SPAWN_COOLDOWN := 16.0
+const MAX_SPAWNED := 3
 const SPAWN_RADIUS_MIN := 16.0
 const SPAWN_RADIUS_MAX := 26.0
 
@@ -54,7 +59,7 @@ func _process(delta: float) -> void:
 		heat = max(0.0, heat - DECAY_RATE * delta)
 		_update_tier()
 
-	if heat > 0.0:
+	if heat >= MIN_SPAWN_HEAT:
 		_spawn_timer -= delta
 		if _spawn_timer <= 0.0:
 			_spawn_timer = SPAWN_COOLDOWN
@@ -68,6 +73,8 @@ func _process(delta: float) -> void:
 # what actually makes heat spawn a response anywhere it happens, capped so
 # a long chase doesn't spiral into an unlimited swarm.
 func _maybe_spawn_reinforcement() -> void:
+	if heat < MIN_SPAWN_HEAT:
+		return
 	_spawned = _spawned.filter(func(c): return is_instance_valid(c) and not c.dead)
 	if _spawned.size() >= MAX_SPAWNED:
 		return

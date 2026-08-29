@@ -17,9 +17,9 @@ const RAY_LENGTH := 60.0
 const MONEY_DROP_CHANCE := 0.4
 const AMMO_DROP_CHANCE := 0.4
 
-const DETECTION_RANGE := 14.0
-const LEASH_RADIUS := 30.0
-const GIVE_UP_TIME := 6.0
+const DETECTION_RANGE := 9.0 # was 14 - wandering cops were piling onto an already-active incident too readily
+const LEASH_RADIUS := 22.0 # was 30 - cops should back off sooner once you've actually put distance between you
+const GIVE_UP_TIME := 4.0 # was 6
 const HIT_HEAT := 5.0
 const KILLED_HEAT := 35.0
 
