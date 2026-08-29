@@ -8,13 +8,80 @@ const EXPLOSION := preload("res://scenes/Explosion.tscn")
 const SCORCH_MARK := preload("res://scenes/ScorchMark.tscn")
 const FIRE := preload("res://scenes/Fire.tscn")
 
+const DRIVE_MAX_SPEED := 14.0
+const DRIVE_ACCEL := 10.0
+const DRIVE_BRAKE_DECEL := 18.0
+const DRIVE_TURN_SPEED := 2.2
+
 @onready var model: Node3D = $Model
+@onready var driver_seat: Marker3D = _get_or_create_marker("DriverSeat", Vector3(0, 0.9, 0))
+@onready var exit_point: Marker3D = _get_or_create_marker("ExitPoint", Vector3(1.8, 0.1, 0))
 
 var health: float
 var destroyed := false
 
+# No driver to eject here (unlike traffic_car.gd) - a parked car is just
+# sitting empty until stolen. Simple kinematic drive (direct position/
+# rotation updates), same technique traffic_car.gd already uses for its
+# own AI patrol - a StaticBody3D has no physics forces to apply throttle
+# to, so this isn't optional simplification, it's the only way a static
+# body moves at all.
+var driver: Node3D = null
+var drive_speed := 0.0
+
 func _ready() -> void:
 	health = max_health
+	add_to_group("parked_vehicles")
+
+func _get_or_create_marker(marker_name: String, local_pos: Vector3) -> Marker3D:
+	if has_node(marker_name):
+		return get_node(marker_name)
+	var m := Marker3D.new()
+	m.name = marker_name
+	add_child(m)
+	m.position = local_pos
+	return m
+
+func driver_enter(who: Node3D) -> void:
+	driver = who
+
+func driver_exit() -> void:
+	driver = null
+	drive_speed = 0.0
+
+func _physics_process(delta: float) -> void:
+	if destroyed or not driver:
+		return
+
+	var throttle := 0.0
+	if Input.is_key_pressed(KEY_W):
+		throttle += 1.0
+	if Input.is_key_pressed(KEY_S):
+		throttle -= 1.0
+	var joy_y := Input.get_joy_axis(0, JOY_AXIS_LEFT_Y)
+	if absf(joy_y) > 0.2:
+		throttle -= joy_y
+	throttle = clamp(throttle, -1.0, 1.0)
+
+	var steer := 0.0
+	if Input.is_key_pressed(KEY_A):
+		steer += 1.0
+	if Input.is_key_pressed(KEY_D):
+		steer -= 1.0
+	var joy_x := Input.get_joy_axis(0, JOY_AXIS_LEFT_X)
+	if absf(joy_x) > 0.2:
+		steer -= joy_x
+	steer = clamp(steer, -1.0, 1.0)
+
+	if absf(throttle) > 0.01:
+		drive_speed = move_toward(drive_speed, throttle * DRIVE_MAX_SPEED, DRIVE_ACCEL * delta)
+	else:
+		drive_speed = move_toward(drive_speed, 0.0, DRIVE_BRAKE_DECEL * delta)
+
+	if absf(drive_speed) > 0.1:
+		rotation.y += steer * DRIVE_TURN_SPEED * delta * sign(drive_speed)
+
+	position += Vector3(sin(rotation.y), 0.0, cos(rotation.y)) * drive_speed * delta
 
 func take_damage(amount: float, _hit_point: Vector3 = Vector3.ZERO) -> void:
 	if destroyed:

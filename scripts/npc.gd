@@ -55,6 +55,7 @@ var attack_cooldown := 0.0
 var patron_aggro_timer := 0.0
 var player: Node3D = null
 var vehicle_hit_cooldown := 0.0
+var eject_stun_timer := 0.0
 
 var anim_idle := ""
 var anim_walk := ""
@@ -121,6 +122,16 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.y = 0.0
 
+	# Thrown-from-car state (see launch(), called by traffic_car.gd's driver
+	# eject) - just gravity plus whatever impulse was given, no wander/AI
+	# input, so the launch velocity actually carries through and arcs
+	# instead of being overwritten by wander logic on the very next frame.
+	if eject_stun_timer > 0.0:
+		eject_stun_timer -= delta
+		move_and_slide()
+		_check_vehicle_collisions()
+		return
+
 	if hostile and player and is_instance_valid(player):
 		_process_hostile(delta)
 	else:
@@ -130,6 +141,11 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 	_check_vehicle_collisions()
+
+# Called by traffic_car.gd when this NPC gets thrown out of a stolen car.
+func launch(impulse: Vector3, stun_duration: float = 1.1) -> void:
+	velocity = impulse
+	eject_stun_timer = stun_duration
 
 # Same technique as player.gd's car-collision check - cars never look for
 # pedestrians themselves, so this runs from the pedestrian's own

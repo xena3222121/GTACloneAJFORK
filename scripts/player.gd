@@ -176,7 +176,7 @@ var gun_rot_aim := Basis(Vector3(0, 1, 0), Vector3(1, 0, 0), Vector3(0, 0, -1))
 
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var camera_pitch := 0.0
-var driving: Car = null
+var driving: Node3D = null
 var fire_cooldown := 0.0
 var vehicle_hit_cooldown := 0.0
 var joy_fire_prev := false
@@ -1137,25 +1137,38 @@ func _make_click_sound() -> AudioStreamWAV:
 	return stream
 
 func try_enter_vehicle() -> bool:
-	var nearest: Car = null
+	var nearest: Node3D = null
 	var nearest_dist := INTERACT_RANGE
-	for car in get_tree().get_nodes_in_group("vehicles"):
-		var dist: float = global_position.distance_to(car.global_position)
-		if dist < nearest_dist:
-			nearest = car
-			nearest_dist = dist
+	# "vehicles" (the original drivable Car), "traffic_cars" (patrolling
+	# cars - stealable, with an implied driver to throw out), and
+	# "parked_vehicles" (stationary until stolen, no driver to eject) are
+	# three separate groups because the car-vs-pedestrian damage code
+	# elsewhere keys off "vehicles" vs "traffic_cars" to know which speed
+	# property to read (RigidBody3D linear_velocity vs a plain speed var) -
+	# entry just needs to search all three together.
+	for group in ["vehicles", "traffic_cars", "parked_vehicles"]:
+		for car in get_tree().get_nodes_in_group(group):
+			var dist: float = global_position.distance_to(car.global_position)
+			if dist < nearest_dist:
+				nearest = car
+				nearest_dist = dist
 	if nearest:
 		enter_vehicle(nearest)
 		return true
 	return false
 
-func enter_vehicle(car: Car) -> void:
+func enter_vehicle(car: Node3D) -> void:
 	driving = car
 	aiming = false
 	crosshair.aiming = false
 	visible = false
 	collision.disabled = true
-	camera.current = false
+	# Only the original Car has its own camera to hand off to - stolen
+	# traffic/parked cars have none, so the player's own third-person
+	# camera just stays active and keeps following (global_position is
+	# synced to driver_seat every frame below regardless of vehicle type).
+	if car.has_node("CameraPivot"):
+		camera.current = false
 	car.driver_enter(self)
 
 func exit_vehicle() -> void:

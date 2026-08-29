@@ -13,11 +13,37 @@ const EXPLOSION := preload("res://scenes/Explosion.tscn")
 const SCORCH_MARK := preload("res://scenes/ScorchMark.tscn")
 const FIRE := preload("res://scenes/Fire.tscn")
 
+const EJECTED_NPC_SCENES := [
+	preload("res://scenes/NPC_A.tscn"),
+	preload("res://scenes/NPC_B.tscn"),
+	preload("res://scenes/NPC_C.tscn"),
+	preload("res://scenes/NPC_D.tscn"),
+]
+const EJECT_KNOCKBACK := 7.0
+const EJECT_UP := 4.5
+
+const DRIVE_MAX_SPEED := 14.0
+const DRIVE_ACCEL := 10.0
+const DRIVE_BRAKE_DECEL := 18.0
+const DRIVE_TURN_SPEED := 2.2
+
 @onready var model: Node3D = $Model
+@onready var driver_seat: Marker3D = _get_or_create_marker("DriverSeat", Vector3(0, 0.9, 0))
+@onready var exit_point: Marker3D = _get_or_create_marker("ExitPoint", Vector3(1.8, 0.1, 0))
 
 var direction: float = 1.0
 var health: float
 var destroyed := false
+
+# Player-driven state. Traffic cars stay in the "traffic_cars" group (not
+# "vehicles") even though they're now stealable - the car-vs-pedestrian
+# damage code elsewhere keys off that group name to know to read `speed`
+# instead of a RigidBody3D's linear_velocity, so it can't be repurposed as
+# a generic "is a car" flag. player.gd's try_enter_vehicle() searches all
+# three vehicle-ish groups separately instead.
+var driver: Node3D = null
+var drive_speed := 0.0
+var already_ejected := false
 
 func _ready() -> void:
 	add_to_group("traffic_cars")
@@ -30,6 +56,69 @@ func _ready() -> void:
 	_update_facing()
 	health = max_health
 
+func _get_or_create_marker(marker_name: String, local_pos: Vector3) -> Marker3D:
+	if has_node(marker_name):
+		return get_node(marker_name)
+	var m := Marker3D.new()
+	m.name = marker_name
+	add_child(m)
+	m.position = local_pos
+	return m
+
+func driver_enter(who: Node3D) -> void:
+	if not already_ejected:
+		already_ejected = true
+		_eject_driver()
+	driver = who
+
+func driver_exit() -> void:
+	driver = null
+	drive_speed = 0.0
+
+# No ragdoll system exists, so this is the "thrown from the car" animation:
+# pop a generic pedestrian out and launch it (see npc.gd's launch()), which
+# lets gravity carry out an actual arc-and-land rather than a single-frame
+# nudge that would otherwise get overwritten by the NPC's own wander
+# movement on the very next physics frame.
+func _eject_driver() -> void:
+	var npc: CharacterBody3D = EJECTED_NPC_SCENES[randi() % EJECTED_NPC_SCENES.size()].instantiate()
+	get_tree().current_scene.add_child(npc)
+	npc.global_position = global_position + Vector3(0, 0.3, 0) - global_transform.basis.z * 1.2
+	var away: Vector3 = -global_transform.basis.z
+	if npc.has_method("launch"):
+		npc.launch(away.normalized() * EJECT_KNOCKBACK + Vector3(0, EJECT_UP, 0))
+
+func _process_driving(delta: float) -> void:
+	var throttle := 0.0
+	if Input.is_key_pressed(KEY_W):
+		throttle += 1.0
+	if Input.is_key_pressed(KEY_S):
+		throttle -= 1.0
+	var joy_y := Input.get_joy_axis(0, JOY_AXIS_LEFT_Y)
+	if absf(joy_y) > 0.2:
+		throttle -= joy_y
+	throttle = clamp(throttle, -1.0, 1.0)
+
+	var steer := 0.0
+	if Input.is_key_pressed(KEY_A):
+		steer += 1.0
+	if Input.is_key_pressed(KEY_D):
+		steer -= 1.0
+	var joy_x := Input.get_joy_axis(0, JOY_AXIS_LEFT_X)
+	if absf(joy_x) > 0.2:
+		steer -= joy_x
+	steer = clamp(steer, -1.0, 1.0)
+
+	if absf(throttle) > 0.01:
+		drive_speed = move_toward(drive_speed, throttle * DRIVE_MAX_SPEED, DRIVE_ACCEL * delta)
+	else:
+		drive_speed = move_toward(drive_speed, 0.0, DRIVE_BRAKE_DECEL * delta)
+
+	if absf(drive_speed) > 0.1:
+		rotation.y += steer * DRIVE_TURN_SPEED * delta * sign(drive_speed)
+
+	position += Vector3(sin(rotation.y), 0.0, cos(rotation.y)) * drive_speed * delta
+
 func _update_facing() -> void:
 	if axis == 0:
 		rotation.y = 0.0 if direction > 0.0 else PI
@@ -38,6 +127,9 @@ func _update_facing() -> void:
 
 func _physics_process(delta: float) -> void:
 	if destroyed:
+		return
+	if driver:
+		_process_driving(delta)
 		return
 	var pos: float = position.z if axis == 0 else position.x
 	pos += direction * speed * delta
