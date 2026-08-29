@@ -2,7 +2,7 @@ extends CharacterBody3D
 
 const WALK_SPEED := 1.8
 const CHASE_SPEED := 3.4
-const WANDER_RADIUS := 3.0
+const WANDER_RADIUS := 14.0 # was 3.0 - too tight a bubble around a fixed post made cops nearly impossible to stumble across in a city this size
 const ARRIVE_DIST := 0.6
 const IDLE_TIME_MIN := 1.5
 const IDLE_TIME_MAX := 4.0

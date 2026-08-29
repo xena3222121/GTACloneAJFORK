@@ -35,6 +35,23 @@ corner_radius_top_right = 4
 corner_radius_bottom_left = 4
 corner_radius_bottom_right = 4
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_knife_blade"]
+albedo_color = Color(0.75, 0.78, 0.8, 1)
+metallic = 0.8
+roughness = 0.25
+
+[sub_resource type="BoxMesh" id="BoxMesh_knife_blade"]
+material = SubResource("StandardMaterial3D_knife_blade")
+size = Vector3(0.025, 0.007, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_knife_handle"]
+albedo_color = Color(0.1, 0.08, 0.07, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_knife_handle"]
+material = SubResource("StandardMaterial3D_knife_handle")
+size = Vector3(0.035, 0.035, 0.11)
+
 [node name="Player" type="CharacterBody3D" unique_id=832341169]
 script = ExtResource("1")
 
@@ -51,6 +68,17 @@ bone_idx = 23
 
 [node name="GunViewmodel" parent="Model/HumanArmature/GeneralSkeleton/BoneAttachment3D" instance=ExtResource("4")]
 transform = Transform3D(0.84, 0, 0, 0, -0.84, 0, 0, 0, -0.84, 0, 0.22, 0.05)
+
+[node name="KnifeViewmodel" type="Node3D" parent="Model/HumanArmature/GeneralSkeleton/BoneAttachment3D"]
+transform = Transform3D(0.84, 0, 0, 0, -0.84, 0, 0, 0, -0.84, 0, 0.22, 0.05)
+visible = false
+
+[node name="Handle" type="MeshInstance3D" parent="Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/KnifeViewmodel"]
+mesh = SubResource("BoxMesh_knife_handle")
+
+[node name="Blade" type="MeshInstance3D" parent="Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/KnifeViewmodel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.155)
+mesh = SubResource("BoxMesh_knife_blade")
 
 [node name="MuzzlePoint" type="Marker3D" parent="Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/GunViewmodel"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.45, 0.45, 0)

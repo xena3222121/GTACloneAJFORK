@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://c63pc38awvfhj"
+path="res://.godot/imported/I havent felt this sad and pathetic since band camp.wav-57241b9a40ff55aed9ffc533d7ef2beb.sample"
+
+[deps]
+
+source_file="res://Audio/Arnold/Random Lines/I havent felt this sad and pathetic since band camp.wav"
+dest_files=["res://.godot/imported/I havent felt this sad and pathetic since band camp.wav-57241b9a40ff55aed9ffc533d7ef2beb.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

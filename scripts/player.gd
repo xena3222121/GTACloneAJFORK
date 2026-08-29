@@ -55,6 +55,8 @@ const PLAYER_KILL_LINES := [
 	"res://Audio/Arnold/Player Shot Someone/Fuck bro I shot you right in the dick my bad bro.wav",
 ]
 const PLAYER_KILL_LINE_CHANCE := 0.6
+const PLAYER_HURT_LINE := "res://Audio/Arnold/Random Lines/I havent felt this sad and pathetic since band camp.wav"
+const PLAYER_HURT_LINE_CHANCE := 0.3
 
 const IMPACT_EFFECT := preload("res://scenes/ImpactEffect.tscn")
 const IMPACT_HIT := preload("res://scenes/ImpactHit.tscn")
@@ -72,7 +74,7 @@ const PISTOL_RELOAD_TIME := 1.6
 const RECOIL_KICK := 0.05
 
 const MELEE_RANGE := 2.2
-const MELEE_DAMAGE := 35.0
+const MELEE_DAMAGE := 90.0 # 2 solid hits kill anything (Police=120hp, NPC=150hp) - a knife needing 4-5 hits while standing next to an armed enemy wasn't a real weapon
 const MELEE_COOLDOWN := 0.85 # Punch_Cross is ~1s long; this lets the swing mostly play out before it can be re-triggered
 const MELEE_RECOIL_KICK := 0.12
 
@@ -128,6 +130,7 @@ const UPPER_BODY_BONES := [
 @onready var spring_arm: SpringArm3D = $CameraPivot/SpringArm3D
 @onready var camera: Camera3D = $CameraPivot/SpringArm3D/Camera3D
 @onready var gun_viewmodel: Node3D = $Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/GunViewmodel
+@onready var knife_viewmodel: Node3D = $Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/KnifeViewmodel
 @onready var muzzle_point: Marker3D = $Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/GunViewmodel/MuzzlePoint
 @onready var muzzle_flash: MeshInstance3D = $Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/GunViewmodel/MuzzlePoint/MuzzleFlash
 @onready var muzzle_light: OmniLight3D = $Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/GunViewmodel/MuzzlePoint/MuzzleLight
@@ -587,6 +590,10 @@ func _physics_process(delta: float) -> void:
 
 	gun_viewmodel.transform.basis = gun_rot_idle.slerp(gun_rot_aim, aim_blend).scaled(Vector3.ONE * GUN_SCALE)
 	gun_viewmodel.transform.origin = GUN_ORIGIN
+	# Knife has no separate idle/aim pose of its own - it just rides along in
+	# the same hand position/orientation the gun would otherwise be in.
+	knife_viewmodel.transform.basis = gun_viewmodel.transform.basis
+	knife_viewmodel.transform.origin = GUN_ORIGIN
 
 	move_and_slide()
 	_check_vehicle_collisions()
@@ -700,6 +707,7 @@ func switch_weapon(weapon: int) -> void:
 		Weapon.MAC10: tint = Color(0.15, 0.15, 0.18)
 	_tint_gun_viewmodel(tint)
 	gun_viewmodel.visible = weapon != Weapon.KNIFE
+	knife_viewmodel.visible = weapon == Weapon.KNIFE
 	_update_ammo_label()
 	_update_reserve_ammo_label()
 
@@ -1166,6 +1174,9 @@ func take_damage(amount: float, _hit_point: Vector3 = Vector3.ZERO) -> void:
 	health_bar.value = health
 	if health <= 0.0:
 		die()
+	elif not voice_line_player.playing and randf() < PLAYER_HURT_LINE_CHANCE:
+		voice_line_player.stream = load(PLAYER_HURT_LINE)
+		voice_line_player.play()
 
 func die() -> void:
 	if dead:
