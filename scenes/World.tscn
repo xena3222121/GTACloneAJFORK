@@ -405,6 +405,10 @@ roughness = 0.9
 size = Vector3(0.9, 0.7, 0.6)
 material = SubResource("StandardMaterial3D_gunstore_crate")
 
+[sub_resource type="BoxMesh" id="BoxMesh_streetlight_pole"]
+material = SubResource("StandardMaterial3D_highway_pole")
+size = Vector3(0.2, 5.0, 0.2)
+
 [node name="World" type="Node3D" unique_id=54692432]
 script = ExtResource("41")
 
@@ -3616,3 +3620,735 @@ is_bar_patron = true
 [node name="Patron2" parent="BarInterior" instance=ExtResource("8")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.1, 1)
 is_bar_patron = true
+
+[node name="Light_n35_E" type="MeshInstance3D" parent="Street"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2.5, -35)
+mesh = SubResource("BoxMesh_streetlight_pole")
+
+[node name="Light" type="OmniLight3D" parent="Street/Light_n35_E"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.1
+omni_range = 10.0
+
+[node name="Fixture" type="MeshInstance3D" parent="Street/Light_n35_E/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+[node name="Light_n21_W" type="MeshInstance3D" parent="Street"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 2.5, -21)
+mesh = SubResource("BoxMesh_streetlight_pole")
+
+[node name="Light" type="OmniLight3D" parent="Street/Light_n21_W"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.1
+omni_range = 10.0
+
+[node name="Fixture" type="MeshInstance3D" parent="Street/Light_n21_W/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+[node name="Light_n7_E" type="MeshInstance3D" parent="Street"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2.5, -7)
+mesh = SubResource("BoxMesh_streetlight_pole")
+
+[node name="Light" type="OmniLight3D" parent="Street/Light_n7_E"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.1
+omni_range = 10.0
+
+[node name="Fixture" type="MeshInstance3D" parent="Street/Light_n7_E/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+[node name="Light_p7_W" type="MeshInstance3D" parent="Street"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 2.5, 7)
+mesh = SubResource("BoxMesh_streetlight_pole")
+
+[node name="Light" type="OmniLight3D" parent="Street/Light_p7_W"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.1
+omni_range = 10.0
+
+[node name="Fixture" type="MeshInstance3D" parent="Street/Light_p7_W/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+[node name="Light_p21_E" type="MeshInstance3D" parent="Street"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2.5, 21)
+mesh = SubResource("BoxMesh_streetlight_pole")
+
+[node name="Light" type="OmniLight3D" parent="Street/Light_p21_E"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.1
+omni_range = 10.0
+
+[node name="Fixture" type="MeshInstance3D" parent="Street/Light_p21_E/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+[node name="Light_p35_W" type="MeshInstance3D" parent="Street"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 2.5, 35)
+mesh = SubResource("BoxMesh_streetlight_pole")
+
+[node name="Light" type="OmniLight3D" parent="Street/Light_p35_W"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.1
+omni_range = 10.0
+
+[node name="Fixture" type="MeshInstance3D" parent="Street/Light_p35_W/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+[node name="Light_n35_E" type="MeshInstance3D" parent="StreetB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 2.5, -35)
+mesh = SubResource("BoxMesh_streetlight_pole")
+
+[node name="Light" type="OmniLight3D" parent="StreetB/Light_n35_E"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.1
+omni_range = 10.0
+
+[node name="Fixture" type="MeshInstance3D" parent="StreetB/Light_n35_E/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+[node name="Light_n21_W" type="MeshInstance3D" parent="StreetB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 2.5, -21)
+mesh = SubResource("BoxMesh_streetlight_pole")
+
+[node name="Light" type="OmniLight3D" parent="StreetB/Light_n21_W"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.1
+omni_range = 10.0
+
+[node name="Fixture" type="MeshInstance3D" parent="StreetB/Light_n21_W/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+[node name="Light_n7_E" type="MeshInstance3D" parent="StreetB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 2.5, -7)
+mesh = SubResource("BoxMesh_streetlight_pole")
+
+[node name="Light" type="OmniLight3D" parent="StreetB/Light_n7_E"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.1
+omni_range = 10.0
+
+[node name="Fixture" type="MeshInstance3D" parent="StreetB/Light_n7_E/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+[node name="Light_p7_W" type="MeshInstance3D" parent="StreetB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 2.5, 7)
+mesh = SubResource("BoxMesh_streetlight_pole")
+
+[node name="Light" type="OmniLight3D" parent="StreetB/Light_p7_W"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.1
+omni_range = 10.0
+
+[node name="Fixture" type="MeshInstance3D" parent="StreetB/Light_p7_W/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+[node name="Light_p21_E" type="MeshInstance3D" parent="StreetB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 2.5, 21)
+mesh = SubResource("BoxMesh_streetlight_pole")
+
+[node name="Light" type="OmniLight3D" parent="StreetB/Light_p21_E"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.1
+omni_range = 10.0
+
+[node name="Fixture" type="MeshInstance3D" parent="StreetB/Light_p21_E/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+[node name="Light_p35_W" type="MeshInstance3D" parent="StreetB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 2.5, 35)
+mesh = SubResource("BoxMesh_streetlight_pole")
+
+[node name="Light" type="OmniLight3D" parent="StreetB/Light_p35_W"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.1
+omni_range = 10.0
+
+[node name="Fixture" type="MeshInstance3D" parent="StreetB/Light_p35_W/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+[node name="Light_n35_E" type="MeshInstance3D" parent="StreetC"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 125, 2.5, -35)
+mesh = SubResource("BoxMesh_streetlight_pole")
+
+[node name="Light" type="OmniLight3D" parent="StreetC/Light_n35_E"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.1
+omni_range = 10.0
+
+[node name="Fixture" type="MeshInstance3D" parent="StreetC/Light_n35_E/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+[node name="Light_n21_W" type="MeshInstance3D" parent="StreetC"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 115, 2.5, -21)
+mesh = SubResource("BoxMesh_streetlight_pole")
+
+[node name="Light" type="OmniLight3D" parent="StreetC/Light_n21_W"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.1
+omni_range = 10.0
+
+[node name="Fixture" type="MeshInstance3D" parent="StreetC/Light_n21_W/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+[node name="Light_n7_E" type="MeshInstance3D" parent="StreetC"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 125, 2.5, -7)
+mesh = SubResource("BoxMesh_streetlight_pole")
+
+[node name="Light" type="OmniLight3D" parent="StreetC/Light_n7_E"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.1
+omni_range = 10.0
+
+[node name="Fixture" type="MeshInstance3D" parent="StreetC/Light_n7_E/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+[node name="Light_p7_W" type="MeshInstance3D" parent="StreetC"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 115, 2.5, 7)
+mesh = SubResource("BoxMesh_streetlight_pole")
+
+[node name="Light" type="OmniLight3D" parent="StreetC/Light_p7_W"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.1
+omni_range = 10.0
+
+[node name="Fixture" type="MeshInstance3D" parent="StreetC/Light_p7_W/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+[node name="Light_p21_E" type="MeshInstance3D" parent="StreetC"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 125, 2.5, 21)
+mesh = SubResource("BoxMesh_streetlight_pole")
+
+[node name="Light" type="OmniLight3D" parent="StreetC/Light_p21_E"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.1
+omni_range = 10.0
+
+[node name="Fixture" type="MeshInstance3D" parent="StreetC/Light_p21_E/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+[node name="Light_p35_W" type="MeshInstance3D" parent="StreetC"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 115, 2.5, 35)
+mesh = SubResource("BoxMesh_streetlight_pole")
+
+[node name="Light" type="OmniLight3D" parent="StreetC/Light_p35_W"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.1
+omni_range = 10.0
+
+[node name="Fixture" type="MeshInstance3D" parent="StreetC/Light_p35_W/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+[node name="Light_n35_E" type="MeshInstance3D" parent="StreetD"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 185, 2.5, -35)
+mesh = SubResource("BoxMesh_streetlight_pole")
+
+[node name="Light" type="OmniLight3D" parent="StreetD/Light_n35_E"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.1
+omni_range = 10.0
+
+[node name="Fixture" type="MeshInstance3D" parent="StreetD/Light_n35_E/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+[node name="Light_n21_W" type="MeshInstance3D" parent="StreetD"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 175, 2.5, -21)
+mesh = SubResource("BoxMesh_streetlight_pole")
+
+[node name="Light" type="OmniLight3D" parent="StreetD/Light_n21_W"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.1
+omni_range = 10.0
+
+[node name="Fixture" type="MeshInstance3D" parent="StreetD/Light_n21_W/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+[node name="Light_n7_E" type="MeshInstance3D" parent="StreetD"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 185, 2.5, -7)
+mesh = SubResource("BoxMesh_streetlight_pole")
+
+[node name="Light" type="OmniLight3D" parent="StreetD/Light_n7_E"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.1
+omni_range = 10.0
+
+[node name="Fixture" type="MeshInstance3D" parent="StreetD/Light_n7_E/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+[node name="Light_p7_W" type="MeshInstance3D" parent="StreetD"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 175, 2.5, 7)
+mesh = SubResource("BoxMesh_streetlight_pole")
+
+[node name="Light" type="OmniLight3D" parent="StreetD/Light_p7_W"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.1
+omni_range = 10.0
+
+[node name="Fixture" type="MeshInstance3D" parent="StreetD/Light_p7_W/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+[node name="Light_p21_E" type="MeshInstance3D" parent="StreetD"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 185, 2.5, 21)
+mesh = SubResource("BoxMesh_streetlight_pole")
+
+[node name="Light" type="OmniLight3D" parent="StreetD/Light_p21_E"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.1
+omni_range = 10.0
+
+[node name="Fixture" type="MeshInstance3D" parent="StreetD/Light_p21_E/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+[node name="Light_p35_W" type="MeshInstance3D" parent="StreetD"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 175, 2.5, 35)
+mesh = SubResource("BoxMesh_streetlight_pole")
+
+[node name="Light" type="OmniLight3D" parent="StreetD/Light_p35_W"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.1
+omni_range = 10.0
+
+[node name="Fixture" type="MeshInstance3D" parent="StreetD/Light_p35_W/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+
+[node name="HighwayEast" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6, 0)
+
+[node name="Deck" type="StaticBody3D" parent="HighwayEast"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayEast/Deck"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, -0.5, 60)
+shape = SubResource("BoxShape3D_highway_deck")
+
+[node name="GuardrailNorth" type="StaticBody3D" parent="HighwayEast"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayEast/GuardrailNorth"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, 0.5, 73.9)
+shape = SubResource("BoxShape3D_guardrail")
+
+[node name="Mesh" type="MeshInstance3D" parent="HighwayEast/GuardrailNorth"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, 0.5, 73.9)
+mesh = SubResource("BoxMesh_guardrail")
+
+[node name="GuardrailSouthB" type="StaticBody3D" parent="HighwayEast"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayEast/GuardrailSouthB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 140, 0.5, 46.1)
+shape = SubResource("BoxShape3D_guardrail_seg52")
+
+[node name="Mesh" type="MeshInstance3D" parent="HighwayEast/GuardrailSouthB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 140, 0.5, 46.1)
+mesh = SubResource("BoxMesh_guardrail_seg52")
+
+[node name="GuardrailSouthC" type="StaticBody3D" parent="HighwayEast"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayEast/GuardrailSouthC"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 194.5, 0.5, 46.1)
+shape = SubResource("BoxShape3D_guardrail_seg31")
+
+[node name="Mesh" type="MeshInstance3D" parent="HighwayEast/GuardrailSouthC"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 194.5, 0.5, 46.1)
+mesh = SubResource("BoxMesh_guardrail_seg31")
+
+[node name="Asphalt" type="MeshInstance3D" parent="HighwayEast"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, -0.01, 60)
+mesh = SubResource("BoxMesh_highway")
+surface_material_override/0 = SubResource("StandardMaterial3D_highway")
+
+[node name="SidewalkNorth" type="MeshInstance3D" parent="HighwayEast"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, 0.075, 72.9)
+mesh = SubResource("BoxMesh_highway_sidewalk")
+surface_material_override/0 = SubResource("StandardMaterial3D_sidewalk")
+
+[node name="SidewalkSouth" type="MeshInstance3D" parent="HighwayEast"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, 0.075, 47.1)
+mesh = SubResource("BoxMesh_highway_sidewalk")
+surface_material_override/0 = SubResource("StandardMaterial3D_sidewalk")
+
+[node name="CenterLineA" type="MeshInstance3D" parent="HighwayEast"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, 0.05, 59.85)
+mesh = SubResource("BoxMesh_highway_yellowline")
+surface_material_override/0 = SubResource("StandardMaterial3D_dash")
+
+[node name="CenterLineB" type="MeshInstance3D" parent="HighwayEast"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, 0.05, 60.15)
+mesh = SubResource("BoxMesh_highway_yellowline")
+surface_material_override/0 = SubResource("StandardMaterial3D_dash")
+
+[node name="LaneDividerS1" type="MeshInstance3D" parent="HighwayEast"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, 0.05, 52)
+mesh = SubResource("BoxMesh_highway_whiteline")
+
+[node name="LaneDividerS2" type="MeshInstance3D" parent="HighwayEast"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, 0.05, 56)
+mesh = SubResource("BoxMesh_highway_whiteline")
+
+[node name="LaneDividerN1" type="MeshInstance3D" parent="HighwayEast"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, 0.05, 64)
+mesh = SubResource("BoxMesh_highway_whiteline")
+
+[node name="LaneDividerN2" type="MeshInstance3D" parent="HighwayEast"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, 0.05, 68)
+mesh = SubResource("BoxMesh_highway_whiteline")
+
+[node name="LightPoleA" type="MeshInstance3D" parent="HighwayEast"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 120, 4, 74)
+mesh = SubResource("BoxMesh_highway_pole")
+
+[node name="Light" type="OmniLight3D" parent="HighwayEast/LightPoleA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 110, 4, 0)
+light_color = Color(1, 0.85, 0.6, 1)
+light_energy = 1.4
+omni_range = 16.0
+
+[node name="Fixture" type="MeshInstance3D" parent="HighwayEast/LightPoleA/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+[node name="LightPoleB" type="MeshInstance3D" parent="HighwayEast"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 180, 4, 74)
+mesh = SubResource("BoxMesh_highway_pole")
+
+[node name="Light" type="OmniLight3D" parent="HighwayEast/LightPoleB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 110, 4, 0)
+light_color = Color(1, 0.85, 0.6, 1)
+light_energy = 1.4
+omni_range = 16.0
+
+[node name="Fixture" type="MeshInstance3D" parent="HighwayEast/LightPoleB/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+[node name="Sign" type="MeshInstance3D" parent="HighwayEast"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 95, 3, 60)
+mesh = SubResource("BoxMesh_highway_sign")
+
+[node name="Label" type="Label3D" parent="HighwayEast/Sign"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 110.1, 0, 0)
+billboard = 1
+font_size = 48
+outline_size = 6
+modulate = Color(1, 1, 1, 1)
+text = "FREEWAY"
+
+[node name="HighwaySouthEast" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6, 0)
+
+[node name="Deck" type="StaticBody3D" parent="HighwaySouthEast"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HighwaySouthEast/Deck"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, -0.5, -60)
+shape = SubResource("BoxShape3D_highway_deck")
+
+[node name="GuardrailOuter" type="StaticBody3D" parent="HighwaySouthEast"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HighwaySouthEast/GuardrailOuter"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, 0.5, -73.9)
+shape = SubResource("BoxShape3D_guardrail")
+
+[node name="Mesh" type="MeshInstance3D" parent="HighwaySouthEast/GuardrailOuter"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, 0.5, -73.9)
+mesh = SubResource("BoxMesh_guardrail")
+
+[node name="GuardrailInnerB" type="StaticBody3D" parent="HighwaySouthEast"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HighwaySouthEast/GuardrailInnerB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 140, 0.5, -46.1)
+shape = SubResource("BoxShape3D_guardrail_seg52")
+
+[node name="Mesh" type="MeshInstance3D" parent="HighwaySouthEast/GuardrailInnerB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 140, 0.5, -46.1)
+mesh = SubResource("BoxMesh_guardrail_seg52")
+
+[node name="GuardrailInnerC" type="StaticBody3D" parent="HighwaySouthEast"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HighwaySouthEast/GuardrailInnerC"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 194.5, 0.5, -46.1)
+shape = SubResource("BoxShape3D_guardrail_seg31")
+
+[node name="Mesh" type="MeshInstance3D" parent="HighwaySouthEast/GuardrailInnerC"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 194.5, 0.5, -46.1)
+mesh = SubResource("BoxMesh_guardrail_seg31")
+
+[node name="Asphalt" type="MeshInstance3D" parent="HighwaySouthEast"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, -0.01, -60)
+mesh = SubResource("BoxMesh_highway")
+surface_material_override/0 = SubResource("StandardMaterial3D_highway")
+
+[node name="SidewalkOuter" type="MeshInstance3D" parent="HighwaySouthEast"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, 0.075, -72.9)
+mesh = SubResource("BoxMesh_highway_sidewalk")
+surface_material_override/0 = SubResource("StandardMaterial3D_sidewalk")
+
+[node name="SidewalkInner" type="MeshInstance3D" parent="HighwaySouthEast"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, 0.075, -47.1)
+mesh = SubResource("BoxMesh_highway_sidewalk")
+surface_material_override/0 = SubResource("StandardMaterial3D_sidewalk")
+
+[node name="CenterLineA" type="MeshInstance3D" parent="HighwaySouthEast"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, 0.05, -60.15)
+mesh = SubResource("BoxMesh_highway_yellowline")
+surface_material_override/0 = SubResource("StandardMaterial3D_dash")
+
+[node name="CenterLineB" type="MeshInstance3D" parent="HighwaySouthEast"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, 0.05, -59.85)
+mesh = SubResource("BoxMesh_highway_yellowline")
+surface_material_override/0 = SubResource("StandardMaterial3D_dash")
+
+[node name="LaneDividerS1" type="MeshInstance3D" parent="HighwaySouthEast"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, 0.05, -68)
+mesh = SubResource("BoxMesh_highway_whiteline")
+
+[node name="LaneDividerS2" type="MeshInstance3D" parent="HighwaySouthEast"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, 0.05, -64)
+mesh = SubResource("BoxMesh_highway_whiteline")
+
+[node name="LaneDividerN1" type="MeshInstance3D" parent="HighwaySouthEast"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, 0.05, -56)
+mesh = SubResource("BoxMesh_highway_whiteline")
+
+[node name="LaneDividerN2" type="MeshInstance3D" parent="HighwaySouthEast"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, 0.05, -52)
+mesh = SubResource("BoxMesh_highway_whiteline")
+
+[node name="LightPoleA" type="MeshInstance3D" parent="HighwaySouthEast"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 120, 4, -74)
+mesh = SubResource("BoxMesh_highway_pole")
+
+[node name="Light" type="OmniLight3D" parent="HighwaySouthEast/LightPoleA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 110, 4, 0)
+light_color = Color(1, 0.85, 0.6, 1)
+light_energy = 1.4
+omni_range = 16.0
+
+[node name="Fixture" type="MeshInstance3D" parent="HighwaySouthEast/LightPoleA/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+[node name="LightPoleB" type="MeshInstance3D" parent="HighwaySouthEast"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 180, 4, -74)
+mesh = SubResource("BoxMesh_highway_pole")
+
+[node name="Light" type="OmniLight3D" parent="HighwaySouthEast/LightPoleB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 110, 4, 0)
+light_color = Color(1, 0.85, 0.6, 1)
+light_energy = 1.4
+omni_range = 16.0
+
+[node name="Fixture" type="MeshInstance3D" parent="HighwaySouthEast/LightPoleB/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+[node name="Sign" type="MeshInstance3D" parent="HighwaySouthEast"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 95, 3, -60)
+mesh = SubResource("BoxMesh_highway_sign")
+
+[node name="Label" type="Label3D" parent="HighwaySouthEast/Sign"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 110.1, 0, 0)
+billboard = 1
+font_size = 48
+outline_size = 6
+modulate = Color(1, 1, 1, 1)
+text = "FREEWAY"
+
+[node name="CrossroadsEast" type="Node3D" parent="."]
+
+[node name="StreetCToHighwayNorth" parent="CrossroadsEast" instance=ExtResource("25")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 110, 0.02, 51)
+
+[node name="StreetDToHighwayNorth" parent="CrossroadsEast" instance=ExtResource("25")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 170, 0.02, 51)
+
+[node name="StreetCToHighwaySouth" parent="CrossroadsEast" instance=ExtResource("25")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 110, 0.02, -51)
+
+[node name="StreetDToHighwaySouth" parent="CrossroadsEast" instance=ExtResource("25")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 170, 0.02, -51)
+
+[node name="TrafficCarsHighwayNorthEast" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6, 0)
+
+[node name="CarA" parent="TrafficCarsHighwayNorthEast" instance=ExtResource("15")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100, 0.1, 54)
+axis = 1
+min_pos = 100.0
+max_pos = 205.0
+speed = 7.0
+
+[node name="CarB" parent="TrafficCarsHighwayNorthEast" instance=ExtResource("16")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 200, 0.1, 66)
+axis = 1
+min_pos = 100.0
+max_pos = 205.0
+speed = 6.0
+start_direction = -1.0
+
+[node name="CarC" parent="TrafficCarsHighwayNorthEast" instance=ExtResource("35")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, 0.1, 60)
+axis = 1
+min_pos = 100.0
+max_pos = 205.0
+speed = 8.0
+
+[node name="TrafficCarsHighwaySouthEast" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6, 0)
+
+[node name="CarA" parent="TrafficCarsHighwaySouthEast" instance=ExtResource("15")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100, 0.1, -54)
+axis = 1
+min_pos = 100.0
+max_pos = 205.0
+speed = 6.5
+start_direction = -1.0
+
+[node name="CarB" parent="TrafficCarsHighwaySouthEast" instance=ExtResource("16")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 200, 0.1, -66)
+axis = 1
+min_pos = 100.0
+max_pos = 205.0
+speed = 5.5
+
+
+[node name="HighwayRampsEast" type="Node3D" parent="."]
+
+[node name="RampNorthC" type="StaticBody3D" parent="HighwayRampsEast"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRampsEast/RampNorthC"]
+transform = Transform3D(1, 0, 0, 0, 0.98894, 0.14834, 0, -0.14834, 0.98894, 124, 3, 28)
+shape = SubResource("BoxShape3D_ramp")
+
+[node name="Mesh" type="MeshInstance3D" parent="HighwayRampsEast/RampNorthC"]
+transform = Transform3D(1, 0, 0, 0, 0.98894, 0.14834, 0, -0.14834, 0.98894, 124, 3, 28)
+mesh = SubResource("BoxMesh_ramp")
+
+[node name="RampNorthD" type="StaticBody3D" parent="HighwayRampsEast"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRampsEast/RampNorthD"]
+transform = Transform3D(1, 0, 0, 0, 0.98894, 0.14834, 0, -0.14834, 0.98894, 176, 3, 28)
+shape = SubResource("BoxShape3D_ramp")
+
+[node name="Mesh" type="MeshInstance3D" parent="HighwayRampsEast/RampNorthD"]
+transform = Transform3D(1, 0, 0, 0, 0.98894, 0.14834, 0, -0.14834, 0.98894, 176, 3, 28)
+mesh = SubResource("BoxMesh_ramp")
+
+[node name="RampSouthC" type="StaticBody3D" parent="HighwayRampsEast"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRampsEast/RampSouthC"]
+transform = Transform3D(1, 0, 0, 0, -0.98894, 0.14834, 0, -0.14834, -0.98894, 124, 3, -28)
+shape = SubResource("BoxShape3D_ramp")
+
+[node name="Mesh" type="MeshInstance3D" parent="HighwayRampsEast/RampSouthC"]
+transform = Transform3D(1, 0, 0, 0, -0.98894, 0.14834, 0, -0.14834, -0.98894, 124, 3, -28)
+mesh = SubResource("BoxMesh_ramp")
+
+[node name="RampSouthD" type="StaticBody3D" parent="HighwayRampsEast"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRampsEast/RampSouthD"]
+transform = Transform3D(1, 0, 0, 0, -0.98894, 0.14834, 0, -0.14834, -0.98894, 176, 3, -28)
+shape = SubResource("BoxShape3D_ramp")
+
+[node name="Mesh" type="MeshInstance3D" parent="HighwayRampsEast/RampSouthD"]
+transform = Transform3D(1, 0, 0, 0, -0.98894, 0.14834, 0, -0.14834, -0.98894, 176, 3, -28)
+mesh = SubResource("BoxMesh_ramp")
+
+[node name="HighwayPylonsEast" type="Node3D" parent="."]
+
+[node name="PylonN1" type="StaticBody3D" parent="HighwayPylonsEast"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayPylonsEast/PylonN1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100, 2.5, 60)
+shape = SubResource("BoxShape3D_pylon")
+
+[node name="Mesh" type="MeshInstance3D" parent="HighwayPylonsEast/PylonN1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100, 2.5, 60)
+mesh = SubResource("BoxMesh_pylon")
+
+[node name="PylonN2" type="StaticBody3D" parent="HighwayPylonsEast"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayPylonsEast/PylonN2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 130, 2.5, 60)
+shape = SubResource("BoxShape3D_pylon")
+
+[node name="Mesh" type="MeshInstance3D" parent="HighwayPylonsEast/PylonN2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 130, 2.5, 60)
+mesh = SubResource("BoxMesh_pylon")
+
+[node name="PylonN3" type="StaticBody3D" parent="HighwayPylonsEast"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayPylonsEast/PylonN3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, 2.5, 60)
+shape = SubResource("BoxShape3D_pylon")
+
+[node name="Mesh" type="MeshInstance3D" parent="HighwayPylonsEast/PylonN3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, 2.5, 60)
+mesh = SubResource("BoxMesh_pylon")
+
+[node name="PylonN4" type="StaticBody3D" parent="HighwayPylonsEast"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayPylonsEast/PylonN4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 190, 2.5, 60)
+shape = SubResource("BoxShape3D_pylon")
+
+[node name="Mesh" type="MeshInstance3D" parent="HighwayPylonsEast/PylonN4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 190, 2.5, 60)
+mesh = SubResource("BoxMesh_pylon")
+
+[node name="PylonS1" type="StaticBody3D" parent="HighwayPylonsEast"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayPylonsEast/PylonS1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100, 2.5, -60)
+shape = SubResource("BoxShape3D_pylon")
+
+[node name="Mesh" type="MeshInstance3D" parent="HighwayPylonsEast/PylonS1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100, 2.5, -60)
+mesh = SubResource("BoxMesh_pylon")
+
+[node name="PylonS2" type="StaticBody3D" parent="HighwayPylonsEast"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayPylonsEast/PylonS2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 130, 2.5, -60)
+shape = SubResource("BoxShape3D_pylon")
+
+[node name="Mesh" type="MeshInstance3D" parent="HighwayPylonsEast/PylonS2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 130, 2.5, -60)
+mesh = SubResource("BoxMesh_pylon")
+
+[node name="PylonS3" type="StaticBody3D" parent="HighwayPylonsEast"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayPylonsEast/PylonS3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, 2.5, -60)
+shape = SubResource("BoxShape3D_pylon")
+
+[node name="Mesh" type="MeshInstance3D" parent="HighwayPylonsEast/PylonS3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, 2.5, -60)
+mesh = SubResource("BoxMesh_pylon")
+
+[node name="PylonS4" type="StaticBody3D" parent="HighwayPylonsEast"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayPylonsEast/PylonS4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 190, 2.5, -60)
+shape = SubResource("BoxShape3D_pylon")
+
+[node name="Mesh" type="MeshInstance3D" parent="HighwayPylonsEast/PylonS4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 190, 2.5, -60)
+mesh = SubResource("BoxMesh_pylon")
+

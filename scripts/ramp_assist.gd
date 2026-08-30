@@ -20,6 +20,13 @@ const RAMPS := [
 	{"x": 56.0, "z_low": 8.0, "z_high": 48.0},
 	{"x": 4.0, "z_low": -8.0, "z_high": -48.0},
 	{"x": 56.0, "z_low": -8.0, "z_high": -48.0},
+	# Midtown (StreetC, x=120) and Eastside (StreetD, x=180) ramps up to
+	# HighwayEast/HighwaySouthEast - same +4/-4 off-road offset as the
+	# original pair, learned from that fix instead of repeating the mistake.
+	{"x": 124.0, "z_low": 8.0, "z_high": 48.0},
+	{"x": 176.0, "z_low": 8.0, "z_high": 48.0},
+	{"x": 124.0, "z_low": -8.0, "z_high": -48.0},
+	{"x": 176.0, "z_low": -8.0, "z_high": -48.0},
 ]
 
 func _physics_process(_delta: float) -> void:
