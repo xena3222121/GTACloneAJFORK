@@ -490,6 +490,33 @@ roughness = 0.8
 size = Vector3(3.6, 0.9, 0.15)
 material = SubResource("StandardMaterial3D_club_sign_bg")
 
+[sub_resource type="BoxMesh" id="BoxMesh_club_room_floor"]
+size = Vector3(22, 0.2, 18)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_club_room_floor"]
+size = Vector3(22, 0.2, 18)
+
+[sub_resource type="BoxMesh" id="BoxMesh_club_wall_ns"]
+size = Vector3(22, 3.5, 0.3)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_club_wall_ns"]
+size = Vector3(22, 3.5, 0.3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_club_wall_ew"]
+size = Vector3(0.3, 3.5, 18)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_club_wall_ew"]
+size = Vector3(0.3, 3.5, 18)
+
+[sub_resource type="BoxMesh" id="BoxMesh_club_ceiling"]
+size = Vector3(22, 0.2, 18)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_club_ceiling"]
+size = Vector3(22, 0.2, 18)
+
+[sub_resource type="BoxMesh" id="BoxMesh_club_dance_tile"]
+size = Vector3(14, 0.04, 2.2)
+
 [node name="World" type="Node3D" unique_id=54692432]
 script = ExtResource("41")
 
@@ -4723,6 +4750,7 @@ omni_range = 10.0
 [node name="Fixture" type="MeshInstance3D" parent="Downtown/Light_PlazaEast/Light"]
 mesh = SubResource("SphereMesh_highway_light")
 
+
 [node name="NightClubInterior" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1240, 0, 0)
 
@@ -4730,67 +4758,67 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1240, 0, 0)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="NightClubInterior/Floor"]
-shape = SubResource("BoxShape3D_room_floor")
+shape = SubResource("BoxShape3D_club_room_floor")
 
 [node name="Mesh" type="MeshInstance3D" parent="NightClubInterior/Floor"]
-mesh = SubResource("BoxMesh_room_floor")
+mesh = SubResource("BoxMesh_club_room_floor")
 surface_material_override/0 = SubResource("StandardMaterial3D_gunstore_floor")
 
 [node name="WallN" type="StaticBody3D" parent="NightClubInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, -6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, -9)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="NightClubInterior/WallN"]
-shape = SubResource("BoxShape3D_room_wall_ns")
+shape = SubResource("BoxShape3D_club_wall_ns")
 
 [node name="Mesh" type="MeshInstance3D" parent="NightClubInterior/WallN"]
-mesh = SubResource("BoxMesh_room_wall_ns")
+mesh = SubResource("BoxMesh_club_wall_ns")
 surface_material_override/0 = SubResource("StandardMaterial3D_gunstore_wall")
 
 [node name="WallS" type="StaticBody3D" parent="NightClubInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 9)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="NightClubInterior/WallS"]
-shape = SubResource("BoxShape3D_room_wall_ns")
+shape = SubResource("BoxShape3D_club_wall_ns")
 
 [node name="Mesh" type="MeshInstance3D" parent="NightClubInterior/WallS"]
-mesh = SubResource("BoxMesh_room_wall_ns")
+mesh = SubResource("BoxMesh_club_wall_ns")
 surface_material_override/0 = SubResource("StandardMaterial3D_gunstore_wall")
 
 [node name="WallE" type="StaticBody3D" parent="NightClubInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 1.75, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="NightClubInterior/WallE"]
-shape = SubResource("BoxShape3D_room_wall_ew")
+shape = SubResource("BoxShape3D_club_wall_ew")
 
 [node name="Mesh" type="MeshInstance3D" parent="NightClubInterior/WallE"]
-mesh = SubResource("BoxMesh_room_wall_ew")
+mesh = SubResource("BoxMesh_club_wall_ew")
 surface_material_override/0 = SubResource("StandardMaterial3D_gunstore_wall")
 
 [node name="WallW" type="StaticBody3D" parent="NightClubInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 1.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11, 1.75, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="NightClubInterior/WallW"]
-shape = SubResource("BoxShape3D_room_wall_ew")
+shape = SubResource("BoxShape3D_club_wall_ew")
 
 [node name="Mesh" type="MeshInstance3D" parent="NightClubInterior/WallW"]
-mesh = SubResource("BoxMesh_room_wall_ew")
+mesh = SubResource("BoxMesh_club_wall_ew")
 surface_material_override/0 = SubResource("StandardMaterial3D_gunstore_wall")
 
 [node name="Ceiling" type="StaticBody3D" parent="NightClubInterior"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.6, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="NightClubInterior/Ceiling"]
-shape = SubResource("BoxShape3D_gunstore_ceiling")
+shape = SubResource("BoxShape3D_club_ceiling")
 
 [node name="Mesh" type="MeshInstance3D" parent="NightClubInterior/Ceiling"]
-mesh = SubResource("BoxMesh_gunstore_ceiling")
+mesh = SubResource("BoxMesh_club_ceiling")
 
 [node name="ClubSpawn" type="Marker3D" parent="NightClubInterior"]
 unique_name_in_owner = true
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.1, 4)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.1, 7)
 
 [node name="ClubBar" type="Area3D" parent="NightClubInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.5, 1, -4.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 1, 6)
 script = ExtResource("33")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="NightClubInterior/ClubBar"]
@@ -4799,95 +4827,119 @@ shape = SubResource("SphereShape3D_interact")
 [node name="Mesh" type="MeshInstance3D" parent="NightClubInterior/ClubBar"]
 mesh = SubResource("BoxMesh_counter")
 
+[node name="BarLight" type="OmniLight3D" parent="NightClubInterior/ClubBar"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+light_color = Color(1, 0.8, 0.6, 1)
+light_energy = 1.2
+omni_range = 6.0
+
 [node name="Sign" type="MeshInstance3D" parent="NightClubInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.15, -5.8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.15, -8.8)
 mesh = SubResource("BoxMesh_club_sign")
 
 [node name="Label" type="Label3D" parent="NightClubInterior/Sign"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.1)
 billboard = 1
-font_size = 34
-outline_size = 6
+font_size = 30
+outline_size = 5
 modulate = Color(1, 0.4, 0.85, 1)
 text = "PRISM"
 
 [node name="DanceFloorRed" type="MeshInstance3D" parent="NightClubInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 3.2)
-mesh = SubResource("BoxMesh_rainbow_tile")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, -5.5)
+mesh = SubResource("BoxMesh_club_dance_tile")
 surface_material_override/0 = SubResource("StandardMaterial3D_rainbow_red")
 
 [node name="DanceFloorOrange" type="MeshInstance3D" parent="NightClubInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 2.2)
-mesh = SubResource("BoxMesh_rainbow_tile")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, -3.3)
+mesh = SubResource("BoxMesh_club_dance_tile")
 surface_material_override/0 = SubResource("StandardMaterial3D_rainbow_orange")
 
 [node name="DanceFloorYellow" type="MeshInstance3D" parent="NightClubInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 1.2)
-mesh = SubResource("BoxMesh_rainbow_tile")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, -1.1)
+mesh = SubResource("BoxMesh_club_dance_tile")
 surface_material_override/0 = SubResource("StandardMaterial3D_rainbow_yellow")
 
 [node name="DanceFloorGreen" type="MeshInstance3D" parent="NightClubInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0.2)
-mesh = SubResource("BoxMesh_rainbow_tile")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 1.1)
+mesh = SubResource("BoxMesh_club_dance_tile")
 surface_material_override/0 = SubResource("StandardMaterial3D_rainbow_green")
 
 [node name="DanceFloorBlue" type="MeshInstance3D" parent="NightClubInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, -0.8)
-mesh = SubResource("BoxMesh_rainbow_tile")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 3.3)
+mesh = SubResource("BoxMesh_club_dance_tile")
 surface_material_override/0 = SubResource("StandardMaterial3D_rainbow_blue")
 
 [node name="DanceFloorViolet" type="MeshInstance3D" parent="NightClubInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, -1.8)
-mesh = SubResource("BoxMesh_rainbow_tile")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 5.5)
+mesh = SubResource("BoxMesh_club_dance_tile")
 surface_material_override/0 = SubResource("StandardMaterial3D_rainbow_violet")
 
 [node name="DiscoBall" type="MeshInstance3D" parent="NightClubInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.3, 0.7)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.3, 0)
 mesh = SubResource("SphereMesh_discoball")
 
 [node name="DiscoLight" type="OmniLight3D" parent="NightClubInterior/DiscoBall"]
 light_color = Color(1, 1, 1, 1)
-light_energy = 0.8
-omni_range = 6.0
+light_energy = 0.9
+omni_range = 8.0
 
 [node name="SpotRed" type="OmniLight3D" parent="NightClubInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 3.2, 0.7)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 3.2, 0)
 light_color = Color(1, 0.15, 0.15, 1)
-light_energy = 1.4
-omni_range = 5.0
+light_energy = 1.5
+omni_range = 5.5
+
+[node name="SpotOrange" type="OmniLight3D" parent="NightClubInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.6, 3.2, 0)
+light_color = Color(1, 0.55, 0.1, 1)
+light_energy = 1.5
+omni_range = 5.5
 
 [node name="SpotYellow" type="OmniLight3D" parent="NightClubInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.8, 3.2, 0.7)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2, 3.2, 0)
 light_color = Color(1, 0.9, 0.1, 1)
-light_energy = 1.4
-omni_range = 5.0
+light_energy = 1.5
+omni_range = 5.5
 
 [node name="SpotGreen" type="OmniLight3D" parent="NightClubInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4, 3.2, 0.7)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.2, 3.2, 0)
 light_color = Color(0.1, 0.9, 0.2, 1)
-light_energy = 1.4
-omni_range = 5.0
+light_energy = 1.5
+omni_range = 5.5
 
 [node name="SpotBlue" type="OmniLight3D" parent="NightClubInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.6, 3.2, 0.7)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.6, 3.2, 0)
 light_color = Color(0.15, 0.35, 1, 1)
-light_energy = 1.4
-omni_range = 5.0
+light_energy = 1.5
+omni_range = 5.5
 
 [node name="SpotViolet" type="OmniLight3D" parent="NightClubInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.8, 3.2, 0.7)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 3.2, 0)
 light_color = Color(0.75, 0.15, 0.9, 1)
-light_energy = 1.4
-omni_range = 5.0
+light_energy = 1.5
+omni_range = 5.5
 
 [node name="Patron1" parent="NightClubInterior" instance=ExtResource("7")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.1, 1.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.1, -3)
 is_bar_patron = true
 
 [node name="Patron2" parent="NightClubInterior" instance=ExtResource("8")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.1, 0.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.1, -2)
 is_bar_patron = true
 
 [node name="Patron3" parent="NightClubInterior" instance=ExtResource("9")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 2.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.1, 2)
+is_bar_patron = true
+
+[node name="Patron4" parent="NightClubInterior" instance=ExtResource("10")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0.1, 3)
+is_bar_patron = true
+
+[node name="Patron5" parent="NightClubInterior" instance=ExtResource("7")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, -1)
+is_bar_patron = true
+
+[node name="Patron6" parent="NightClubInterior" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0.1, 4)
 is_bar_patron = true

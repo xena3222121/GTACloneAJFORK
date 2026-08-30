@@ -1395,6 +1395,28 @@ func exit_vehicle() -> void:
 	camera.current = true
 	car.driver_exit()
 
+# Generic version of the pattern above for one-off location voice lines
+# (see building_entrance.gd's voice_clips_dir) - scans the folder at
+# call time instead of a hardcoded file list, so dropping more .wav files
+# in later (some run long, e.g. a ~20s one) just works with no code
+# change. Guarded by voice_line_player.playing exactly like the other
+# lines here so a long clip can't get cut off by a second entry, and
+# can't cut off/overlap whatever line is already playing.
+func play_random_voice_clip(dir_path: String) -> void:
+	if voice_line_player.playing:
+		return
+	var dir := DirAccess.open(dir_path)
+	if not dir:
+		return
+	var clips: Array = []
+	for file_name in dir.get_files():
+		if file_name.get_extension().to_lower() == "wav":
+			clips.append(dir_path.path_join(file_name))
+	if clips.is_empty():
+		return
+	voice_line_player.stream = load(clips[randi() % clips.size()])
+	voice_line_player.play()
+
 func play_cops_incoming_line() -> void:
 	if played_cops_incoming_line:
 		return
