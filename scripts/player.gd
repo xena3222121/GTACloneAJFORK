@@ -1,6 +1,6 @@
 extends CharacterBody3D
 
-enum Weapon { KNIFE, PISTOL, SHOTGUN, MAC10 }
+enum Weapon { KNIFE, PISTOL, SHOTGUN, MAC10, UNARMED }
 
 const WALK_SPEED := 5.0
 const SPRINT_SPEED := 8.5
@@ -418,7 +418,7 @@ func _ready() -> void:
 	gunshot_player.stream = _make_gunshot_sound()
 	if SaveSystem.has_save():
 		SaveSystem.load_game(self)
-		gun_viewmodel.visible = current_weapon != Weapon.KNIFE
+		gun_viewmodel.visible = current_weapon != Weapon.KNIFE and current_weapon != Weapon.UNARMED
 		knife_viewmodel.visible = current_weapon == Weapon.KNIFE
 	_update_ammo_label()
 	_update_reserve_ammo_label()
@@ -489,6 +489,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and event.keycode == KEY_4:
 		if not driving:
 			switch_weapon(Weapon.MAC10)
+	if event is InputEventKey and event.pressed and event.keycode == KEY_0:
+		if not driving:
+			switch_weapon(Weapon.UNARMED)
 
 	if event is InputEventKey and event.pressed and event.keycode == KEY_E:
 		_interact()
@@ -727,6 +730,9 @@ func _set_current_reserve_ammo(value: int) -> void:
 		Weapon.MAC10: mac10_reserve_ammo = value
 		_: pistol_reserve_ammo = value
 
+func is_unarmed() -> bool:
+	return current_weapon == Weapon.UNARMED
+
 func _has_weapon(weapon: int) -> bool:
 	match weapon:
 		Weapon.SHOTGUN: return has_shotgun
@@ -763,7 +769,7 @@ func switch_weapon(weapon: int) -> void:
 		Weapon.SHOTGUN: tint = Color(0.55, 0.4, 0.15)
 		Weapon.MAC10: tint = Color(0.15, 0.15, 0.18)
 	_tint_gun_viewmodel(tint)
-	gun_viewmodel.visible = weapon != Weapon.KNIFE
+	gun_viewmodel.visible = weapon != Weapon.KNIFE and weapon != Weapon.UNARMED
 	knife_viewmodel.visible = weapon == Weapon.KNIFE
 	_update_ammo_label()
 	_update_reserve_ammo_label()
@@ -786,6 +792,8 @@ func _tint_gun_viewmodel(color) -> void:
 # currently equipped: melee for the knife (no ammo), otherwise fire if the
 # mag has rounds, otherwise a dry-fire click.
 func _try_fire() -> void:
+	if current_weapon == Weapon.UNARMED:
+		return
 	if current_weapon == Weapon.KNIFE:
 		melee_attack()
 		fire_cooldown = MELEE_COOLDOWN
@@ -862,7 +870,7 @@ func shoot() -> void:
 		_fire_ray(origin, forward, PISTOL_DAMAGE)
 
 func reload() -> void:
-	if reload_timer > 0.0 or current_weapon == Weapon.KNIFE:
+	if reload_timer > 0.0 or current_weapon == Weapon.KNIFE or current_weapon == Weapon.UNARMED:
 		return
 	if _current_ammo_in_mag() >= _mag_size() or _current_reserve_ammo() <= 0:
 		return
@@ -879,11 +887,16 @@ func reload() -> void:
 
 func _update_ammo_label() -> void:
 	if ammo_label:
-		ammo_label.text = "-- / --" if current_weapon == Weapon.KNIFE else "%d / %d" % [_current_ammo_in_mag(), _mag_size()]
+		ammo_label.text = "-- / --" if current_weapon == Weapon.KNIFE or current_weapon == Weapon.UNARMED else "%d / %d" % [_current_ammo_in_mag(), _mag_size()]
 
 func _update_reserve_ammo_label() -> void:
 	if reserve_ammo_label:
-		reserve_ammo_label.text = "Knife" if current_weapon == Weapon.KNIFE else "Ammo: %d" % _current_reserve_ammo()
+		if current_weapon == Weapon.KNIFE:
+			reserve_ammo_label.text = "Knife"
+		elif current_weapon == Weapon.UNARMED:
+			reserve_ammo_label.text = "Unarmed"
+		else:
+			reserve_ammo_label.text = "Ammo: %d" % _current_reserve_ammo()
 
 func _update_money_label() -> void:
 	if money_label:

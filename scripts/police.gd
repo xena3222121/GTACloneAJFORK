@@ -242,12 +242,22 @@ func _check_vehicle_collisions() -> void:
 # physically spot nearby (WantedSystem.heat > 0) - it doesn't go hostile
 # over a clean, quiet player just walking past. Direct alerts from a new
 # crime (see alert()) are what actually starts an incident.
+#
+# An unarmed player (see player.gd's Weapon.UNARMED) never trips this at
+# all, even with residual heat still ticking down from something unrelated
+# a minute ago - AJ asked for a way to just not have cops on him constantly;
+# holstering everything is that "I'm not a threat" signal.
 func _check_proactive_detection() -> void:
 	if not player or not is_instance_valid(player) or WantedSystem.heat <= 0.0:
+		return
+	if _player_is_unarmed():
 		return
 	var to_player := player.global_position - global_position
 	if to_player.length() <= DETECTION_RANGE and _has_line_of_sight(player.global_position):
 		_engage()
+
+func _player_is_unarmed() -> bool:
+	return player and is_instance_valid(player) and player.has_method("is_unarmed") and player.is_unarmed()
 
 # Called by WantedSystem when a crime happens within this cop's alert
 # radius. AJ asked for cops to have to actually SEE the player before
@@ -259,7 +269,7 @@ func _check_proactive_detection() -> void:
 func alert(source_position: Vector3) -> void:
 	if dead or hostile:
 		return
-	if player and is_instance_valid(player) \
+	if player and is_instance_valid(player) and not _player_is_unarmed() \
 			and global_position.distance_to(player.global_position) <= ENGAGE_RANGE \
 			and _has_line_of_sight(player.global_position):
 		_engage()
@@ -306,7 +316,7 @@ func _process_investigate(delta: float) -> void:
 
 	var to_player := player.global_position - global_position
 	to_player.y = 0
-	if to_player.length() <= DETECTION_RANGE and _has_line_of_sight(player.global_position):
+	if not _player_is_unarmed() and to_player.length() <= DETECTION_RANGE and _has_line_of_sight(player.global_position):
 		_engage()
 		return
 
