@@ -20,6 +20,9 @@ func _ready() -> void:
 	quit_button.pressed.connect(_on_quit_pressed)
 	settings_menu.visible = false
 	settings_menu.closed.connect(_on_settings_closed)
+	# Nothing had focus by default, so a controller had no button to
+	# navigate from or press at all on this screen.
+	(continue_button if continue_button.visible else new_game_button).grab_focus()
 
 func _on_continue_pressed() -> void:
 	# WantedSystem is an autoload - it survives scene changes, so without
@@ -40,10 +43,12 @@ func _on_new_game_pressed() -> void:
 func _on_settings_pressed() -> void:
 	main_buttons.visible = false
 	settings_menu.visible = true
+	settings_menu.focus_default()
 
 func _on_settings_closed() -> void:
 	settings_menu.visible = false
 	main_buttons.visible = true
+	(continue_button if continue_button.visible else new_game_button).grab_focus()
 
 func _on_quit_pressed() -> void:
 	get_tree().quit()

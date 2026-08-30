@@ -26,3 +26,9 @@ func _on_fullscreen_toggled(enabled: bool) -> void:
 
 func _on_back_pressed() -> void:
 	closed.emit()
+
+# Called by whichever menu (MainMenu/PauseMenu) just made this visible -
+# nothing had focus by default, so a controller had no control to
+# navigate from or press.
+func focus_default() -> void:
+	volume_slider.grab_focus()

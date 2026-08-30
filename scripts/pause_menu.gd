@@ -65,10 +65,12 @@ func _resume() -> void:
 func _open_settings() -> void:
 	main_panel.visible = false
 	settings_menu.visible = true
+	settings_menu.focus_default()
 
 func _on_settings_closed() -> void:
 	settings_menu.visible = false
 	main_panel.visible = true
+	resume_button.grab_focus()
 
 func _on_save_pressed() -> void:
 	var player := get_tree().get_first_node_in_group("player")
