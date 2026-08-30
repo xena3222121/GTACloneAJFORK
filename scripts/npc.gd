@@ -43,6 +43,11 @@ const CHATTER_AUDIO_CLIPS := [
 ]
 const CHATTER_CHECK_INTERVAL := 6.0
 const CHATTER_RANGE := 5.0
+# Overrides CHATTER_AUDIO_CLIPS with a folder scan instead - e.g. Prism's
+# patrons (World.tscn) get "NPC Random In Gay Club" set here so they bark
+# club-appropriate lines instead of generic street chatter. Scanned at
+# call time (not cached) so dropping more .wav files in later just works.
+@export var chatter_clips_dir: String = ""
 const CHATTER_CHANCE := 0.12
 
 # A dealer NPC (see is_dealer below) auto-sells the player's drugs for them
@@ -317,8 +322,24 @@ func _process_dealer(delta: float) -> void:
 func say_hello() -> void:
 	if chatter_audio.playing:
 		return
-	chatter_audio.stream = load(CHATTER_AUDIO_CLIPS[randi() % CHATTER_AUDIO_CLIPS.size()])
+	var clips: Array = _get_chatter_clips()
+	if clips.is_empty():
+		return
+	chatter_audio.stream = load(clips[randi() % clips.size()])
 	chatter_audio.play()
+
+# Folder scan when chatter_clips_dir is set (per-instance override, e.g.
+# club patrons), otherwise the shared default list.
+func _get_chatter_clips() -> Array:
+	if chatter_clips_dir == "":
+		return CHATTER_AUDIO_CLIPS
+	var clips: Array = []
+	var dir := DirAccess.open(chatter_clips_dir)
+	if dir:
+		for file_name in dir.get_files():
+			if file_name.get_extension().to_lower() == "wav":
+				clips.append(chatter_clips_dir.path_join(file_name))
+	return clips
 
 # Occasional background bark when the player's standing near a peaceful
 # civilian - checked on a timer (not every frame) so it can't spam.
@@ -335,7 +356,10 @@ func _check_ambient_chatter(delta: float) -> void:
 	if global_position.distance_to(p.global_position) > CHATTER_RANGE:
 		return
 	if randf() < CHATTER_CHANCE:
-		chatter_audio.stream = load(CHATTER_AUDIO_CLIPS[randi() % CHATTER_AUDIO_CLIPS.size()])
+		var clips: Array = _get_chatter_clips()
+		if clips.is_empty():
+			return
+		chatter_audio.stream = load(clips[randi() % clips.size()])
 		chatter_audio.play()
 
 func _process_hostile(delta: float) -> void:

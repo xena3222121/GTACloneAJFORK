@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://ce455rsdfxe35"
+path="res://.godot/imported/arnoldlingers.wav-65d8791719b1b8b397f18452d25491be.sample"
+
+[deps]
+
+source_file="res://Audio/Arnold/Gay Club Arnold Lines/arnoldlingers.wav"
+dest_files=["res://.godot/imported/arnoldlingers.wav-65d8791719b1b8b397f18452d25491be.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://bjercjtwcyljy"
+path="res://.godot/imported/Parrot_Ai_w_8790def1.wav-3f2e83068d9f0c56d94c8592ff49d789.sample"
+
+[deps]
+
+source_file="res://Audio/Arnold/Gay Club Arnold Lines/Parrot_Ai_w_8790def1.wav"
+dest_files=["res://.godot/imported/Parrot_Ai_w_8790def1.wav-3f2e83068d9f0c56d94c8592ff49d789.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2
