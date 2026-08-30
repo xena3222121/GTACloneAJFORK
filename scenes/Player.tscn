@@ -4,6 +4,8 @@
 [ext_resource type="Script" uid="uid://cpb75njr1ryam" path="res://scripts/crosshair.gd" id="2"]
 [ext_resource type="PackedScene" uid="uid://c7w5mx7vjnnbm" path="res://assets/characters-realistic/Male_Suit.fbx" id="3"]
 [ext_resource type="PackedScene" uid="uid://copmsowv8ofgy" path="res://assets/weapons/Pistol_2.glb" id="4"]
+[ext_resource type="PackedScene" path="res://assets/guns-pack/shotgun.glb" id="8"]
+[ext_resource type="PackedScene" path="res://assets/guns-pack/mac10.glb" id="9"]
 [ext_resource type="Script" path="res://scripts/minimap_camera.gd" id="5"]
 [ext_resource type="Script" path="res://scripts/pause_menu.gd" id="6"]
 [ext_resource type="PackedScene" path="res://scenes/SettingsMenu.tscn" id="7"]
@@ -88,7 +90,15 @@ transform = Transform3D(0.372, 0, 0, 0, 0.372, 0, 0, 0, 0.372, 0, 0, 0)
 bone_name = "RightHand"
 bone_idx = 23
 
-[node name="GunViewmodel" parent="Model/HumanArmature/GeneralSkeleton/BoneAttachment3D" instance=ExtResource("4")]
+[node name="PistolViewmodel" parent="Model/HumanArmature/GeneralSkeleton/BoneAttachment3D" instance=ExtResource("4")]
+transform = Transform3D(0.84, 0, 0, 0, -0.84, 0, 0, 0, -0.84, 0, 0.22, 0.05)
+visible = false
+
+[node name="ShotgunViewmodel" parent="Model/HumanArmature/GeneralSkeleton/BoneAttachment3D" instance=ExtResource("8")]
+transform = Transform3D(0.84, 0, 0, 0, -0.84, 0, 0, 0, -0.84, 0, 0.22, 0.05)
+visible = false
+
+[node name="Mac10Viewmodel" parent="Model/HumanArmature/GeneralSkeleton/BoneAttachment3D" instance=ExtResource("9")]
 transform = Transform3D(0.84, 0, 0, 0, -0.84, 0, 0, 0, -0.84, 0, 0.22, 0.05)
 visible = false
 
@@ -103,14 +113,38 @@ mesh = SubResource("BoxMesh_knife_handle")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.155)
 mesh = SubResource("BoxMesh_knife_blade")
 
-[node name="MuzzlePoint" type="Marker3D" parent="Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/GunViewmodel"]
+[node name="MuzzlePoint" type="Marker3D" parent="Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/PistolViewmodel"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.45, 0.45, 0)
 
-[node name="MuzzleFlash" type="MeshInstance3D" parent="Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/GunViewmodel/MuzzlePoint"]
+[node name="MuzzleFlash" type="MeshInstance3D" parent="Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/PistolViewmodel/MuzzlePoint"]
 visible = false
 mesh = SubResource("QuadMesh_MuzzleFlash")
 
-[node name="MuzzleLight" type="OmniLight3D" parent="Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/GunViewmodel/MuzzlePoint"]
+[node name="MuzzleLight" type="OmniLight3D" parent="Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/PistolViewmodel/MuzzlePoint"]
+light_color = Color(1, 0.7, 0.3, 1)
+light_energy = 0.0
+omni_range = 2.5
+
+[node name="MuzzlePoint" type="Marker3D" parent="Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/ShotgunViewmodel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.45, 0.45, 0)
+
+[node name="MuzzleFlash" type="MeshInstance3D" parent="Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/ShotgunViewmodel/MuzzlePoint"]
+visible = false
+mesh = SubResource("QuadMesh_MuzzleFlash")
+
+[node name="MuzzleLight" type="OmniLight3D" parent="Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/ShotgunViewmodel/MuzzlePoint"]
+light_color = Color(1, 0.7, 0.3, 1)
+light_energy = 0.0
+omni_range = 2.5
+
+[node name="MuzzlePoint" type="Marker3D" parent="Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/Mac10Viewmodel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.45, 0.45, 0)
+
+[node name="MuzzleFlash" type="MeshInstance3D" parent="Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/Mac10Viewmodel/MuzzlePoint"]
+visible = false
+mesh = SubResource("QuadMesh_MuzzleFlash")
+
+[node name="MuzzleLight" type="OmniLight3D" parent="Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/Mac10Viewmodel/MuzzlePoint"]
 light_color = Color(1, 0.7, 0.3, 1)
 light_energy = 0.0
 omni_range = 2.5

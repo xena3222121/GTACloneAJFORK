@@ -138,11 +138,19 @@ const UPPER_BODY_BONES := [
 @onready var spring_arm: SpringArm3D = $CameraPivot/SpringArm3D
 @onready var camera: Camera3D = $CameraPivot/SpringArm3D/Camera3D
 @onready var rain: GPUParticles3D = $CameraPivot/Rain
-@onready var gun_viewmodel: Node3D = $Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/GunViewmodel
+@onready var pistol_viewmodel: Node3D = $Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/PistolViewmodel
+@onready var shotgun_viewmodel: Node3D = $Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/ShotgunViewmodel
+@onready var mac10_viewmodel: Node3D = $Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/Mac10Viewmodel
 @onready var knife_viewmodel: Node3D = $Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/KnifeViewmodel
-@onready var muzzle_point: Marker3D = $Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/GunViewmodel/MuzzlePoint
-@onready var muzzle_flash: MeshInstance3D = $Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/GunViewmodel/MuzzlePoint/MuzzleFlash
-@onready var muzzle_light: OmniLight3D = $Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/GunViewmodel/MuzzlePoint/MuzzleLight
+# Each real gun model (from styloo's guns pack) replaced one shared,
+# re-tinted Pistol_2.glb doing duty as all 3 guns - keyed by Weapon so
+# _current_gun_viewmodel()/_current_muzzle_point() below can look up
+# whichever one is actually equipped instead of a single fixed node.
+@onready var gun_viewmodels := {
+	Weapon.PISTOL: pistol_viewmodel,
+	Weapon.SHOTGUN: shotgun_viewmodel,
+	Weapon.MAC10: mac10_viewmodel,
+}
 @onready var gunshot_player: AudioStreamPlayer = $GunshotPlayer
 @onready var voice_line_player: AudioStreamPlayer = $VoiceLinePlayer
 @onready var crosshair: Control = $HUD/Crosshair
@@ -188,6 +196,7 @@ const UPPER_BODY_BONES := [
 # vice versa. So the gun's attachment blends between two authored
 # orientations using the same aim_blend the animation tree already tracks.
 const GUN_SCALE := 0.84
+const GUNS_PACK_VIEWMODEL_SCALE := 3.0
 const GUN_ORIGIN := Vector3(0, 0.22, 0.05)
 # Basis.slerp() requires pure (unscaled) rotation matrices, so scale is kept
 # separate here and reapplied after blending rather than baked into these.
@@ -418,7 +427,7 @@ func _ready() -> void:
 	gunshot_player.stream = _make_gunshot_sound()
 	if SaveSystem.has_save():
 		SaveSystem.load_game(self)
-		gun_viewmodel.visible = current_weapon != Weapon.KNIFE and current_weapon != Weapon.UNARMED
+		_update_gun_viewmodel_visibility()
 		knife_viewmodel.visible = current_weapon == Weapon.KNIFE
 	_update_ammo_label()
 	_update_reserve_ammo_label()
@@ -648,11 +657,28 @@ func _physics_process(delta: float) -> void:
 	anim_tree["parameters/UpperAim/blend_amount"] = aim_blend
 	anim_tree["parameters/WalkSpeed/scale"] = speed / WALK_SPEED
 
-	gun_viewmodel.transform.basis = gun_rot_idle.slerp(gun_rot_aim, aim_blend).scaled(Vector3.ONE * GUN_SCALE)
-	gun_viewmodel.transform.origin = GUN_ORIGIN
+	# All 3 gun models share one idle/aim sway ROTATION - only one is ever
+	# visible at a time, but updating all 3 (plus the knife) unconditionally
+	# is simpler than tracking which one and means no re-sync is needed the
+	# moment you switch weapons. Scale is per-weapon though: Pistol_2.glb
+	# (assets/weapons/) has a 100x correction baked into its own mesh
+	# transform from whatever DCC tool exported it, so GUN_SCALE=0.84 nets
+	# out to a normal-looking pistol; the guns-pack models (mac10/shotgun,
+	# added this session) have no such correction and are already authored
+	# at real-world meter scale, so they need a much bigger multiplier here
+	# to read as anything but a tiny sliver in the character's hand -
+	# confirmed empirically via screenshot, not calculated, since the two
+	# packs' internal scale conventions don't match.
+	var gun_rot: Basis = gun_rot_idle.slerp(gun_rot_aim, aim_blend)
+	pistol_viewmodel.transform.basis = gun_rot.scaled(Vector3.ONE * GUN_SCALE)
+	pistol_viewmodel.transform.origin = GUN_ORIGIN
+	shotgun_viewmodel.transform.basis = gun_rot.scaled(Vector3.ONE * GUNS_PACK_VIEWMODEL_SCALE)
+	shotgun_viewmodel.transform.origin = GUN_ORIGIN
+	mac10_viewmodel.transform.basis = gun_rot.scaled(Vector3.ONE * GUNS_PACK_VIEWMODEL_SCALE)
+	mac10_viewmodel.transform.origin = GUN_ORIGIN
 	# Knife has no separate idle/aim pose of its own - it just rides along in
 	# the same hand position/orientation the gun would otherwise be in.
-	knife_viewmodel.transform.basis = gun_viewmodel.transform.basis
+	knife_viewmodel.transform.basis = gun_rot.scaled(Vector3.ONE * GUN_SCALE)
 	knife_viewmodel.transform.origin = GUN_ORIGIN
 
 	move_and_slide()
@@ -764,29 +790,35 @@ func switch_weapon(weapon: int) -> void:
 	if reload_timer > 0.0:
 		return
 	current_weapon = weapon
-	var tint = null
-	match weapon:
-		Weapon.SHOTGUN: tint = Color(0.55, 0.4, 0.15)
-		Weapon.MAC10: tint = Color(0.15, 0.15, 0.18)
-	_tint_gun_viewmodel(tint)
-	gun_viewmodel.visible = weapon != Weapon.KNIFE and weapon != Weapon.UNARMED
+	_update_gun_viewmodel_visibility()
 	knife_viewmodel.visible = weapon == Weapon.KNIFE
 	_update_ammo_label()
 	_update_reserve_ammo_label()
 
-func _tint_gun_viewmodel(color) -> void:
-	var meshes: Array = gun_viewmodel.find_children("*", "MeshInstance3D", true, false)
-	for m in meshes:
-		var mesh_inst: MeshInstance3D = m
-		if not mesh_inst.mesh:
-			continue
-		var mat: StandardMaterial3D = null
-		if color != null:
-			mat = StandardMaterial3D.new()
-			mat.albedo_color = color
-			mat.roughness = 0.5
-		for i in range(mesh_inst.mesh.get_surface_count()):
-			mesh_inst.set_surface_override_material(i, mat)
+# Each gun is now a distinct real model (see gun_viewmodels), not one
+# shared Pistol_2.glb re-tinted per weapon - so this just shows the one
+# matching current_weapon and hides the other two, no material_override
+# recoloring needed anymore.
+func _update_gun_viewmodel_visibility() -> void:
+	pistol_viewmodel.visible = current_weapon == Weapon.PISTOL
+	shotgun_viewmodel.visible = current_weapon == Weapon.SHOTGUN
+	mac10_viewmodel.visible = current_weapon == Weapon.MAC10
+
+# Knife/unarmed have no gun of their own to fire from, so this falls back
+# to the pistol's muzzle point as a generic "hand position" reference -
+# matching the previous behavior where muzzle_point was always the one
+# shared gun's, regardless of which weapon was actually equipped.
+func _current_muzzle_point() -> Marker3D:
+	var vm: Node3D = gun_viewmodels.get(current_weapon)
+	if vm:
+		return vm.get_node("MuzzlePoint")
+	return pistol_viewmodel.get_node("MuzzlePoint")
+
+func _current_muzzle_flash() -> MeshInstance3D:
+	return _current_muzzle_point().get_node("MuzzleFlash")
+
+func _current_muzzle_light() -> OmniLight3D:
+	return _current_muzzle_point().get_node("MuzzleLight")
 
 # Dispatches the left-click / auto-fire action for whichever weapon is
 # currently equipped: melee for the knife (no ammo), otherwise fire if the
@@ -858,7 +890,7 @@ func shoot() -> void:
 		origin = camera.global_position
 		forward = -camera.global_transform.basis.z.normalized()
 	else:
-		origin = muzzle_point.global_position
+		origin = _current_muzzle_point().global_position
 		forward = model.global_transform.basis.z.normalized()
 
 	if current_weapon == Weapon.SHOTGUN:
@@ -1185,7 +1217,7 @@ func melee_attack() -> void:
 	# player's own position, let alone an adjacent enemy - confirmed by
 	# direct measurement, not assumed. The camera is still what supplies
 	# the aim *direction*, matching the crosshair.
-	var origin: Vector3 = muzzle_point.global_position
+	var origin: Vector3 = _current_muzzle_point().global_position
 	var forward: Vector3 = -camera.global_transform.basis.z.normalized()
 
 	var space_state := get_world_3d().direct_space_state
@@ -1236,6 +1268,8 @@ func melee_attack() -> void:
 		_maybe_play_kill_line(hit, is_person)
 
 func _flash_muzzle() -> void:
+	var muzzle_flash: MeshInstance3D = _current_muzzle_flash()
+	var muzzle_light: OmniLight3D = _current_muzzle_light()
 	muzzle_flash.visible = true
 	muzzle_flash.scale = Vector3.ONE * 1.3
 	muzzle_light.light_energy = 5.0
