@@ -76,6 +76,10 @@ var dead := false
 # (see World.tscn's BarInterior) - a regular street civilian never fights
 # back, this is purely opt-in per-instance.
 @export var is_bar_patron := false
+# Only set true on Prism's 6 patrons (World.tscn's NightClubInterior) -
+# read by player.gd's _sell_drugs_to() so pill sales to an actual club
+# patron never risk a snitch, per AJ (nobody in the club is undercover).
+@export var is_club_patron := false
 var hostile := false
 var attack_cooldown := 0.0
 

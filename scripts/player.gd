@@ -25,6 +25,12 @@ const SELL_PRICE_MAX := 45
 const SNITCH_CHANCE := 0.10 # was 0.15 - AJ asked for a flat 10% undercover-buyer chance
 const SNITCH_HEAT := 20.0
 
+# Boner pills sell for more than weed - the 2 ingredients cost real money
+# up front (see ingredient_shelf.gd), so the payout needs to clear that
+# bar for cooking a batch to actually be worth it over just dealing weed.
+const PILL_SELL_PRICE_MIN := 40
+const PILL_SELL_PRICE_MAX := 90
+
 const AMMO_PRICE := 20
 const AMMO_BUY_AMOUNT := 60
 const SHOTGUN_PRICE := 50
@@ -166,6 +172,7 @@ const UPPER_BODY_BONES := [
 @onready var money_label: Label = $HUD/MoneyLabel
 @onready var wanted_label: Label = $HUD/WantedLabel
 @onready var drugs_label: Label = $HUD/DrugsLabel
+@onready var pills_label: Label = $HUD/PillsLabel
 @onready var interact_prompt_label: Label = $HUD/InteractPromptLabel
 @onready var drunk_overlay: ColorRect = $HUD/DrunkOverlay
 @onready var store_menu: Control = $HUD/StoreMenu
@@ -239,6 +246,12 @@ var mac10_ammo_in_mag := 0
 var mac10_reserve_ammo := 0
 var money := 0
 var drugs := 0
+# Boner pills - a second sellable good alongside weed, cooked at the
+# safehouse (pill_cook_station.gd) from 2 ingredients bought at the
+# Convenience Store (ingredient_shelf.gd), sold the same way drugs are.
+var pills := 0
+var blue_oyster_dust := 0
+var horse_semen := 0
 var drunk_timer := 0.0
 var drunk_sway_time := 0.0
 var drunk_pitch_sway := 0.0
@@ -433,6 +446,7 @@ func _ready() -> void:
 	_update_reserve_ammo_label()
 	_update_money_label()
 	_update_drugs_label()
+	_update_pills_label()
 	health_bar.max_value = MAX_HEALTH
 	health_bar.value = health
 	restart_button.pressed.connect(_on_restart_pressed)
@@ -947,6 +961,22 @@ func add_drugs(amount: int) -> void:
 	drugs += amount
 	_update_drugs_label()
 
+func _update_pills_label() -> void:
+	if pills_label:
+		pills_label.visible = pills > 0
+		pills_label.text = "Pills: %d" % pills
+
+func add_pills(amount: int) -> void:
+	pills += amount
+	_update_pills_label()
+
+# Called by ingredient_shelf.gd - key is "blue_oyster_dust" or
+# "horse_semen" (matches the var names below 1:1 on purpose).
+func add_ingredient(key: String, amount: int) -> void:
+	match key:
+		"blue_oyster_dust": blue_oyster_dust += amount
+		"horse_semen": horse_semen += amount
+
 func get_drunk(duration: float) -> void:
 	drunk_timer = duration
 
@@ -1022,7 +1052,7 @@ func open_npc_menu(npc: Node3D) -> void:
 	# a dedicated single-button menu instead of the normal talk/sell one.
 	talk_button.visible = not is_dealer
 	sell_drugs_button.visible = not is_dealer
-	sell_drugs_button.disabled = drugs <= 0
+	sell_drugs_button.disabled = drugs <= 0 and pills <= 0
 	hire_button.visible = is_dealer
 	if is_dealer:
 		if hired:
@@ -1127,7 +1157,7 @@ func _tint_outfit_recursive(node: Node, mat: Material) -> void:
 		_tint_outfit_recursive(child, mat)
 
 func try_sell_drugs_to_nearby_npc() -> void:
-	if drugs <= 0:
+	if drugs <= 0 and pills <= 0:
 		return
 	var nearest: Node3D = null
 	var nearest_dist := SELL_RANGE
@@ -1143,15 +1173,28 @@ func try_sell_drugs_to_nearby_npc() -> void:
 	_sell_drugs_to(nearest)
 
 # Shared by the blind nearest-NPC fallback above and the explicit "Sell
-# Drugs" button in the NPC talk menu - same undercover-buyer risk either way.
+# Drugs" button in the NPC talk menu - same undercover-buyer risk either
+# way. Sells a drug first if you're holding any, otherwise a pill - one
+# sale per interaction either way.
 func _sell_drugs_to(npc: Node3D) -> void:
-	if drugs <= 0 or npc.get("dead") == true:
+	if npc.get("dead") == true:
 		return
-	drugs -= 1
-	_update_drugs_label()
-	add_money(randi_range(SELL_PRICE_MIN, SELL_PRICE_MAX))
-	if randf() < SNITCH_CHANCE:
-		WantedSystem.add_heat(SNITCH_HEAT, global_position)
+	if drugs > 0:
+		drugs -= 1
+		_update_drugs_label()
+		add_money(randi_range(SELL_PRICE_MIN, SELL_PRICE_MAX))
+		if randf() < SNITCH_CHANCE:
+			WantedSystem.add_heat(SNITCH_HEAT, global_position)
+	elif pills > 0:
+		pills -= 1
+		_update_pills_label()
+		add_money(randi_range(PILL_SELL_PRICE_MIN, PILL_SELL_PRICE_MAX))
+		# AJ's call: nobody in Prism is an undercover - pills are always
+		# safe to sell to an actual club patron. Selling pills to anyone
+		# else still carries the normal risk.
+		var is_club_patron: bool = npc.get("is_club_patron") == true
+		if not is_club_patron and randf() < SNITCH_CHANCE:
+			WantedSystem.add_heat(SNITCH_HEAT, global_position)
 
 # weapon: "pistol" (default), "shotgun", or "mac10". Picking up a weapon for
 # the first time grants it and auto-equips it; later pickups just add ammo.

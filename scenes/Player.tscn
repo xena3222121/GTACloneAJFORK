@@ -400,6 +400,27 @@ horizontal_alignment = 2
 vertical_alignment = 1
 visible = false
 
+[node name="PillsLabel" type="Label" parent="HUD"]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -170.0
+offset_top = -196.0
+offset_right = -20.0
+offset_bottom = -163.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 0.4, 0.55, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 22
+text = ""
+horizontal_alignment = 2
+vertical_alignment = 1
+visible = false
+
 [node name="DrunkOverlay" type="ColorRect" parent="HUD"]
 layout_mode = 3
 anchors_preset = 15

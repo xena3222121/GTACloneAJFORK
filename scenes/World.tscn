@@ -46,6 +46,8 @@
 [ext_resource type="PackedScene" path="res://assets/guns-pack/shotgun.glb" id="47"]
 [ext_resource type="PackedScene" path="res://assets/guns-pack/mac10.glb" id="48"]
 [ext_resource type="PackedScene" path="res://assets/guns-pack/pew.glb" id="49"]
+[ext_resource type="Script" path="res://scripts/ingredient_shelf.gd" id="50"]
+[ext_resource type="Script" path="res://scripts/pill_cook_station.gd" id="51"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
 sky_top_color = Color(0.3, 0.5, 0.85, 1)
@@ -3503,6 +3505,16 @@ shape = SubResource("SphereShape3D_interact")
 [node name="Mesh" type="MeshInstance3D" parent="HouseInterior/WeedPlot"]
 mesh = SubResource("BoxMesh_counter")
 
+[node name="PillCookStation" type="Area3D" parent="HouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1, -4.5)
+script = ExtResource("51")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HouseInterior/PillCookStation"]
+shape = SubResource("SphereShape3D_interact")
+
+[node name="Mesh" type="MeshInstance3D" parent="HouseInterior/PillCookStation"]
+mesh = SubResource("BoxMesh_counter")
+
 [node name="Dealer" parent="HouseInterior" instance=ExtResource("7")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0.1, -4.5)
 is_dealer = true
@@ -3710,6 +3722,32 @@ script = ExtResource("32")
 shape = SubResource("SphereShape3D_interact")
 
 [node name="Mesh" type="MeshInstance3D" parent="ConvenienceInterior/Register"]
+mesh = SubResource("BoxMesh_counter")
+
+[node name="BlueOysterDustShelf" type="Area3D" parent="ConvenienceInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1, -4.5)
+script = ExtResource("50")
+ingredient_key = "blue_oyster_dust"
+display_name = "Blue Oyster Dust"
+price = 25
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ConvenienceInterior/BlueOysterDustShelf"]
+shape = SubResource("SphereShape3D_interact")
+
+[node name="Mesh" type="MeshInstance3D" parent="ConvenienceInterior/BlueOysterDustShelf"]
+mesh = SubResource("BoxMesh_counter")
+
+[node name="HorseSemenShelf" type="Area3D" parent="ConvenienceInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1, -4.5)
+script = ExtResource("50")
+ingredient_key = "horse_semen"
+display_name = "Horse Semen"
+price = 35
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ConvenienceInterior/HorseSemenShelf"]
+shape = SubResource("SphereShape3D_interact")
+
+[node name="Mesh" type="MeshInstance3D" parent="ConvenienceInterior/HorseSemenShelf"]
 mesh = SubResource("BoxMesh_counter")
 
 [node name="BarInterior" type="Node3D" parent="."]
@@ -4925,28 +4963,34 @@ omni_range = 5.5
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.1, -3)
 is_bar_patron = true
 chatter_clips_dir = "res://Audio/Arnold/NPC Random In Gay Club/"
+is_club_patron = true
 
 [node name="Patron2" parent="NightClubInterior" instance=ExtResource("8")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.1, -2)
 is_bar_patron = true
 chatter_clips_dir = "res://Audio/Arnold/NPC Random In Gay Club/"
+is_club_patron = true
 
 [node name="Patron3" parent="NightClubInterior" instance=ExtResource("9")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.1, 2)
 is_bar_patron = true
 chatter_clips_dir = "res://Audio/Arnold/NPC Random In Gay Club/"
+is_club_patron = true
 
 [node name="Patron4" parent="NightClubInterior" instance=ExtResource("10")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0.1, 3)
 is_bar_patron = true
 chatter_clips_dir = "res://Audio/Arnold/NPC Random In Gay Club/"
+is_club_patron = true
 
 [node name="Patron5" parent="NightClubInterior" instance=ExtResource("7")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, -1)
 is_bar_patron = true
 chatter_clips_dir = "res://Audio/Arnold/NPC Random In Gay Club/"
+is_club_patron = true
 
 [node name="Patron6" parent="NightClubInterior" instance=ExtResource("8")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0.1, 4)
 is_bar_patron = true
 chatter_clips_dir = "res://Audio/Arnold/NPC Random In Gay Club/"
+is_club_patron = true
