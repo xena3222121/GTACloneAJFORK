@@ -43,6 +43,9 @@
 [ext_resource type="PackedScene" path="res://assets/car-kit-realistic/MazdaRX7.glb" id="44"]
 [ext_resource type="PackedScene" path="res://assets/car-kit-realistic/RangeRover.glb" id="45"]
 [ext_resource type="Script" path="res://scripts/dealer_counter.gd" id="46"]
+[ext_resource type="PackedScene" path="res://assets/guns-pack/shotgun.glb" id="47"]
+[ext_resource type="PackedScene" path="res://assets/guns-pack/mac10.glb" id="48"]
+[ext_resource type="PackedScene" path="res://assets/guns-pack/pew.glb" id="49"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
 sky_top_color = Color(0.3, 0.5, 0.85, 1)
@@ -370,28 +373,6 @@ material = SubResource("StandardMaterial3D_gunrack_frame")
 [sub_resource type="BoxMesh" id="BoxMesh_gunrack_shelf"]
 size = Vector3(4.6, 0.08, 0.5)
 material = SubResource("StandardMaterial3D_gunrack_frame")
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rack_shotgun"]
-shading_mode = 0
-albedo_color = Color(0.15, 0.13, 0.1, 1)
-emission_enabled = true
-emission = Color(1, 0.55, 0.2, 1)
-emission_energy_multiplier = 1.1
-
-[sub_resource type="BoxMesh" id="BoxMesh_rack_shotgun"]
-size = Vector3(1.1, 0.12, 0.14)
-material = SubResource("StandardMaterial3D_rack_shotgun")
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rack_mac10"]
-shading_mode = 0
-albedo_color = Color(0.12, 0.12, 0.14, 1)
-emission_enabled = true
-emission = Color(0.3, 0.6, 1, 1)
-emission_energy_multiplier = 1.1
-
-[sub_resource type="BoxMesh" id="BoxMesh_rack_mac10"]
-size = Vector3(0.8, 0.12, 0.12)
-material = SubResource("StandardMaterial3D_rack_mac10")
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gunstore_sign_bg"]
 albedo_color = Color(0.05, 0.32, 0.14, 1)
@@ -3483,37 +3464,29 @@ mesh = SubResource("BoxMesh_gunrack_shelf")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, -5.6)
 mesh = SubResource("BoxMesh_gunrack_shelf")
 
-[node name="RackShotgun1" type="MeshInstance3D" parent="StoreInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.8, 2.7, -5.55)
-mesh = SubResource("BoxMesh_rack_shotgun")
+[node name="RackShotgun1" parent="StoreInterior" instance=ExtResource("47")]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, -1.8, 2.7, -5.55)
 
-[node name="RackMac10_1" type="MeshInstance3D" parent="StoreInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.6, 2.7, -5.55)
-mesh = SubResource("BoxMesh_rack_mac10")
+[node name="RackMac10_1" parent="StoreInterior" instance=ExtResource("48")]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, -0.6, 2.7, -5.55)
 
-[node name="RackShotgun2" type="MeshInstance3D" parent="StoreInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.6, 2.7, -5.55)
-mesh = SubResource("BoxMesh_rack_shotgun")
+[node name="RackPistol1" parent="StoreInterior" instance=ExtResource("49")]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0.6, 2.7, -5.55)
 
-[node name="RackMac10_2" type="MeshInstance3D" parent="StoreInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8, 2.7, -5.55)
-mesh = SubResource("BoxMesh_rack_mac10")
+[node name="RackMac10_2" parent="StoreInterior" instance=ExtResource("48")]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 1.8, 2.7, -5.55)
 
-[node name="RackMac10_3" type="MeshInstance3D" parent="StoreInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.8, 1.5, -5.55)
-mesh = SubResource("BoxMesh_rack_mac10")
+[node name="RackMac10_3" parent="StoreInterior" instance=ExtResource("48")]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, -1.8, 1.5, -5.55)
 
-[node name="RackShotgun3" type="MeshInstance3D" parent="StoreInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.6, 1.5, -5.55)
-mesh = SubResource("BoxMesh_rack_shotgun")
+[node name="RackShotgun3" parent="StoreInterior" instance=ExtResource("47")]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, -0.6, 1.5, -5.55)
 
-[node name="RackMac10_4" type="MeshInstance3D" parent="StoreInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.6, 1.5, -5.55)
-mesh = SubResource("BoxMesh_rack_mac10")
+[node name="RackPistol2" parent="StoreInterior" instance=ExtResource("49")]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0.6, 1.5, -5.55)
 
-[node name="RackShotgun4" type="MeshInstance3D" parent="StoreInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8, 1.5, -5.55)
-mesh = SubResource("BoxMesh_rack_shotgun")
+[node name="RackShotgun4" parent="StoreInterior" instance=ExtResource("47")]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 1.8, 1.5, -5.55)
 
 [node name="AmmoCrate1" type="MeshInstance3D" parent="StoreInterior"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.8, 0.35, 1.5)

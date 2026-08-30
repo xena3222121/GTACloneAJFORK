@@ -3,7 +3,7 @@ extends Area3D
 @export var weapon: String = "shotgun"
 @export var amount: int = 16
 
-@onready var mesh: MeshInstance3D = $Mesh
+@onready var mesh: Node3D = $Mesh
 
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)

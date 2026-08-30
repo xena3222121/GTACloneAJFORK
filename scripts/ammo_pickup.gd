@@ -3,7 +3,7 @@ extends Area3D
 const AMOUNT_MIN := 6
 const AMOUNT_MAX := 18
 
-@onready var mesh: MeshInstance3D = $Mesh
+@onready var mesh: Node3D = $Mesh
 
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)

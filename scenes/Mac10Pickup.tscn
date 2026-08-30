@@ -1,17 +1,7 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/weapon_pickup.gd" id="1"]
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mac10"]
-shading_mode = 0
-albedo_color = Color(0.12, 0.12, 0.14, 1)
-emission_enabled = true
-emission = Color(0.3, 0.6, 1, 1)
-emission_energy_multiplier = 1.2
-
-[sub_resource type="BoxMesh" id="BoxMesh_mac10"]
-material = SubResource("StandardMaterial3D_mac10")
-size = Vector3(0.4, 0.16, 0.14)
+[ext_resource type="PackedScene" path="res://assets/guns-pack/mac10.glb" id="2"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_mac10"]
 radius = 0.5
@@ -24,5 +14,6 @@ amount = 60
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("SphereShape3D_mac10")
 
-[node name="Mesh" type="MeshInstance3D" parent="."]
-mesh = SubResource("BoxMesh_mac10")
+[node name="Mesh" type="Node3D" parent="."]
+
+[node name="Model" parent="Mesh" instance=ExtResource("2")]
