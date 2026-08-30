@@ -27,7 +27,15 @@ const INVESTIGATE_GIVE_UP_TIME := 10.0
 const VEHICLE_HIT_MIN_SPEED := 2.0
 const VEHICLE_HIT_DAMAGE_PER_SPEED := 4.0
 const VEHICLE_HIT_MAX_DAMAGE := 80.0
-const VEHICLE_HIT_KNOCKBACK := 6.0
+# See launch() below - routed through the eject-stun pattern (matching
+# npc.gd) instead of a flat velocity add, since _process_hostile/
+# _process_investigate/_process_wander would otherwise overwrite
+# velocity.x/z the very next physics tick and the knockback would never
+# actually read as getting hit.
+const VEHICLE_HIT_KNOCKBACK_BASE := 5.0
+const VEHICLE_HIT_KNOCKBACK_PER_SPEED := 0.55
+const VEHICLE_HIT_LAUNCH_UP := 4.5
+const VEHICLE_HIT_STUN_TIME := 1.4
 const VEHICLE_HIT_COOLDOWN := 0.6
 
 const BLOOD_POOL := preload("res://scenes/BloodPool.tscn")
@@ -78,6 +86,7 @@ var investigate_timer := 0.0
 var fire_cooldown := 0.0
 var lost_sight_timer := 0.0
 var vehicle_hit_cooldown := 0.0
+var eject_stun_timer := 0.0
 # Set right before take_damage() by whatever actually dealt the hit - a cop
 # run over by ambient AI traffic (or shot by another cop's stray fire, if
 # that ever happens) shouldn't go hostile on the player or add heat.
@@ -187,12 +196,29 @@ func _pick_new_target() -> void:
 	var dist := randf() * WANDER_RADIUS
 	target_position = home_position + Vector3(cos(angle) * dist, 0, sin(angle) * dist)
 
+# Mirrors npc.gd's launch() - a car-hit impulse strong enough to send a cop
+# flying needs to survive at least a few frames without the movement AI
+# immediately overwriting velocity.x/z with its own.
+func launch(impulse: Vector3, stun_duration: float = 1.1) -> void:
+	velocity = impulse
+	eject_stun_timer = stun_duration
+
 func _physics_process(delta: float) -> void:
 	if dead:
 		return
 
 	fire_cooldown = max(0.0, fire_cooldown - delta)
 	vehicle_hit_cooldown = max(0.0, vehicle_hit_cooldown - delta)
+
+	if eject_stun_timer > 0.0:
+		eject_stun_timer -= delta
+		if not is_on_floor():
+			velocity.y -= gravity * delta
+		else:
+			velocity.y = 0.0
+		move_and_slide()
+		_check_vehicle_collisions()
+		return
 
 	if hostile and not siren_audio.playing:
 		siren_audio.stream = _make_siren_sound()
@@ -240,7 +266,9 @@ func _check_vehicle_collisions() -> void:
 			return
 		var away: Vector3 = global_position - collider.global_position
 		away.y = 0.0
-		velocity += (away.normalized() if away.length() > 0.01 else -collision.get_normal()) * VEHICLE_HIT_KNOCKBACK
+		var horizontal_dir: Vector3 = away.normalized() if away.length() > 0.01 else -collision.get_normal()
+		var knockback_speed: float = VEHICLE_HIT_KNOCKBACK_BASE + car_speed * VEHICLE_HIT_KNOCKBACK_PER_SPEED
+		launch(horizontal_dir * knockback_speed + Vector3(0, VEHICLE_HIT_LAUNCH_UP, 0), VEHICLE_HIT_STUN_TIME)
 		break
 
 # A wandering cop only joins an already-in-progress incident it happens to

@@ -11,8 +11,24 @@ var master_volume: float = 1.0 # 0..1 linear, applied to the Master bus
 var fullscreen: bool = false
 
 func _ready() -> void:
+	_setup_controller_ui_input()
 	_load()
 	_apply()
+
+# The engine's default ui_up/ui_down already include a d-pad/stick binding,
+# but ui_accept and ui_cancel ship with only keyboard events - so a
+# controller could navigate between a menu's buttons (see grab_focus calls
+# in player.gd/pause_menu.gd) but had no bound button that could actually
+# press one. Added once here rather than per-menu since every Control-based
+# menu in the game shares these two actions.
+func _setup_controller_ui_input() -> void:
+	var accept := InputEventJoypadButton.new()
+	accept.button_index = JOY_BUTTON_A # X on PlayStation, A on Xbox
+	InputMap.action_add_event("ui_accept", accept)
+
+	var cancel := InputEventJoypadButton.new()
+	cancel.button_index = JOY_BUTTON_B # Circle on PlayStation, B on Xbox
+	InputMap.action_add_event("ui_cancel", cancel)
 
 func _apply() -> void:
 	var bus_idx := AudioServer.get_bus_index("Master")

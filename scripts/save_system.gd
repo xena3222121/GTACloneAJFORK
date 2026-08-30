@@ -12,11 +12,10 @@ const SAVE_PATH := "user://savegame.json"
 # the fresh scene (and its Player) actually exists to load into.
 var load_on_next_ready := false
 
-# Where the player lands on a loaded game - just outside the safehouse door
-# (HouseEntrance's own position in World.tscn), matching classic GTA "you
-# wake up at the safehouse" behavior rather than trying to preserve exact
-# mid-street position/orientation across a session boundary.
-const LOAD_SPAWN_POSITION := Vector3(7.3, 1.0, 0.0)
+# Fallback only, if HouseEntrance somehow isn't found (see load_game below) -
+# its exterior door position, at actual ground height rather than the
+# door trigger's own chest-height y.
+const LOAD_SPAWN_POSITION := Vector3(7.3, 0.1, 0.0)
 
 func has_save() -> bool:
 	return FileAccess.file_exists(SAVE_PATH)
@@ -105,5 +104,16 @@ func load_game(player: Node) -> bool:
 		if tint.a > 0.0:
 			player._set_outfit_tint(tint)
 
-	player.global_position = LOAD_SPAWN_POSITION
+	# Wake up inside the safehouse itself (classic GTA "you wake up at the
+	# safehouse" behavior) rather than preserving exact mid-street
+	# position/orientation across a session boundary - going through
+	# enter_building() (instead of a bare position assignment) is what
+	# actually sets current_interior/exterior_return_position too, so
+	# pressing E to leave works immediately rather than the player being
+	# visually inside but the game still thinking they're outside.
+	var house_entrance := player.get_tree().current_scene.get_node_or_null("HouseEntrance")
+	if house_entrance and house_entrance.has_method("get_interior_spawn") and player.has_method("enter_building"):
+		player.enter_building(house_entrance, house_entrance.global_position)
+	else:
+		player.global_position = LOAD_SPAWN_POSITION
 	return true

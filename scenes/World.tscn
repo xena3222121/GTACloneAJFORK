@@ -48,6 +48,9 @@
 [ext_resource type="PackedScene" path="res://assets/guns-pack/pew.glb" id="49"]
 [ext_resource type="Script" path="res://scripts/ingredient_shelf.gd" id="50"]
 [ext_resource type="Script" path="res://scripts/pill_cook_station.gd" id="51"]
+[ext_resource type="Script" path="res://scripts/building_skin.gd" id="52"]
+[ext_resource type="PackedScene" path="res://scenes/HealthPack.tscn" id="53"]
+[ext_resource type="PackedScene" path="res://scenes/ArmorPickup.tscn" id="54"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
 sky_top_color = Color(0.3, 0.5, 0.85, 1)
@@ -303,28 +306,28 @@ size = Vector3(4, 1.1, 0.08)
 albedo_color = Color(0.24, 0.22, 0.2, 1)
 
 [sub_resource type="BoxMesh" id="BoxMesh_room_floor"]
-size = Vector3(12, 0.2, 12)
+size = Vector3(24, 0.2, 24)
 material = SubResource("StandardMaterial3D_room_floor")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_room_floor"]
-size = Vector3(12, 0.2, 12)
+size = Vector3(24, 0.2, 24)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_room_wall"]
 albedo_color = Color(0.58, 0.55, 0.5, 1)
 
 [sub_resource type="BoxMesh" id="BoxMesh_room_wall_ns"]
-size = Vector3(12, 3.5, 0.3)
+size = Vector3(24, 3.5, 0.3)
 material = SubResource("StandardMaterial3D_room_wall")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_room_wall_ns"]
-size = Vector3(12, 3.5, 0.3)
+size = Vector3(24, 3.5, 0.3)
 
 [sub_resource type="BoxMesh" id="BoxMesh_room_wall_ew"]
-size = Vector3(0.3, 3.5, 12)
+size = Vector3(0.3, 3.5, 24)
 material = SubResource("StandardMaterial3D_room_wall")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_room_wall_ew"]
-size = Vector3(0.3, 3.5, 12)
+size = Vector3(0.3, 3.5, 24)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_counter"]
 albedo_color = Color(0.32, 0.22, 0.14, 1)
@@ -332,6 +335,111 @@ albedo_color = Color(0.32, 0.22, 0.14, 1)
 [sub_resource type="BoxMesh" id="BoxMesh_counter"]
 size = Vector3(2, 1, 0.8)
 material = SubResource("StandardMaterial3D_counter")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wood"]
+albedo_color = Color(0.42, 0.28, 0.16, 1)
+roughness = 0.85
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fabric_dark"]
+albedo_color = Color(0.22, 0.24, 0.32, 1)
+roughness = 0.9
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_white_appliance"]
+albedo_color = Color(0.88, 0.88, 0.86, 1)
+roughness = 0.4
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_black_electronics"]
+albedo_color = Color(0.05, 0.05, 0.06, 1)
+roughness = 0.3
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rug"]
+albedo_color = Color(0.55, 0.15, 0.15, 1)
+roughness = 0.95
+
+[sub_resource type="BoxMesh" id="BoxMesh_bed_frame"]
+size = Vector3(2.2, 0.4, 3.2)
+material = SubResource("StandardMaterial3D_wood")
+
+[sub_resource type="BoxMesh" id="BoxMesh_bed_mattress"]
+size = Vector3(2.0, 0.3, 3.0)
+material = SubResource("StandardMaterial3D_white_appliance")
+
+[sub_resource type="BoxMesh" id="BoxMesh_pillow"]
+size = Vector3(0.7, 0.2, 0.5)
+material = SubResource("StandardMaterial3D_white_appliance")
+
+[sub_resource type="BoxMesh" id="BoxMesh_sofa_base"]
+size = Vector3(2.6, 0.5, 1.0)
+material = SubResource("StandardMaterial3D_fabric_dark")
+
+[sub_resource type="BoxMesh" id="BoxMesh_sofa_back"]
+size = Vector3(2.6, 0.6, 0.25)
+material = SubResource("StandardMaterial3D_fabric_dark")
+
+[sub_resource type="BoxMesh" id="BoxMesh_tv"]
+size = Vector3(1.6, 0.9, 0.1)
+material = SubResource("StandardMaterial3D_black_electronics")
+
+[sub_resource type="BoxMesh" id="BoxMesh_tv_stand"]
+size = Vector3(1.8, 0.5, 0.5)
+material = SubResource("StandardMaterial3D_wood")
+
+[sub_resource type="BoxMesh" id="BoxMesh_bookshelf"]
+size = Vector3(1.4, 2.2, 0.4)
+material = SubResource("StandardMaterial3D_wood")
+
+[sub_resource type="BoxMesh" id="BoxMesh_kitchen_counter"]
+size = Vector3(3.0, 1.0, 0.7)
+material = SubResource("StandardMaterial3D_wood")
+
+[sub_resource type="BoxMesh" id="BoxMesh_fridge"]
+size = Vector3(0.9, 1.8, 0.8)
+material = SubResource("StandardMaterial3D_white_appliance")
+
+[sub_resource type="BoxMesh" id="BoxMesh_rug"]
+size = Vector3(4.0, 0.03, 3.0)
+material = SubResource("StandardMaterial3D_rug")
+
+[sub_resource type="BoxMesh" id="BoxMesh_aisle_shelf"]
+size = Vector3(3.5, 1.8, 0.6)
+material = SubResource("StandardMaterial3D_wood")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_product_a"]
+albedo_color = Color(0.85, 0.15, 0.15, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_product_b"]
+albedo_color = Color(0.15, 0.55, 0.85, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_product_c"]
+albedo_color = Color(0.85, 0.75, 0.15, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_product_box"]
+size = Vector3(0.35, 0.35, 0.3)
+material = SubResource("StandardMaterial3D_product_a")
+
+[sub_resource type="BoxMesh" id="BoxMesh_bar_table"]
+size = Vector3(1.0, 0.75, 1.0)
+material = SubResource("StandardMaterial3D_wood")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_stool"]
+albedo_color = Color(0.3, 0.2, 0.12, 1)
+roughness = 0.8
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_stool"]
+top_radius = 0.25
+bottom_radius = 0.2
+height = 0.75
+material = SubResource("StandardMaterial3D_stool")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jukebox"]
+albedo_color = Color(0.7, 0.1, 0.15, 1)
+emission_enabled = true
+emission = Color(1, 0.3, 0.1, 1)
+emission_energy_multiplier = 0.6
+
+[sub_resource type="BoxMesh" id="BoxMesh_jukebox"]
+size = Vector3(0.9, 1.6, 0.6)
+material = SubResource("StandardMaterial3D_jukebox")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_shop_a"]
 size = Vector3(4.42, 6.47, 4.7)
@@ -357,11 +465,11 @@ roughness = 0.9
 albedo_color = Color(0.08, 0.08, 0.09, 1)
 
 [sub_resource type="BoxMesh" id="BoxMesh_gunstore_ceiling"]
-size = Vector3(12, 0.2, 12)
+size = Vector3(24, 0.2, 24)
 material = SubResource("StandardMaterial3D_gunstore_ceiling")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_gunstore_ceiling"]
-size = Vector3(12, 0.2, 12)
+size = Vector3(24, 0.2, 24)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gunrack_frame"]
 albedo_color = Color(0.22, 0.2, 0.18, 1)
@@ -391,6 +499,54 @@ roughness = 0.9
 [sub_resource type="BoxMesh" id="BoxMesh_gunstore_crate"]
 size = Vector3(0.9, 0.7, 0.6)
 material = SubResource("StandardMaterial3D_gunstore_crate")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_marquee_bg"]
+albedo_color = Color(0.08, 0.08, 0.08, 1)
+roughness = 0.6
+
+[sub_resource type="BoxMesh" id="BoxMesh_club_marquee"]
+size = Vector3(3.6, 0.9, 0.15)
+material = SubResource("StandardMaterial3D_marquee_bg")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_post"]
+albedo_color = Color(0.3, 0.28, 0.24, 1)
+roughness = 0.9
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_mailbox_post"]
+top_radius = 0.05
+bottom_radius = 0.05
+height = 1.0
+material = SubResource("StandardMaterial3D_post")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mailbox_box"]
+albedo_color = Color(0.15, 0.35, 0.55, 1)
+roughness = 0.6
+
+[sub_resource type="BoxMesh" id="BoxMesh_mailbox_box"]
+size = Vector3(0.35, 0.25, 0.55)
+material = SubResource("StandardMaterial3D_mailbox_box")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_home_sign_bg"]
+albedo_color = Color(0.42, 0.24, 0.14, 1)
+roughness = 0.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_home_sign"]
+size = Vector3(1.4, 0.6, 0.1)
+material = SubResource("StandardMaterial3D_home_sign_bg")
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_home_sign_post"]
+top_radius = 0.06
+bottom_radius = 0.06
+height = 1.6
+material = SubResource("StandardMaterial3D_post")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_carpet"]
+albedo_color = Color(0.85, 0.1, 0.45, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_carpet"]
+size = Vector3(3.0, 0.03, 1.4)
+material = SubResource("StandardMaterial3D_carpet")
 
 [sub_resource type="BoxMesh" id="BoxMesh_streetlight_pole"]
 material = SubResource("StandardMaterial3D_highway_pole")
@@ -3263,6 +3419,38 @@ pixel_size = 0.08
 modulate = Color(0.5, 1, 0.6, 1)
 text = "Safehouse"
 
+[node name="PorchLight" type="OmniLight3D" parent="HouseEntrance"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4, 0.3, 0)
+light_color = Color(0.6, 1, 0.7, 1)
+light_energy = 1.2
+omni_range = 5.0
+
+[node name="HomeSignPost" type="MeshInstance3D" parent="HouseEntrance"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, -0.2, 2.0)
+mesh = SubResource("CylinderMesh_home_sign_post")
+
+[node name="HomeSign" type="MeshInstance3D" parent="HouseEntrance"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -2.5, 0.6, 2.0)
+mesh = SubResource("BoxMesh_home_sign")
+
+[node name="HomeSignLabel" type="Label3D" parent="HouseEntrance/HomeSign"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.1)
+billboard = 1
+no_depth_test = true
+font_size = 40
+outline_size = 8
+pixel_size = 0.01
+modulate = Color(0.6, 1, 0.7, 1)
+text = "HOME"
+
+[node name="MailboxPost" type="MeshInstance3D" parent="HouseEntrance"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.8, -0.5, 4.0)
+mesh = SubResource("CylinderMesh_mailbox_post")
+
+[node name="MailboxBox" type="MeshInstance3D" parent="HouseEntrance"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.8, 0.1, 4.0)
+mesh = SubResource("BoxMesh_mailbox_box")
+
 [node name="Shops" type="Node3D" parent="."]
 
 [node name="GeneralStore" type="StaticBody3D" parent="Shops"]
@@ -3274,6 +3462,9 @@ shape = SubResource("BoxShape3D_shop_a")
 
 [node name="Model" parent="Shops/GeneralStore" instance=ExtResource("26")]
 transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 0, 0)
+script = ExtResource("52")
+albedo = Color(0.62, 0.56, 0.42, 1)
+roughness = 0.9
 
 [node name="Entrance" type="Area3D" parent="Shops/GeneralStore"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.8, 1, 0)
@@ -3294,6 +3485,32 @@ outline_size = 12
 pixel_size = 0.08
 text = "Gun Store"
 
+[node name="Marquee" type="MeshInstance3D" parent="Shops/GeneralStore"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 2.6, 5.6, 0)
+mesh = SubResource("BoxMesh_gunstore_sign")
+
+[node name="MarqueeLabel" type="Label3D" parent="Shops/GeneralStore/Marquee"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.1)
+billboard = 1
+no_depth_test = true
+font_size = 48
+outline_size = 10
+pixel_size = 0.01
+modulate = Color(0.95, 0.15, 0.1, 1)
+text = "GUNS & AMMO"
+
+[node name="MarqueeLight" type="OmniLight3D" parent="Shops/GeneralStore"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.8, 5.6, 0)
+light_color = Color(1, 0.9, 0.75, 1)
+light_energy = 1.4
+omni_range = 6.0
+
+[node name="DoorLight" type="OmniLight3D" parent="Shops/GeneralStore"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.6, 2.2, 0)
+light_color = Color(1, 0.85, 0.6, 1)
+light_energy = 1.0
+omni_range = 4.5
+
 [node name="ConvenienceStore" type="StaticBody3D" parent="Shops"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35, 0, 0)
 
@@ -3303,6 +3520,9 @@ shape = SubResource("BoxShape3D_shop_b")
 
 [node name="Model" parent="Shops/ConvenienceStore" instance=ExtResource("27")]
 transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 0, 0)
+script = ExtResource("52")
+albedo = Color(0.82, 0.76, 0.52, 1)
+roughness = 0.85
 
 [node name="Entrance" type="Area3D" parent="Shops/ConvenienceStore"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 1, 0)
@@ -3332,6 +3552,9 @@ shape = SubResource("BoxShape3D_shop_c")
 
 [node name="Model" parent="Shops/Bar" instance=ExtResource("28")]
 transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 0, 0)
+script = ExtResource("52")
+albedo = Color(0.4, 0.16, 0.13, 1)
+roughness = 0.9
 
 [node name="Entrance" type="Area3D" parent="Shops/Bar"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.8, 1, 0)
@@ -3361,6 +3584,9 @@ shape = SubResource("BoxShape3D_shop_a")
 
 [node name="Model" parent="Shops/NightClub" instance=ExtResource("26")]
 transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 0, 0)
+script = ExtResource("52")
+albedo = Color(0.09, 0.08, 0.11, 1)
+roughness = 0.5
 
 [node name="Entrance" type="Area3D" parent="Shops/NightClub"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.8, 1, 0)
@@ -3413,6 +3639,42 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 3.85, 0)
 mesh = SubResource("BoxMesh_rainbow_stripe")
 surface_material_override/0 = SubResource("StandardMaterial3D_rainbow_violet")
 
+[node name="Marquee" type="MeshInstance3D" parent="Shops/NightClub"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 3, 6.0, 0)
+mesh = SubResource("BoxMesh_club_marquee")
+
+[node name="MarqueeLabel" type="Label3D" parent="Shops/NightClub/Marquee"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.15)
+billboard = 1
+no_depth_test = true
+font_size = 56
+outline_size = 12
+pixel_size = 0.012
+modulate = Color(1, 0.4, 0.85, 1)
+text = "PRISM"
+
+[node name="MarqueeGlow" type="OmniLight3D" parent="Shops/NightClub"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.2, 6.0, 0)
+light_color = Color(1, 0.3, 0.8, 1)
+light_energy = 1.3
+omni_range = 6.0
+
+[node name="UplightPink" type="OmniLight3D" parent="Shops/NightClub"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 0.4, -1.6)
+light_color = Color(1, 0.2, 0.75, 1)
+light_energy = 1.6
+omni_range = 5.0
+
+[node name="UplightCyan" type="OmniLight3D" parent="Shops/NightClub"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 0.4, 1.6)
+light_color = Color(0.2, 0.85, 1, 1)
+light_energy = 1.6
+omni_range = 5.0
+
+[node name="EntryCarpet" type="MeshInstance3D" parent="Shops/NightClub"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.3, 0.05, 0)
+mesh = SubResource("BoxMesh_carpet")
+
 [node name="HouseInterior" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1000, 0, 0)
 
@@ -3426,7 +3688,7 @@ shape = SubResource("BoxShape3D_room_floor")
 mesh = SubResource("BoxMesh_room_floor")
 
 [node name="WallN" type="StaticBody3D" parent="HouseInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, -6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, -12)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HouseInterior/WallN"]
 shape = SubResource("BoxShape3D_room_wall_ns")
@@ -3435,7 +3697,7 @@ shape = SubResource("BoxShape3D_room_wall_ns")
 mesh = SubResource("BoxMesh_room_wall_ns")
 
 [node name="WallS" type="StaticBody3D" parent="HouseInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 12)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HouseInterior/WallS"]
 shape = SubResource("BoxShape3D_room_wall_ns")
@@ -3444,7 +3706,7 @@ shape = SubResource("BoxShape3D_room_wall_ns")
 mesh = SubResource("BoxMesh_room_wall_ns")
 
 [node name="WallE" type="StaticBody3D" parent="HouseInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1.75, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HouseInterior/WallE"]
 shape = SubResource("BoxShape3D_room_wall_ew")
@@ -3453,7 +3715,7 @@ shape = SubResource("BoxShape3D_room_wall_ew")
 mesh = SubResource("BoxMesh_room_wall_ew")
 
 [node name="WallW" type="StaticBody3D" parent="HouseInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 1.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 1.75, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HouseInterior/WallW"]
 shape = SubResource("BoxShape3D_room_wall_ew")
@@ -3463,17 +3725,17 @@ mesh = SubResource("BoxMesh_room_wall_ew")
 
 [node name="HouseSpawn" type="Marker3D" parent="HouseInterior"]
 unique_name_in_owner = true
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.1, 4)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.1, 10)
 
 [node name="CookStation" type="Area3D" parent="HouseInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -4.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 1, -9)
 script = ExtResource("30")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HouseInterior/CookStation"]
 shape = SubResource("SphereShape3D_interact")
 
 [node name="SavePoint" type="Area3D" parent="HouseInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 1, 6)
 script = ExtResource("37")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HouseInterior/SavePoint"]
@@ -3483,7 +3745,7 @@ shape = SubResource("SphereShape3D_interact")
 mesh = SubResource("BoxMesh_counter")
 
 [node name="JobBoard" type="Area3D" parent="HouseInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 1, 6)
 script = ExtResource("38")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HouseInterior/JobBoard"]
@@ -3493,23 +3755,67 @@ shape = SubResource("SphereShape3D_interact")
 mesh = SubResource("BoxMesh_counter")
 
 [node name="WeedPlot" type="Area3D" parent="HouseInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1, -4.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 1, -5)
 script = ExtResource("39")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HouseInterior/WeedPlot"]
 shape = SubResource("SphereShape3D_interact")
 
 [node name="PillCookStation" type="Area3D" parent="HouseInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1, -4.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 1, -9)
 script = ExtResource("51")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HouseInterior/PillCookStation"]
 shape = SubResource("SphereShape3D_interact")
 
 [node name="Dealer" parent="HouseInterior" instance=ExtResource("7")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 2)
 is_dealer = true
 wanders = false
+
+[node name="BedFrame" type="MeshInstance3D" parent="HouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0.2, 9)
+mesh = SubResource("BoxMesh_bed_frame")
+
+[node name="BedMattress" type="MeshInstance3D" parent="HouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0.55, 9)
+mesh = SubResource("BoxMesh_bed_mattress")
+
+[node name="BedPillow" type="MeshInstance3D" parent="HouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0.75, 7.7)
+mesh = SubResource("BoxMesh_pillow")
+
+[node name="Bookshelf" type="MeshInstance3D" parent="HouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.5, 1.1, 9)
+mesh = SubResource("BoxMesh_bookshelf")
+
+[node name="SofaBase" type="MeshInstance3D" parent="HouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 5)
+mesh = SubResource("BoxMesh_sofa_base")
+
+[node name="SofaBack" type="MeshInstance3D" parent="HouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 5.6)
+mesh = SubResource("BoxMesh_sofa_back")
+
+[node name="TVStand" type="MeshInstance3D" parent="HouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -11.5)
+mesh = SubResource("BoxMesh_tv_stand")
+
+[node name="TV" type="MeshInstance3D" parent="HouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, -11.6)
+mesh = SubResource("BoxMesh_tv")
+
+[node name="LivingRoomRug" type="MeshInstance3D" parent="HouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 2)
+mesh = SubResource("BoxMesh_rug")
+
+[node name="KitchenCounter" type="MeshInstance3D" parent="HouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 1, -11.4)
+mesh = SubResource("BoxMesh_kitchen_counter")
+
+[node name="Fridge" type="MeshInstance3D" parent="HouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 1.1, -11.5)
+mesh = SubResource("BoxMesh_fridge")
 
 [node name="StoreInterior" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1060, 0, 0)
@@ -3525,7 +3831,7 @@ mesh = SubResource("BoxMesh_room_floor")
 surface_material_override/0 = SubResource("StandardMaterial3D_gunstore_floor")
 
 [node name="WallN" type="StaticBody3D" parent="StoreInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, -6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, -12)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="StoreInterior/WallN"]
 shape = SubResource("BoxShape3D_room_wall_ns")
@@ -3535,7 +3841,7 @@ mesh = SubResource("BoxMesh_room_wall_ns")
 surface_material_override/0 = SubResource("StandardMaterial3D_gunstore_wall")
 
 [node name="WallS" type="StaticBody3D" parent="StoreInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 12)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="StoreInterior/WallS"]
 shape = SubResource("BoxShape3D_room_wall_ns")
@@ -3545,7 +3851,7 @@ mesh = SubResource("BoxMesh_room_wall_ns")
 surface_material_override/0 = SubResource("StandardMaterial3D_gunstore_wall")
 
 [node name="WallE" type="StaticBody3D" parent="StoreInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1.75, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="StoreInterior/WallE"]
 shape = SubResource("BoxShape3D_room_wall_ew")
@@ -3555,7 +3861,7 @@ mesh = SubResource("BoxMesh_room_wall_ew")
 surface_material_override/0 = SubResource("StandardMaterial3D_gunstore_wall")
 
 [node name="WallW" type="StaticBody3D" parent="StoreInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 1.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 1.75, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="StoreInterior/WallW"]
 shape = SubResource("BoxShape3D_room_wall_ew")
@@ -3680,6 +3986,54 @@ shape = SubResource("SphereShape3D_interact")
 [node name="Mesh" type="MeshInstance3D" parent="StoreInterior/HorseSemenShelf"]
 mesh = SubResource("BoxMesh_counter")
 
+[node name="LightC" type="OmniLight3D" parent="StoreInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 3.2, -9)
+light_color = Color(1, 0.95, 0.85, 1)
+light_energy = 1.2
+omni_range = 8.0
+
+[node name="LightD" type="OmniLight3D" parent="StoreInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 3.2, 9)
+light_color = Color(1, 0.95, 0.85, 1)
+light_energy = 1.2
+omni_range = 8.0
+
+[node name="AmmoCrate3" type="MeshInstance3D" parent="StoreInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 0.35, -10)
+mesh = SubResource("BoxMesh_gunstore_crate")
+
+[node name="AmmoCrate4" type="MeshInstance3D" parent="StoreInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0.35, 10)
+mesh = SubResource("BoxMesh_gunstore_crate")
+
+[node name="AmmoCrate5" type="MeshInstance3D" parent="StoreInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 0.35, 10)
+mesh = SubResource("BoxMesh_gunstore_crate")
+
+[node name="EntryRug" type="MeshInstance3D" parent="StoreInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 9)
+mesh = SubResource("BoxMesh_rug")
+
+[node name="SideRackFrame" type="MeshInstance3D" parent="StoreInterior"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -11.5, 2.0, 0)
+mesh = SubResource("BoxMesh_gunrack_frame")
+
+[node name="SideRackShelf" type="MeshInstance3D" parent="StoreInterior"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -11.3, 2.6, 0)
+mesh = SubResource("BoxMesh_gunrack_shelf")
+
+[node name="SideRackShotgun1" parent="StoreInterior" instance=ExtResource("47")]
+transform = Transform3D(0, 0, 3, 0, 3, 0, -3, 0, 0, -11.25, 2.7, -1.8)
+
+[node name="SideRackPistol1" parent="StoreInterior" instance=ExtResource("49")]
+transform = Transform3D(0, 0, 3, 0, 3, 0, -3, 0, 0, -11.25, 2.7, -0.6)
+
+[node name="SideRackMac10_1" parent="StoreInterior" instance=ExtResource("48")]
+transform = Transform3D(0, 0, 3, 0, 3, 0, -3, 0, 0, -11.25, 2.7, 0.6)
+
+[node name="SideRackShotgun2" parent="StoreInterior" instance=ExtResource("47")]
+transform = Transform3D(0, 0, 3, 0, 3, 0, -3, 0, 0, -11.25, 2.7, 1.8)
+
 [node name="ConvenienceInterior" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1120, 0, 0)
 
@@ -3693,7 +4047,7 @@ shape = SubResource("BoxShape3D_room_floor")
 mesh = SubResource("BoxMesh_room_floor")
 
 [node name="WallN" type="StaticBody3D" parent="ConvenienceInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, -6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, -12)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="ConvenienceInterior/WallN"]
 shape = SubResource("BoxShape3D_room_wall_ns")
@@ -3702,7 +4056,7 @@ shape = SubResource("BoxShape3D_room_wall_ns")
 mesh = SubResource("BoxMesh_room_wall_ns")
 
 [node name="WallS" type="StaticBody3D" parent="ConvenienceInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 12)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="ConvenienceInterior/WallS"]
 shape = SubResource("BoxShape3D_room_wall_ns")
@@ -3711,7 +4065,7 @@ shape = SubResource("BoxShape3D_room_wall_ns")
 mesh = SubResource("BoxMesh_room_wall_ns")
 
 [node name="WallE" type="StaticBody3D" parent="ConvenienceInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1.75, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="ConvenienceInterior/WallE"]
 shape = SubResource("BoxShape3D_room_wall_ew")
@@ -3720,7 +4074,7 @@ shape = SubResource("BoxShape3D_room_wall_ew")
 mesh = SubResource("BoxMesh_room_wall_ew")
 
 [node name="WallW" type="StaticBody3D" parent="ConvenienceInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 1.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 1.75, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="ConvenienceInterior/WallW"]
 shape = SubResource("BoxShape3D_room_wall_ew")
@@ -3768,6 +4122,72 @@ shape = SubResource("SphereShape3D_interact")
 [node name="Mesh" type="MeshInstance3D" parent="ConvenienceInterior/HorseSemenShelf"]
 mesh = SubResource("BoxMesh_counter")
 
+[node name="LightA" type="OmniLight3D" parent="ConvenienceInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 3.2, 0)
+light_color = Color(1, 0.95, 0.85, 1)
+light_energy = 1.3
+omni_range = 10.0
+
+[node name="LightB" type="OmniLight3D" parent="ConvenienceInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 3.2, 0)
+light_color = Color(1, 0.95, 0.85, 1)
+light_energy = 1.3
+omni_range = 10.0
+
+[node name="LightC" type="OmniLight3D" parent="ConvenienceInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.2, 8)
+light_color = Color(1, 0.95, 0.85, 1)
+light_energy = 1.2
+omni_range = 8.0
+
+[node name="AisleShelf1" type="MeshInstance3D" parent="ConvenienceInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0.9, 3)
+mesh = SubResource("BoxMesh_aisle_shelf")
+
+[node name="AisleShelf1Products" type="MeshInstance3D" parent="ConvenienceInterior/AisleShelf1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2, 0.55, 0.15)
+mesh = SubResource("BoxMesh_product_box")
+
+[node name="AisleShelf1Products2" type="MeshInstance3D" parent="ConvenienceInterior/AisleShelf1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0.15)
+mesh = SubResource("BoxMesh_product_box")
+surface_material_override/0 = SubResource("StandardMaterial3D_product_b")
+
+[node name="AisleShelf1Products3" type="MeshInstance3D" parent="ConvenienceInterior/AisleShelf1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.2, 0.55, 0.15)
+mesh = SubResource("BoxMesh_product_box")
+surface_material_override/0 = SubResource("StandardMaterial3D_product_c")
+
+[node name="AisleShelf2" type="MeshInstance3D" parent="ConvenienceInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0.9, 3)
+mesh = SubResource("BoxMesh_aisle_shelf")
+
+[node name="AisleShelf2Products" type="MeshInstance3D" parent="ConvenienceInterior/AisleShelf2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2, 0.55, 0.15)
+mesh = SubResource("BoxMesh_product_box")
+surface_material_override/0 = SubResource("StandardMaterial3D_product_c")
+
+[node name="AisleShelf2Products2" type="MeshInstance3D" parent="ConvenienceInterior/AisleShelf2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0.15)
+mesh = SubResource("BoxMesh_product_box")
+
+[node name="AisleShelf2Products3" type="MeshInstance3D" parent="ConvenienceInterior/AisleShelf2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.2, 0.55, 0.15)
+mesh = SubResource("BoxMesh_product_box")
+surface_material_override/0 = SubResource("StandardMaterial3D_product_b")
+
+[node name="Cooler" type="MeshInstance3D" parent="ConvenienceInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.5, 1.1, -8)
+mesh = SubResource("BoxMesh_fridge")
+
+[node name="Cooler2" type="MeshInstance3D" parent="ConvenienceInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.5, 1.1, -6)
+mesh = SubResource("BoxMesh_fridge")
+
+[node name="EntryRug" type="MeshInstance3D" parent="ConvenienceInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 9)
+mesh = SubResource("BoxMesh_rug")
+
 [node name="BarInterior" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1180, 0, 0)
 
@@ -3781,7 +4201,7 @@ shape = SubResource("BoxShape3D_room_floor")
 mesh = SubResource("BoxMesh_room_floor")
 
 [node name="WallN" type="StaticBody3D" parent="BarInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, -6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, -12)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="BarInterior/WallN"]
 shape = SubResource("BoxShape3D_room_wall_ns")
@@ -3790,7 +4210,7 @@ shape = SubResource("BoxShape3D_room_wall_ns")
 mesh = SubResource("BoxMesh_room_wall_ns")
 
 [node name="WallS" type="StaticBody3D" parent="BarInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 12)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="BarInterior/WallS"]
 shape = SubResource("BoxShape3D_room_wall_ns")
@@ -3799,7 +4219,7 @@ shape = SubResource("BoxShape3D_room_wall_ns")
 mesh = SubResource("BoxMesh_room_wall_ns")
 
 [node name="WallE" type="StaticBody3D" parent="BarInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1.75, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="BarInterior/WallE"]
 shape = SubResource("BoxShape3D_room_wall_ew")
@@ -3808,7 +4228,7 @@ shape = SubResource("BoxShape3D_room_wall_ew")
 mesh = SubResource("BoxMesh_room_wall_ew")
 
 [node name="WallW" type="StaticBody3D" parent="BarInterior"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 1.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 1.75, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="BarInterior/WallW"]
 shape = SubResource("BoxShape3D_room_wall_ew")
@@ -3850,6 +4270,76 @@ shape = SubResource("SphereShape3D_interact")
 
 [node name="Mesh" type="MeshInstance3D" parent="BarInterior/HorseSemenShelf"]
 mesh = SubResource("BoxMesh_counter")
+
+[node name="LightA" type="OmniLight3D" parent="BarInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 3.2, 4)
+light_color = Color(1, 0.75, 0.55, 1)
+light_energy = 1.1
+omni_range = 9.0
+
+[node name="LightB" type="OmniLight3D" parent="BarInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 3.2, 4)
+light_color = Color(1, 0.75, 0.55, 1)
+light_energy = 1.1
+omni_range = 9.0
+
+[node name="LightC" type="OmniLight3D" parent="BarInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.2, -8)
+light_color = Color(1, 0.75, 0.55, 1)
+light_energy = 1.0
+omni_range = 8.0
+
+[node name="Jukebox" type="MeshInstance3D" parent="BarInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.5, 0.8, -10.5)
+mesh = SubResource("BoxMesh_jukebox")
+
+[node name="Table1" type="MeshInstance3D" parent="BarInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0.375, 2)
+mesh = SubResource("BoxMesh_bar_table")
+
+[node name="Stool1A" type="MeshInstance3D" parent="BarInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.9, 0.375, 2)
+mesh = SubResource("CylinderMesh_stool")
+
+[node name="Stool1B" type="MeshInstance3D" parent="BarInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.1, 0.375, 2)
+mesh = SubResource("CylinderMesh_stool")
+
+[node name="Table2" type="MeshInstance3D" parent="BarInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0.375, 2)
+mesh = SubResource("BoxMesh_bar_table")
+
+[node name="Stool2A" type="MeshInstance3D" parent="BarInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.1, 0.375, 2)
+mesh = SubResource("CylinderMesh_stool")
+
+[node name="Stool2B" type="MeshInstance3D" parent="BarInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.9, 0.375, 2)
+mesh = SubResource("CylinderMesh_stool")
+
+[node name="Table3" type="MeshInstance3D" parent="BarInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.375, 9)
+mesh = SubResource("BoxMesh_bar_table")
+
+[node name="Stool3A" type="MeshInstance3D" parent="BarInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.9, 0.375, 9)
+mesh = SubResource("CylinderMesh_stool")
+
+[node name="Stool3B" type="MeshInstance3D" parent="BarInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.9, 0.375, 9)
+mesh = SubResource("CylinderMesh_stool")
+
+[node name="EntryRug" type="MeshInstance3D" parent="BarInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 9)
+mesh = SubResource("BoxMesh_rug")
+
+[node name="Patron3" parent="BarInterior" instance=ExtResource("9")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0.1, -3)
+is_bar_patron = true
+
+[node name="Patron4" parent="BarInterior" instance=ExtResource("10")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0.1, -3)
+is_bar_patron = true
 
 [node name="Light_n35_E" type="MeshInstance3D" parent="Street"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2.5, -35)
@@ -4639,6 +5129,9 @@ shape = SubResource("BoxShape3D_shop_a")
 
 [node name="Model" parent="Downtown/DowntownBuildingA" instance=ExtResource("26")]
 transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 0, 0)
+script = ExtResource("52")
+albedo = Color(0.58, 0.58, 0.6, 1)
+roughness = 0.8
 
 [node name="DowntownBuildingB" type="StaticBody3D" parent="Downtown"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 0, 108)
@@ -4649,6 +5142,10 @@ shape = SubResource("BoxShape3D_shop_b")
 
 [node name="Model" parent="Downtown/DowntownBuildingB" instance=ExtResource("27")]
 transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 0, 0)
+script = ExtResource("52")
+albedo = Color(0.32, 0.4, 0.48, 1)
+roughness = 0.3
+metallic = 0.3
 
 [node name="DowntownBuildingC" type="StaticBody3D" parent="Downtown"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 0, 121)
@@ -4659,6 +5156,9 @@ shape = SubResource("BoxShape3D_shop_c")
 
 [node name="Model" parent="Downtown/DowntownBuildingC" instance=ExtResource("28")]
 transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 0, 0)
+script = ExtResource("52")
+albedo = Color(0.62, 0.5, 0.38, 1)
+roughness = 0.85
 
 [node name="DowntownBuildingD" type="StaticBody3D" parent="Downtown"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0, 138)
@@ -4669,6 +5169,9 @@ shape = SubResource("BoxShape3D_shop_a")
 
 [node name="Model" parent="Downtown/DowntownBuildingD" instance=ExtResource("26")]
 transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 0, 0)
+script = ExtResource("52")
+albedo = Color(0.4, 0.38, 0.36, 1)
+roughness = 0.9
 
 [node name="DowntownBuildingE" type="StaticBody3D" parent="Downtown"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0, 138)
@@ -4679,6 +5182,10 @@ shape = SubResource("BoxShape3D_shop_b")
 
 [node name="Model" parent="Downtown/DowntownBuildingE" instance=ExtResource("27")]
 transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 0, 0)
+script = ExtResource("52")
+albedo = Color(0.26, 0.32, 0.38, 1)
+roughness = 0.25
+metallic = 0.4
 
 [node name="DowntownBuildingF" type="StaticBody3D" parent="Downtown"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0, 138)
@@ -4689,6 +5196,9 @@ shape = SubResource("BoxShape3D_shop_c")
 
 [node name="Model" parent="Downtown/DowntownBuildingF" instance=ExtResource("28")]
 transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 0, 0)
+script = ExtResource("52")
+albedo = Color(0.5, 0.46, 0.4, 1)
+roughness = 0.8
 
 [node name="ShowroomCamaro" type="StaticBody3D" parent="Downtown"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 100)
@@ -5025,3 +5535,41 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0.1, 4)
 is_bar_patron = true
 chatter_clips_dir = "res://Audio/Arnold/NPC Random In Gay Club/"
 is_club_patron = true
+
+[node name="Pickups" type="Node3D" parent="."]
+
+[node name="HealthPack1" parent="Pickups" instance=ExtResource("53")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.9, 0.5, -20)
+
+[node name="HealthPack2" parent="Pickups" instance=ExtResource("53")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.9, 0.5, 10)
+
+[node name="HealthPack3" parent="Pickups" instance=ExtResource("53")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65.9, 0.5, -20)
+
+[node name="HealthPack4" parent="Pickups" instance=ExtResource("53")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 58.1, 0.5, 10)
+
+[node name="HealthPack5" parent="Pickups" instance=ExtResource("53")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.5, 39)
+
+[node name="HealthPack6" parent="Pickups" instance=ExtResource("53")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 118.1, 0.5, 10)
+
+[node name="HealthPack7" parent="Pickups" instance=ExtResource("53")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0.5, 115)
+
+[node name="ArmorPickup1" parent="Pickups" instance=ExtResource("54")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.9, 0.5, 38)
+
+[node name="ArmorPickup2" parent="Pickups" instance=ExtResource("54")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 68, 0.5, 39)
+
+[node name="ArmorPickup3" parent="Pickups" instance=ExtResource("54")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 125.9, 0.5, -20)
+
+[node name="ArmorPickup4" parent="Pickups" instance=ExtResource("54")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 120, 0.5, 39)
+
+[node name="ArmorPickup5" parent="Pickups" instance=ExtResource("54")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 130)

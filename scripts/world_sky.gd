@@ -23,11 +23,23 @@ const NIGHT_SUN_ENERGY := 0.05
 # that doesn't exist yet - by the time THIS node's _ready() runs, every
 # descendant (Player included) has already had its own _ready() called.
 func _ready() -> void:
+	var player := get_tree().get_first_node_in_group("player")
 	if SaveSystem.load_on_next_ready:
 		SaveSystem.load_on_next_ready = false
-		var player := get_tree().get_first_node_in_group("player")
 		if player:
 			SaveSystem.load_game(player)
+	elif player:
+		# New Game used to drop the player at whatever spot Player.tscn's
+		# own baked transform happened to be (out in the open street) -
+		# occasionally right on top of a wandering civilian. Spawning
+		# inside the safehouse instead is always clear and matches
+		# Continue's own "wake up at the safehouse" spawn.
+		_spawn_in_house(player)
+
+func _spawn_in_house(player: Node) -> void:
+	var house_entrance := get_node_or_null("HouseEntrance")
+	if house_entrance and house_entrance.has_method("get_interior_spawn") and player.has_method("enter_building"):
+		player.enter_building(house_entrance, house_entrance.global_position)
 
 func _process(_delta: float) -> void:
 	var t: float = DayNightCycle.time_of_day

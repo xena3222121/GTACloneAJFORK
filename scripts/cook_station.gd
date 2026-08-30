@@ -3,7 +3,9 @@ extends Area3D
 const COOK_TIME := 8.0
 const YIELD_MIN := 3
 const YIELD_MAX := 6
-const IDLE_PROMPT := "Press E to cook a batch"
+const COOK_COST := 5
+const IDLE_PROMPT := "Press E to cook a batch - $%d" % COOK_COST
+const NO_MONEY_PROMPT := "Need $%d to cook a batch" % COOK_COST
 
 const POT_COLOR := Color(0.22, 0.24, 0.22)
 const CONTENTS_COLOR := Color(0.32, 0.55, 0.2)
@@ -94,6 +96,10 @@ func _process(delta: float) -> void:
 func interact(player: Node3D) -> void:
 	if cooking:
 		return
+	if player.get("money") == null or player.money < COOK_COST:
+		prompt_text = NO_MONEY_PROMPT
+		return
+	player.add_money(-COOK_COST)
 	cooking = true
 	cook_timer = COOK_TIME
 	bob_time = 0.0

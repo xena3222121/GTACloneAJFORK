@@ -9,6 +9,7 @@
 [ext_resource type="Script" path="res://scripts/minimap_camera.gd" id="5"]
 [ext_resource type="Script" path="res://scripts/pause_menu.gd" id="6"]
 [ext_resource type="PackedScene" path="res://scenes/SettingsMenu.tscn" id="7"]
+[ext_resource type="Theme" path="res://themes/game_theme.tres" id="11"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
 radius = 0.4
@@ -54,6 +55,20 @@ corner_radius_bottom_right = 4
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_fill"]
 bg_color = Color(0.85, 0.15, 0.1, 0.95)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_armor_bg"]
+bg_color = Color(0.1, 0.1, 0.1, 0.75)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_armor_fill"]
+bg_color = Color(0.2, 0.45, 0.85, 0.95)
 corner_radius_top_left = 4
 corner_radius_top_right = 4
 corner_radius_bottom_left = 4
@@ -257,13 +272,25 @@ theme_override_styles/fill = SubResource("StyleBoxFlat_health_fill")
 value = 100.0
 show_percentage = false
 
+[node name="ArmorBar" type="ProgressBar" parent="HUD"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 20.0
+offset_top = 48.0
+offset_right = 220.0
+offset_bottom = 62.0
+theme_override_styles/background = SubResource("StyleBoxFlat_armor_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_armor_fill")
+value = 0.0
+show_percentage = false
+
 [node name="WantedLabel" type="Label" parent="HUD"]
 layout_mode = 3
 anchors_preset = 0
 offset_left = 20.0
-offset_top = 50.0
+offset_top = 68.0
 offset_right = 220.0
-offset_bottom = 84.0
+offset_bottom = 102.0
 theme_override_colors/font_color = Color(1, 0.85, 0.15, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 5
@@ -319,6 +346,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("11")
 mouse_filter = 2
 
 [node name="Dim" type="ColorRect" parent="HUD/DeathScreen"]
@@ -462,6 +490,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+theme = ExtResource("11")
 
 [node name="Dim" type="ColorRect" parent="HUD/StoreMenu"]
 layout_mode = 1
@@ -550,6 +579,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+theme = ExtResource("11")
 
 [node name="Dim" type="ColorRect" parent="HUD/DealerMenu"]
 layout_mode = 1
@@ -626,6 +656,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+theme = ExtResource("11")
 
 [node name="Dim" type="ColorRect" parent="HUD/NPCMenu"]
 layout_mode = 1
@@ -644,9 +675,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -140.0
-offset_top = -140.0
+offset_top = -170.0
 offset_right = 140.0
-offset_bottom = 140.0
+offset_bottom = 170.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -681,6 +712,12 @@ custom_minimum_size = Vector2(0, 40)
 theme_override_font_sizes/font_size = 18
 text = "Sell Drugs"
 
+[node name="RobButton" type="Button" parent="HUD/NPCMenu/Panel/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 40)
+theme_override_font_sizes/font_size = 18
+text = "Rob"
+
 [node name="HireButton" type="Button" parent="HUD/NPCMenu/Panel/VBox"]
 visible = false
 layout_mode = 2
@@ -702,6 +739,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+theme = ExtResource("11")
 script = ExtResource("6")
 
 [node name="Dim" type="ColorRect" parent="HUD/PauseMenu"]

@@ -31,7 +31,11 @@ func _ready() -> void:
 	settings_menu.closed.connect(_on_settings_closed)
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE):
+	var is_escape: bool = event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE
+	# JOY_BUTTON_START is Godot's generic name for whatever sits in that slot
+	# on the physical pad - Options on a PS4/PS5 controller, Menu on Xbox.
+	var is_options: bool = event is InputEventJoypadButton and event.pressed and event.button_index == JOY_BUTTON_START
+	if not (is_escape or is_options):
 		return
 	if visible and settings_menu.visible:
 		_on_settings_closed()
@@ -51,6 +55,7 @@ func _open() -> void:
 	main_panel.visible = true
 	get_tree().paused = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	resume_button.grab_focus()
 
 func _resume() -> void:
 	visible = false

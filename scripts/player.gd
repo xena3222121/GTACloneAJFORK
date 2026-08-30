@@ -13,6 +13,14 @@ const INTERACT_RANGE := 3.0
 const PISTOL_FIRE_COOLDOWN := 0.12
 const MUZZLE_FLASH_TIME := 0.08
 const MAX_HEALTH := 100.0
+const MAX_ARMOR := 100.0
+# Passive regen only tops the player back up to a baseline, not full health -
+# still meant to feel dangerous, just not "one stray hit away from a fresh
+# game" after every little scrape.
+const HEALTH_REGEN_TARGET_FRACTION := 0.6
+const HEALTH_REGEN_RATE := 4.0 # HP/sec
+const HEALTH_REGEN_DELAY := 4.0 # seconds since last hit before regen kicks in
+const HEALTH_PACK_HEAL_FRACTION := 0.35
 const VEHICLE_HIT_MIN_SPEED := 2.0
 const VEHICLE_HIT_DAMAGE_PER_SPEED := 4.0
 const VEHICLE_HIT_MAX_DAMAGE := 80.0
@@ -30,6 +38,11 @@ const SNITCH_HEAT := 20.0
 # bar for cooking a batch to actually be worth it over just dealing weed.
 const PILL_SELL_PRICE_MIN := 40
 const PILL_SELL_PRICE_MAX := 90
+
+const ROB_AMOUNT_MIN := 5
+const ROB_AMOUNT_MAX := 100
+const ROB_FAIL_CHANCE := 0.33
+const ROB_FAIL_HEAT := 25.0
 
 const AMMO_PRICE := 20
 const AMMO_BUY_AMOUNT := 60
@@ -113,6 +126,12 @@ const MAC10_PICKUP_AMMO := 60
 const RECOIL_RECOVERY := 9.0
 const TURN_SPEED := 12.0
 const AIM_TURN_SPEED := 20.0
+# Flips the model's forward convention 180 degrees - only the walking yaw
+# needs this. The aim_yaw formula below already independently accounts for
+# the same mesh convention as part of its own camera-forward math; adding
+# this there too just cancelled it back out (confirmed: made aiming face
+# backward while walking was correct).
+const MODEL_FORWARD_OFFSET := PI
 const RAY_LENGTH := 1000.0
 const LOCO_BLEND_SPEED := 6.0
 const AIM_BLEND_SPEED := 8.0
@@ -167,6 +186,7 @@ const UPPER_BODY_BONES := [
 @onready var anim_tree: AnimationTree = $AnimTree
 @onready var death_screen: Control = $HUD/DeathScreen
 @onready var health_bar: ProgressBar = $HUD/HealthBar
+@onready var armor_bar: ProgressBar = $HUD/ArmorBar
 @onready var restart_button: Button = $HUD/DeathScreen/ButtonRow/RestartButton
 @onready var quit_button: Button = $HUD/DeathScreen/ButtonRow/QuitButton
 @onready var money_label: Label = $HUD/MoneyLabel
@@ -192,6 +212,7 @@ const UPPER_BODY_BONES := [
 @onready var npc_menu_title: Label = $HUD/NPCMenu/Panel/VBox/Title
 @onready var talk_button: Button = $HUD/NPCMenu/Panel/VBox/TalkButton
 @onready var sell_drugs_button: Button = $HUD/NPCMenu/Panel/VBox/SellDrugsButton
+@onready var rob_button: Button = $HUD/NPCMenu/Panel/VBox/RobButton
 @onready var hire_button: Button = $HUD/NPCMenu/Panel/VBox/HireButton
 @onready var close_npc_button: Button = $HUD/NPCMenu/Panel/VBox/CloseNPCButton
 
@@ -227,6 +248,8 @@ var anim_aim := ""
 var anim_die := ""
 var aiming := false
 var health := MAX_HEALTH
+var armor := 0.0
+var time_since_hurt := HEALTH_REGEN_DELAY # starts already regen-eligible
 var dead := false
 var played_cops_incoming_line := false
 var death_cam_zooming := false
@@ -449,6 +472,8 @@ func _ready() -> void:
 	_update_pills_label()
 	health_bar.max_value = MAX_HEALTH
 	health_bar.value = health
+	armor_bar.max_value = MAX_ARMOR
+	armor_bar.value = armor
 	restart_button.pressed.connect(_on_restart_pressed)
 	quit_button.pressed.connect(_on_quit_pressed)
 	WantedSystem.tier_changed.connect(_on_wanted_tier_changed)
@@ -465,6 +490,7 @@ func _ready() -> void:
 	close_dealer_button.pressed.connect(close_dealer_menu)
 	talk_button.pressed.connect(_on_npc_talk_pressed)
 	sell_drugs_button.pressed.connect(_on_npc_sell_pressed)
+	rob_button.pressed.connect(_on_npc_rob_pressed)
 	hire_button.pressed.connect(_on_npc_hire_pressed)
 	close_npc_button.pressed.connect(close_npc_menu)
 
@@ -549,6 +575,15 @@ func _physics_process(delta: float) -> void:
 	fire_cooldown = max(0.0, fire_cooldown - delta)
 	vehicle_hit_cooldown = max(0.0, vehicle_hit_cooldown - delta)
 	drunk_timer = max(0.0, drunk_timer - delta)
+
+	# Passive regen only tops back up to a baseline (not full) a few seconds
+	# after the last hit - still lets a bad firefight actually hurt you
+	# long-term, just stops a single graze from being a permanent scar.
+	time_since_hurt += delta
+	var regen_target: float = MAX_HEALTH * HEALTH_REGEN_TARGET_FRACTION
+	if health > 0.0 and health < regen_target and time_since_hurt >= HEALTH_REGEN_DELAY:
+		health = min(regen_target, health + HEALTH_REGEN_RATE * delta)
+		health_bar.value = health
 	# Getting drunk (bar_drink.gd) used to be completely invisible to the
 	# player - it only quietly nudged one aggro-chance roll in npc.gd. A
 	# gentle camera sway (roll for the "tipsy" wobble, a little pitch drift)
@@ -656,10 +691,14 @@ func _physics_process(delta: float) -> void:
 	if aiming:
 		# Camera3D looks down -Z, so the direction the camera is actually facing
 		# (and where the reticle points) is offset by PI from camera_pivot's yaw.
+		# This already accounted for the model's own forward convention
+		# correctly on its own - stacking MODEL_FORWARD_OFFSET on top of it
+		# (like the walking branch below needs) actually undid it and made
+		# aiming face backward instead.
 		var aim_yaw := camera_pivot.rotation.y + PI
 		model.rotation.y = lerp_angle(model.rotation.y, aim_yaw, AIM_TURN_SPEED * delta)
 	elif moving:
-		var target_yaw := atan2(move_dir.x, move_dir.z)
+		var target_yaw := atan2(move_dir.x, move_dir.z) + MODEL_FORWARD_OFFSET
 		model.rotation.y = lerp_angle(model.rotation.y, target_yaw, TURN_SPEED * delta)
 
 	# The lower body always follows Idle/Walk based on actual movement, and the
@@ -954,6 +993,20 @@ func add_money(amount: int) -> void:
 	money += amount
 	_update_money_label()
 
+# Health packs can push above the passive-regen baseline, all the way to
+# MAX_HEALTH - that ceiling only caps the automatic regen, not a pickup.
+func add_health(amount: float) -> void:
+	if dead:
+		return
+	health = min(MAX_HEALTH, health + amount)
+	health_bar.value = health
+
+func add_armor(amount: float) -> void:
+	if dead:
+		return
+	armor = min(MAX_ARMOR, armor + amount)
+	armor_bar.value = armor
+
 func _update_drugs_label() -> void:
 	if drugs_label:
 		drugs_label.visible = drugs > 0
@@ -1021,6 +1074,10 @@ func open_store_menu() -> void:
 	menu_open = true
 	store_menu.visible = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	# Nothing had focus by default, so a controller's d-pad/stick had no
+	# button to navigate from and its face button had nothing to "press" -
+	# grabbing focus on open is what makes ui_up/down/accept do anything.
+	buy_ammo_button.grab_focus()
 
 func close_store_menu() -> void:
 	menu_open = false
@@ -1036,6 +1093,7 @@ func open_dealer_menu() -> void:
 	menu_open = true
 	dealer_menu.visible = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	buy_camaro_button.grab_focus()
 
 func close_dealer_menu() -> void:
 	current_dealer = null
@@ -1056,6 +1114,16 @@ func open_npc_menu(npc: Node3D) -> void:
 	talk_button.visible = not is_dealer
 	sell_drugs_button.visible = not is_dealer
 	sell_drugs_button.disabled = drugs <= 0 and pills <= 0
+	rob_button.visible = not is_dealer
+	if npc.get("robbed") == true:
+		rob_button.text = "Already robbed them"
+		rob_button.disabled = true
+	elif npc.get("dead") == true:
+		rob_button.text = "Rob"
+		rob_button.disabled = true
+	else:
+		rob_button.text = "Rob"
+		rob_button.disabled = false
 	hire_button.visible = is_dealer
 	if is_dealer:
 		if jailed:
@@ -1069,6 +1137,10 @@ func open_npc_menu(npc: Node3D) -> void:
 			hire_button.disabled = money < 200
 	npc_menu.visible = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	# Whichever button is actually showing for this NPC - nothing had focus
+	# by default, so a controller's stick/face-button had no button to
+	# navigate from or "click".
+	(hire_button if is_dealer else talk_button).grab_focus()
 
 func close_npc_menu() -> void:
 	current_npc = null
@@ -1085,6 +1157,22 @@ func _on_npc_sell_pressed() -> void:
 	if current_npc and is_instance_valid(current_npc):
 		_sell_drugs_to(current_npc)
 	close_npc_menu()
+
+func _on_npc_rob_pressed() -> void:
+	if current_npc and is_instance_valid(current_npc):
+		_rob_npc(current_npc)
+	close_npc_menu()
+
+# One attempt per NPC (see the "robbed" flag) - otherwise this would just be
+# an infinite money loop by reopening the same person's menu over and over.
+func _rob_npc(npc: Node3D) -> void:
+	if npc.get("dead") == true or npc.get("robbed") == true:
+		return
+	npc.set("robbed", true)
+	if randf() < ROB_FAIL_CHANCE:
+		WantedSystem.add_heat(ROB_FAIL_HEAT, npc.global_position)
+	else:
+		add_money(randi_range(ROB_AMOUNT_MIN, ROB_AMOUNT_MAX))
 
 func _on_npc_hire_pressed() -> void:
 	if current_npc and is_instance_valid(current_npc):
@@ -1498,6 +1586,14 @@ func _maybe_play_kill_line(hit: Object, is_person: bool) -> void:
 func take_damage(amount: float, _hit_point: Vector3 = Vector3.ZERO) -> void:
 	if dead:
 		return
+	time_since_hurt = 0.0
+	# Armor soaks damage 1:1 before health starts dropping at all (classic
+	# GTA behavior) rather than just a flat damage-reduction percentage.
+	if armor > 0.0:
+		var absorbed: float = min(armor, amount)
+		armor -= absorbed
+		amount -= absorbed
+		armor_bar.value = armor
 	health -= amount
 	health_bar.value = health
 	if health <= 0.0:
@@ -1547,6 +1643,7 @@ func _show_death_text() -> void:
 	# mouse captured/hidden for looking around, which would otherwise leave
 	# Restart/Quit unclickable.
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	restart_button.grab_focus()
 	var tween := create_tween()
 	tween.tween_property(death_screen, "modulate:a", 1.0, DEATH_TEXT_FADE_TIME)
 

@@ -20,7 +20,16 @@ const PATRON_AGGRO_CHANCE := 0.35
 const VEHICLE_HIT_MIN_SPEED := 2.0
 const VEHICLE_HIT_DAMAGE_PER_SPEED := 4.0
 const VEHICLE_HIT_MAX_DAMAGE := 80.0
-const VEHICLE_HIT_KNOCKBACK := 6.0
+# A flat knockback added straight to velocity used to get stomped the very
+# next physics tick by _process_wander/_process_hostile setting
+# velocity.x/z outright - looked like a shove, not a hit. Routed through
+# launch() (below) instead, same as the stolen-car-eject impulse, so the
+# stun timer actually blocks normal movement AI from overwriting it and
+# gravity carries the arc through properly.
+const VEHICLE_HIT_KNOCKBACK_BASE := 5.0
+const VEHICLE_HIT_KNOCKBACK_PER_SPEED := 0.55
+const VEHICLE_HIT_LAUNCH_UP := 4.5
+const VEHICLE_HIT_STUN_TIME := 1.4
 const VEHICLE_HIT_COOLDOWN := 0.6
 
 const BLOOD_POOL := preload("res://scenes/BloodPool.tscn")
@@ -100,6 +109,9 @@ var attack_cooldown := 0.0
 # stand in place instead.
 @export var wanders := true
 var hired := false
+# Set by player.gd's _rob_npc - one attempt per person, so reopening the
+# same NPC's menu can't just be farmed for infinite money.
+var robbed := false
 var jailed := false
 var street_dealer: Node3D = null
 # True only on the wandering street body _spawn_street_dealer() creates -
@@ -269,7 +281,9 @@ func _check_vehicle_collisions() -> void:
 			return
 		var away: Vector3 = global_position - collider.global_position
 		away.y = 0.0
-		velocity += (away.normalized() if away.length() > 0.01 else -collision.get_normal()) * VEHICLE_HIT_KNOCKBACK
+		var horizontal_dir: Vector3 = away.normalized() if away.length() > 0.01 else -collision.get_normal()
+		var knockback_speed: float = VEHICLE_HIT_KNOCKBACK_BASE + car_speed * VEHICLE_HIT_KNOCKBACK_PER_SPEED
+		launch(horizontal_dir * knockback_speed + Vector3(0, VEHICLE_HIT_LAUNCH_UP, 0), VEHICLE_HIT_STUN_TIME)
 		break
 
 func _process_wander(delta: float) -> void:
