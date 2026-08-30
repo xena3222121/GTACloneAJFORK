@@ -215,7 +215,7 @@ var dead := false
 var played_cops_incoming_line := false
 var death_cam_zooming := false
 var recoil_pitch := 0.0
-var current_weapon: int = Weapon.KNIFE
+var current_weapon: int = Weapon.UNARMED
 # Alpha 0 means "stock outfit, no tint bought" - distinguishes that from a
 # legitimately dark purchased color when deciding whether to persist/reapply
 # an outfit on save/load.
@@ -745,7 +745,7 @@ func _joy_axis(axis: JoyAxis) -> float:
 	var v := Input.get_joy_axis(0, axis)
 	return v if absf(v) > JOY_DEADZONE else 0.0
 
-const WEAPON_ORDER := [Weapon.KNIFE, Weapon.PISTOL, Weapon.SHOTGUN, Weapon.MAC10]
+const WEAPON_ORDER := [Weapon.UNARMED, Weapon.KNIFE, Weapon.PISTOL, Weapon.SHOTGUN, Weapon.MAC10]
 
 func _cycle_weapon(direction: int) -> void:
 	if driving:
