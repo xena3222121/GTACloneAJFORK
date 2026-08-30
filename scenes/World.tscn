@@ -39,6 +39,10 @@
 [ext_resource type="Script" path="res://scripts/weed_plot.gd" id="39"]
 [ext_resource type="Script" path="res://scripts/sky_plane.gd" id="40"]
 [ext_resource type="Script" path="res://scripts/world_sky.gd" id="41"]
+[ext_resource type="PackedScene" path="res://assets/car-kit-realistic/Camaro.glb" id="43"]
+[ext_resource type="PackedScene" path="res://assets/car-kit-realistic/MazdaRX7.glb" id="44"]
+[ext_resource type="PackedScene" path="res://assets/car-kit-realistic/RangeRover.glb" id="45"]
+[ext_resource type="Script" path="res://scripts/dealer_counter.gd" id="46"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
 sky_top_color = Color(0.3, 0.5, 0.85, 1)
@@ -408,6 +412,24 @@ material = SubResource("StandardMaterial3D_gunstore_crate")
 [sub_resource type="BoxMesh" id="BoxMesh_streetlight_pole"]
 material = SubResource("StandardMaterial3D_highway_pole")
 size = Vector3(0.2, 5.0, 0.2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_downtown_a8"]
+size = Vector3(7.072, 10.352, 7.52)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_downtown_b8"]
+size = Vector3(7.76, 10.352, 7.52)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_downtown_c8"]
+size = Vector3(7.072, 7.152, 8.72)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_downtown_a6"]
+size = Vector3(5.304, 7.764, 5.64)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_downtown_b6"]
+size = Vector3(5.82, 7.764, 5.64)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_showroom_car"]
+size = Vector3(2.0, 1.5, 4.3)
 
 [node name="World" type="Node3D" unique_id=54692432]
 script = ExtResource("41")
@@ -4352,3 +4374,226 @@ shape = SubResource("BoxShape3D_pylon")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 190, 2.5, -60)
 mesh = SubResource("BoxMesh_pylon")
 
+
+[node name="Road_p51" parent="Street" instance=ExtResource("6")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 0, 0.02, 51)
+
+[node name="Road_p57" parent="Street" instance=ExtResource("6")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 0, 0.02, 57)
+
+[node name="Road_p63" parent="Street" instance=ExtResource("6")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 0, 0.02, 63)
+
+[node name="Road_p69" parent="Street" instance=ExtResource("6")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 0, 0.02, 69)
+
+[node name="Road_p75" parent="Street" instance=ExtResource("6")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 0, 0.02, 75)
+
+[node name="Road_p81" parent="Street" instance=ExtResource("6")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 0, 0.02, 81)
+
+[node name="Road_p87" parent="Street" instance=ExtResource("6")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 0, 0.02, 87)
+
+[node name="Road_p93" parent="Street" instance=ExtResource("6")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 0, 0.02, 93)
+
+[node name="Road_p99" parent="Street" instance=ExtResource("6")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 0, 0.02, 99)
+
+[node name="Road_p105" parent="Street" instance=ExtResource("6")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 0, 0.02, 105)
+
+[node name="Downtown" type="Node3D" parent="."]
+
+[node name="MapLabelDowntown" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 15, 110)
+layers = 524288
+billboard = 1
+no_depth_test = true
+font_size = 64
+outline_size = 12
+pixel_size = 0.08
+modulate = Color(1, 0.85, 0.3, 1)
+text = "Downtown"
+
+[node name="DowntownBuildingA" type="StaticBody3D" parent="Downtown"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25, 0, 115)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Downtown/DowntownBuildingA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.176, 0)
+shape = SubResource("BoxShape3D_downtown_a8")
+
+[node name="Model" parent="Downtown/DowntownBuildingA" instance=ExtResource("26")]
+transform = Transform3D(8, 0, 0, 0, 8, 0, 0, 0, 8, 0, 0, 0)
+
+[node name="DowntownBuildingB" type="StaticBody3D" parent="Downtown"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 85, 0, 115)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Downtown/DowntownBuildingB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.176, 0)
+shape = SubResource("BoxShape3D_downtown_b8")
+
+[node name="Model" parent="Downtown/DowntownBuildingB" instance=ExtResource("27")]
+transform = Transform3D(8, 0, 0, 0, 8, 0, 0, 0, 8, 0, 0, 0)
+
+[node name="DowntownBuildingC" type="StaticBody3D" parent="Downtown"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0, 155)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Downtown/DowntownBuildingC"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.576, 0)
+shape = SubResource("BoxShape3D_downtown_c8")
+
+[node name="Model" parent="Downtown/DowntownBuildingC" instance=ExtResource("28")]
+transform = Transform3D(8, 0, 0, 0, 8, 0, 0, 0, 8, 0, 0, 0)
+
+[node name="DowntownBuildingD" type="StaticBody3D" parent="Downtown"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 0, 150)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Downtown/DowntownBuildingD"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.882, 0)
+shape = SubResource("BoxShape3D_downtown_a6")
+
+[node name="Model" parent="Downtown/DowntownBuildingD" instance=ExtResource("26")]
+transform = Transform3D(6, 0, 0, 0, 6, 0, 0, 0, 6, 0, 0, 0)
+
+[node name="DowntownBuildingE" type="StaticBody3D" parent="Downtown"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75, 0, 150)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Downtown/DowntownBuildingE"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.882, 0)
+shape = SubResource("BoxShape3D_downtown_b6")
+
+[node name="Model" parent="Downtown/DowntownBuildingE" instance=ExtResource("27")]
+transform = Transform3D(6, 0, 0, 0, 6, 0, 0, 0, 6, 0, 0, 0)
+
+[node name="DealerSign" type="MeshInstance3D" parent="Downtown"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 16, 3, 98)
+mesh = SubResource("BoxMesh_highway_sign")
+
+[node name="Label" type="Label3D" parent="Downtown/DealerSign"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, 0, 0)
+billboard = 1
+font_size = 40
+outline_size = 6
+modulate = Color(1, 1, 1, 1)
+text = "DOWNTOWN MOTORS"
+
+[node name="ShowroomCamaro" type="StaticBody3D" parent="Downtown"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 95)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Downtown/ShowroomCamaro"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+shape = SubResource("BoxShape3D_showroom_car")
+
+[node name="Model" parent="Downtown/ShowroomCamaro" instance=ExtResource("43")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.284, 0)
+
+[node name="ShowroomMazda" type="StaticBody3D" parent="Downtown"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, 95)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Downtown/ShowroomMazda"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+shape = SubResource("BoxShape3D_showroom_car")
+
+[node name="Model" parent="Downtown/ShowroomMazda" instance=ExtResource("44")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.284, 0)
+
+[node name="ShowroomRangeRover" type="StaticBody3D" parent="Downtown"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 0, 95)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Downtown/ShowroomRangeRover"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+shape = SubResource("BoxShape3D_showroom_car")
+
+[node name="Model" parent="Downtown/ShowroomRangeRover" instance=ExtResource("45")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.284, 0)
+
+[node name="DealerCounter" type="Area3D" parent="Downtown"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 1, 90)
+script = ExtResource("46")
+spawn_marker_path = NodePath("SpawnPoint")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Downtown/DealerCounter"]
+shape = SubResource("SphereShape3D_interact")
+
+[node name="Mesh" type="MeshInstance3D" parent="Downtown/DealerCounter"]
+mesh = SubResource("BoxMesh_counter")
+
+[node name="SpawnPoint" type="Marker3D" parent="Downtown/DealerCounter"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.9, -8)
+
+[node name="JobBoard" type="Area3D" parent="Downtown"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 1, 100)
+script = ExtResource("38")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Downtown/JobBoard"]
+shape = SubResource("SphereShape3D_interact")
+
+[node name="Mesh" type="MeshInstance3D" parent="Downtown/JobBoard"]
+mesh = SubResource("BoxMesh_counter")
+
+[node name="NPC1" parent="Downtown" instance=ExtResource("7")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0.1, 118)
+
+[node name="NPC2" parent="Downtown" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 0.1, 122)
+
+[node name="NPC3" parent="Downtown" instance=ExtResource("9")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 0.1, 135)
+
+[node name="NPC4" parent="Downtown" instance=ExtResource("10")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.1, 100)
+
+[node name="Light_p57_E" type="MeshInstance3D" parent="Downtown"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2.5, 57)
+mesh = SubResource("BoxMesh_streetlight_pole")
+
+[node name="Light" type="OmniLight3D" parent="Downtown/Light_p57_E"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.1
+omni_range = 10.0
+
+[node name="Fixture" type="MeshInstance3D" parent="Downtown/Light_p57_E/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+[node name="Light_p87_W" type="MeshInstance3D" parent="Downtown"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 2.5, 87)
+mesh = SubResource("BoxMesh_streetlight_pole")
+
+[node name="Light" type="OmniLight3D" parent="Downtown/Light_p87_W"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.1
+omni_range = 10.0
+
+[node name="Fixture" type="MeshInstance3D" parent="Downtown/Light_p87_W/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+[node name="Light_Plaza1" type="MeshInstance3D" parent="Downtown"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 130)
+mesh = SubResource("BoxMesh_streetlight_pole")
+
+[node name="Light" type="OmniLight3D" parent="Downtown/Light_Plaza1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.1
+omni_range = 10.0
+
+[node name="Fixture" type="MeshInstance3D" parent="Downtown/Light_Plaza1/Light"]
+mesh = SubResource("SphereMesh_highway_light")
+
+[node name="Light_Plaza2" type="MeshInstance3D" parent="Downtown"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 2.5, 130)
+mesh = SubResource("BoxMesh_streetlight_pole")
+
+[node name="Light" type="OmniLight3D" parent="Downtown/Light_Plaza2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.1
+omni_range = 10.0
+
+[node name="Fixture" type="MeshInstance3D" parent="Downtown/Light_Plaza2/Light"]
+mesh = SubResource("SphereMesh_highway_light")

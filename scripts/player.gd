@@ -32,6 +32,13 @@ const SHOTGUN_BUY_AMOUNT := 16
 const MAC10_PRICE := 80
 const MAC10_BUY_AMOUNT := 90
 const OUTFIT_PRICE := 30
+
+const CAMARO_PRICE := 2500
+const MAZDA_PRICE := 2200
+const RANGEROVER_PRICE := 3200
+const CAMARO_SCENE := preload("res://scenes/ParkedCar_Camaro.tscn")
+const MAZDA_SCENE := preload("res://scenes/ParkedCar_MazdaRX7.tscn")
+const RANGEROVER_SCENE := preload("res://scenes/ParkedCar_RangeRover.tscn")
 # Verified by rendering a sweep of values, not assumed: the SpringArm3D
 # orbits the character rather than doing a true free-look, so pitch stops
 # framing cleanly past the normal gameplay clamp range in either direction.
@@ -160,6 +167,11 @@ const UPPER_BODY_BONES := [
 @onready var buy_red_outfit_button: Button = $HUD/StoreMenu/Panel/VBox/BuyRedOutfitButton
 @onready var buy_black_outfit_button: Button = $HUD/StoreMenu/Panel/VBox/BuyBlackOutfitButton
 @onready var close_store_button: Button = $HUD/StoreMenu/Panel/VBox/CloseStoreButton
+@onready var dealer_menu: Control = $HUD/DealerMenu
+@onready var buy_camaro_button: Button = $HUD/DealerMenu/Panel/VBox/BuyCamaroButton
+@onready var buy_mazda_button: Button = $HUD/DealerMenu/Panel/VBox/BuyMazdaButton
+@onready var buy_rangerover_button: Button = $HUD/DealerMenu/Panel/VBox/BuyRangeRoverButton
+@onready var close_dealer_button: Button = $HUD/DealerMenu/Panel/VBox/CloseDealerButton
 @onready var reserve_ammo_label: Label = $HUD/ReserveAmmoLabel
 @onready var npc_menu: Control = $HUD/NPCMenu
 @onready var npc_menu_title: Label = $HUD/NPCMenu/Panel/VBox/Title
@@ -225,6 +237,7 @@ var menu_open := false
 var nearby_interactable: Node = null
 var current_npc: Node3D = null
 var current_interior: Node = null
+var current_dealer: Node = null
 var exterior_return_position := Vector3.ZERO
 var reload_timer := 0.0
 var loco_blend := 0.0
@@ -423,6 +436,10 @@ func _ready() -> void:
 	buy_red_outfit_button.pressed.connect(_buy_red_outfit)
 	buy_black_outfit_button.pressed.connect(_buy_black_outfit)
 	close_store_button.pressed.connect(close_store_menu)
+	buy_camaro_button.pressed.connect(_buy_camaro)
+	buy_mazda_button.pressed.connect(_buy_mazda)
+	buy_rangerover_button.pressed.connect(_buy_rangerover)
+	close_dealer_button.pressed.connect(close_dealer_menu)
 	talk_button.pressed.connect(_on_npc_talk_pressed)
 	sell_drugs_button.pressed.connect(_on_npc_sell_pressed)
 	hire_button.pressed.connect(_on_npc_hire_pressed)
@@ -933,6 +950,22 @@ func close_store_menu() -> void:
 	store_menu.visible = false
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
+# nearby_interactable is still the DealerCounter that triggered this call
+# (interact() runs via nearby_interactable.interact(self) - see _interact()),
+# so grabbing it here is how _buy_car() below later finds the right
+# showroom's spawn marker without the counter having to pass itself as an arg.
+func open_dealer_menu() -> void:
+	current_dealer = nearby_interactable
+	menu_open = true
+	dealer_menu.visible = true
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+
+func close_dealer_menu() -> void:
+	current_dealer = null
+	menu_open = false
+	dealer_menu.visible = false
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
 func open_npc_menu(npc: Node3D) -> void:
 	current_npc = npc
 	menu_open = true
@@ -1008,6 +1041,31 @@ func _buy_black_outfit() -> void:
 		money -= OUTFIT_PRICE
 		_set_outfit_tint(Color(0.08, 0.08, 0.09))
 		_update_money_label()
+
+func _buy_camaro() -> void:
+	_buy_car(CAMARO_PRICE, CAMARO_SCENE)
+
+func _buy_mazda() -> void:
+	_buy_car(MAZDA_PRICE, MAZDA_SCENE)
+
+func _buy_rangerover() -> void:
+	_buy_car(RANGEROVER_PRICE, RANGEROVER_SCENE)
+
+# Spawns a real, drivable ParkedCar_* at the showroom's own SpawnPoint marker
+# (the display models out front are plain scenery with no script, so they
+# can't just be "unlocked" - buying hands you a separate car instead) rather
+# than teleporting one in on top of the player, which could clip a wall.
+func _buy_car(price: int, scene: PackedScene) -> void:
+	if money < price:
+		return
+	if not current_dealer or not is_instance_valid(current_dealer):
+		return
+	add_money(-price)
+	var car: Node3D = scene.instantiate()
+	get_tree().current_scene.add_child(car)
+	var spawn: Marker3D = current_dealer.get_spawn_marker()
+	car.global_position = spawn.global_position
+	car.rotation.y = spawn.rotation.y
 
 # Purely cosmetic - same recursive material_override trick police.gd's
 # _tint_uniform() uses to fake a uniform on the shared civilian model.
@@ -1334,6 +1392,7 @@ func die() -> void:
 	if menu_open:
 		close_store_menu()
 		close_npc_menu()
+		close_dealer_menu()
 
 	if anim:
 		# The AnimationTree normally drives every pose each frame; switch it
