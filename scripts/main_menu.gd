@@ -22,10 +22,18 @@ func _ready() -> void:
 	settings_menu.closed.connect(_on_settings_closed)
 
 func _on_continue_pressed() -> void:
+	# WantedSystem is an autoload - it survives scene changes, so without
+	# this a wanted level built up in an earlier session (before quitting
+	# to this menu) would carry straight into the "fresh" one, instantly
+	# sending cops hostile. Heat was never part of the save data (see
+	# save_system.gd) so resetting here doesn't lose anything Continue
+	# is supposed to restore.
+	WantedSystem.reset()
 	SaveSystem.load_on_next_ready = true
 	get_tree().change_scene_to_file("res://scenes/World.tscn")
 
 func _on_new_game_pressed() -> void:
+	WantedSystem.reset()
 	SaveSystem.load_on_next_ready = false
 	get_tree().change_scene_to_file("res://scenes/World.tscn")
 
