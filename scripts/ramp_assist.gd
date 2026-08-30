@@ -10,16 +10,16 @@ extends Node
 # collision/mesh stays in place for looks and for anything standing still
 # on it; this only overrides height for vehicles actively crossing.
 
-const RAMP_HALF_WIDTH := 14.0
+const RAMP_HALF_WIDTH := 3.5 # was 14 - a full-width ramp box straddled the entire main road beneath it, snapping straight-through traffic onto the ramp slope instead of just vehicles actually using it. Narrowed (and the ramp geometry in World.tscn shifted to x=4/56, off the x=0/60 road centerlines) so it only covers the ramp lane itself.
 const RISE := 6.0
 
 # Each entry: x center, z range the ramp covers, and which end (z_low) is
 # ground level (height 0) vs which end (z_high) is deck level (height RISE).
 const RAMPS := [
-	{"x": 0.0, "z_low": 8.0, "z_high": 48.0},
-	{"x": 60.0, "z_low": 8.0, "z_high": 48.0},
-	{"x": 0.0, "z_low": -8.0, "z_high": -48.0},
-	{"x": 60.0, "z_low": -8.0, "z_high": -48.0},
+	{"x": 4.0, "z_low": 8.0, "z_high": 48.0},
+	{"x": 56.0, "z_low": 8.0, "z_high": 48.0},
+	{"x": 4.0, "z_low": -8.0, "z_high": -48.0},
+	{"x": 56.0, "z_low": -8.0, "z_high": -48.0},
 ]
 
 func _physics_process(_delta: float) -> void:

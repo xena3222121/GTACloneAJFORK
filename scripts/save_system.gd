@@ -7,6 +7,11 @@ extends Node
 
 const SAVE_PATH := "user://savegame.json"
 
+# Set by MainMenu.tscn's "Continue" button before changing scene to
+# World.tscn, then consumed (and cleared) by world_sky.gd's _ready() once
+# the fresh scene (and its Player) actually exists to load into.
+var load_on_next_ready := false
+
 # Where the player lands on a loaded game - just outside the safehouse door
 # (HouseEntrance's own position in World.tscn), matching classic GTA "you
 # wake up at the safehouse" behavior rather than trying to preserve exact

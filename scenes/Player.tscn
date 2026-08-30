@@ -5,6 +5,8 @@
 [ext_resource type="PackedScene" uid="uid://c7w5mx7vjnnbm" path="res://assets/characters-realistic/Male_Suit.fbx" id="3"]
 [ext_resource type="PackedScene" uid="uid://copmsowv8ofgy" path="res://assets/weapons/Pistol_2.glb" id="4"]
 [ext_resource type="Script" path="res://scripts/minimap_camera.gd" id="5"]
+[ext_resource type="Script" path="res://scripts/pause_menu.gd" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/SettingsMenu.tscn" id="7"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
 radius = 0.4
@@ -559,3 +561,88 @@ layout_mode = 2
 custom_minimum_size = Vector2(0, 40)
 theme_override_font_sizes/font_size = 18
 text = "Close"
+
+[node name="PauseMenu" type="Control" parent="HUD"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("6")
+
+[node name="Dim" type="ColorRect" parent="HUD/PauseMenu"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.6)
+
+[node name="Panel" type="Panel" parent="HUD/PauseMenu"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -160.0
+offset_top = -160.0
+offset_right = 160.0
+offset_bottom = 160.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="HUD/PauseMenu/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="HUD/PauseMenu/Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "Paused"
+horizontal_alignment = 1
+
+[node name="ResumeButton" type="Button" parent="HUD/PauseMenu/Panel/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 40)
+theme_override_font_sizes/font_size = 18
+text = "Resume"
+
+[node name="SettingsButton" type="Button" parent="HUD/PauseMenu/Panel/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 40)
+theme_override_font_sizes/font_size = 18
+text = "Settings"
+
+[node name="SaveButton" type="Button" parent="HUD/PauseMenu/Panel/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 40)
+theme_override_font_sizes/font_size = 18
+text = "Save Game"
+
+[node name="QuitToMenuButton" type="Button" parent="HUD/PauseMenu/Panel/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 40)
+theme_override_font_sizes/font_size = 18
+text = "Quit to Main Menu"
+
+[node name="QuitButton" type="Button" parent="HUD/PauseMenu/Panel/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 40)
+theme_override_font_sizes/font_size = 18
+text = "Quit to Desktop"
+
+[node name="SettingsMenu" parent="HUD/PauseMenu" instance=ExtResource("7")]
+layout_mode = 1

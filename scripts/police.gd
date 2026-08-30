@@ -9,10 +9,10 @@ const IDLE_TIME_MAX := 4.0
 const MAX_HEALTH := 120.0
 const TURN_SPEED := 8.0
 
-const ENGAGE_RANGE := 16.0
+const ENGAGE_RANGE := 13.0 # was 16 - cops opened fire from further away than a player could reasonably react to
 const STOP_DISTANCE := 7.0
-const FIRE_COOLDOWN := 1.3
-const GUN_DAMAGE := 12.0
+const FIRE_COOLDOWN := 1.5 # was 1.3
+const GUN_DAMAGE := 9.0 # was 12 - stacked up brutally once 2-3 cops were shooting at once
 const RAY_LENGTH := 60.0
 const MONEY_DROP_CHANCE := 0.4
 const AMMO_DROP_CHANCE := 0.4
@@ -379,7 +379,20 @@ func _shoot_at_player() -> void:
 
 	var origin: Vector3 = global_position + Vector3(0, 1.4, 0)
 	var target: Vector3 = player.global_position + Vector3(0, 1.0, 0)
-	var forward: Vector3 = (target - origin).normalized()
+	var to_target: Vector3 = target - origin
+	var dist_to_target: float = to_target.length()
+	var forward: Vector3 = to_target.normalized()
+
+	# Cops used to be perfect hitscan - every shot in range/LOS landed for
+	# GUN_DAMAGE, no way to feel "lucky" getting shot at from across the
+	# street. This adds a cone of inaccuracy that widens with range (tight
+	# up close, sprays wide at ENGAGE_RANGE) so distant shots often miss.
+	var spread_amount: float = clamp(dist_to_target / ENGAGE_RANGE, 0.0, 1.0) * 1.1
+	var right: Vector3 = forward.cross(Vector3.UP).normalized()
+	var up: Vector3 = right.cross(forward)
+	var spread_offset: Vector3 = (right * randf_range(-1.0, 1.0) + up * randf_range(-1.0, 1.0)) * spread_amount
+	forward = (to_target + spread_offset).normalized()
+
 	var query := PhysicsRayQueryParameters3D.create(origin, origin + forward * RAY_LENGTH)
 	query.exclude = [self.get_rid()]
 	var result: Dictionary = get_world_3d().direct_space_state.intersect_ray(query)

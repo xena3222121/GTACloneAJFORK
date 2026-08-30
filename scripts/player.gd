@@ -446,9 +446,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		camera_pivot.rotate_y(-event.relative.x * MOUSE_SENSITIVITY)
 		camera_pitch = clamp(camera_pitch - event.relative.y * MOUSE_SENSITIVITY, -1.2, 0.8)
 
-	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -482,12 +479,17 @@ func _unhandled_input(event: InputEvent) -> void:
 func _interact() -> void:
 	if menu_open:
 		return
-	if current_interior:
-		exit_building()
-	elif driving:
+	if driving:
 		exit_vehicle()
 	elif nearby_interactable:
+		# Checked before current_interior: standing at the StoreCounter/
+		# Register with a nearby_interactable set means E should open that
+		# menu, not exit the building - current_interior used to be checked
+		# first, so pressing E at the counter always bailed out to the
+		# street instead of shopping (the "kicks you out immediately" bug).
 		nearby_interactable.interact(self)
+	elif current_interior:
+		exit_building()
 	elif not try_enter_vehicle():
 		try_sell_drugs_to_nearby_npc()
 

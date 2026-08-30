@@ -18,6 +18,17 @@ const NIGHT_SUN_ENERGY := 0.05
 @onready var sun: DirectionalLight3D = $DirectionalLight3D
 @onready var world_env: WorldEnvironment = $WorldEnvironment
 
+# MainMenu.tscn's "Continue" button sets SaveSystem.load_on_next_ready
+# before changing to this scene, since it can't load a save into a Player
+# that doesn't exist yet - by the time THIS node's _ready() runs, every
+# descendant (Player included) has already had its own _ready() called.
+func _ready() -> void:
+	if SaveSystem.load_on_next_ready:
+		SaveSystem.load_on_next_ready = false
+		var player := get_tree().get_first_node_in_group("player")
+		if player:
+			SaveSystem.load_game(player)
+
 func _process(_delta: float) -> void:
 	var t: float = DayNightCycle.time_of_day
 	var angle: float = (t / 24.0 - 0.25) * TAU

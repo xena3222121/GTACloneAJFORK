@@ -14,8 +14,8 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 [application]
 
-config/name="GTA Clone Prototype"
-run/main_scene="res://scenes/World.tscn"
+config/name="Valid Crash Out"
+run/main_scene="res://scenes/MainMenu.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -27,6 +27,7 @@ CityAmbience="*res://scripts/city_ambience.gd"
 DayNightCycle="*res://scripts/day_night_cycle.gd"
 Weather="*res://scripts/weather.gd"
 RampAssist="*res://scripts/ramp_assist.gd"
+Settings="*res://scripts/settings.gd"
 
 [physics]
 
