@@ -4,6 +4,10 @@
 export.cfg
 export_presets.cfg
 
+# Exported standalone builds (large binaries - build these locally instead
+# of tracking them in git)
+build/
+
 # Imported translations (automatically generated from CSV files)
 *.translation
 
