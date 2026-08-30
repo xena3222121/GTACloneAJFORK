@@ -336,6 +336,75 @@ size = Vector3(4.42, 4.47, 5.45)
 [sub_resource type="SphereShape3D" id="SphereShape3D_interact"]
 radius = 1.8
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gunstore_wall"]
+albedo_color = Color(0.16, 0.17, 0.2, 1)
+roughness = 0.85
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gunstore_floor"]
+albedo_color = Color(0.1, 0.1, 0.12, 1)
+roughness = 0.9
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gunstore_ceiling"]
+albedo_color = Color(0.08, 0.08, 0.09, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_gunstore_ceiling"]
+size = Vector3(12, 0.2, 12)
+material = SubResource("StandardMaterial3D_gunstore_ceiling")
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_gunstore_ceiling"]
+size = Vector3(12, 0.2, 12)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gunrack_frame"]
+albedo_color = Color(0.22, 0.2, 0.18, 1)
+metallic = 0.3
+roughness = 0.6
+
+[sub_resource type="BoxMesh" id="BoxMesh_gunrack_frame"]
+size = Vector3(4.6, 2.4, 0.15)
+material = SubResource("StandardMaterial3D_gunrack_frame")
+
+[sub_resource type="BoxMesh" id="BoxMesh_gunrack_shelf"]
+size = Vector3(4.6, 0.08, 0.5)
+material = SubResource("StandardMaterial3D_gunrack_frame")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rack_shotgun"]
+shading_mode = 0
+albedo_color = Color(0.15, 0.13, 0.1, 1)
+emission_enabled = true
+emission = Color(1, 0.55, 0.2, 1)
+emission_energy_multiplier = 1.1
+
+[sub_resource type="BoxMesh" id="BoxMesh_rack_shotgun"]
+size = Vector3(1.1, 0.12, 0.14)
+material = SubResource("StandardMaterial3D_rack_shotgun")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rack_mac10"]
+shading_mode = 0
+albedo_color = Color(0.12, 0.12, 0.14, 1)
+emission_enabled = true
+emission = Color(0.3, 0.6, 1, 1)
+emission_energy_multiplier = 1.1
+
+[sub_resource type="BoxMesh" id="BoxMesh_rack_mac10"]
+size = Vector3(0.8, 0.12, 0.12)
+material = SubResource("StandardMaterial3D_rack_mac10")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gunstore_sign_bg"]
+albedo_color = Color(0.05, 0.32, 0.14, 1)
+roughness = 0.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_gunstore_sign"]
+size = Vector3(3.6, 0.7, 0.1)
+material = SubResource("StandardMaterial3D_gunstore_sign_bg")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gunstore_crate"]
+albedo_color = Color(0.35, 0.25, 0.15, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_gunstore_crate"]
+size = Vector3(0.9, 0.7, 0.6)
+material = SubResource("StandardMaterial3D_gunstore_crate")
+
 [node name="World" type="Node3D" unique_id=54692432]
 script = ExtResource("41")
 
@@ -3276,6 +3345,7 @@ shape = SubResource("BoxShape3D_room_floor")
 
 [node name="Mesh" type="MeshInstance3D" parent="StoreInterior/Floor"]
 mesh = SubResource("BoxMesh_room_floor")
+surface_material_override/0 = SubResource("StandardMaterial3D_gunstore_floor")
 
 [node name="WallN" type="StaticBody3D" parent="StoreInterior"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, -6)
@@ -3285,6 +3355,7 @@ shape = SubResource("BoxShape3D_room_wall_ns")
 
 [node name="Mesh" type="MeshInstance3D" parent="StoreInterior/WallN"]
 mesh = SubResource("BoxMesh_room_wall_ns")
+surface_material_override/0 = SubResource("StandardMaterial3D_gunstore_wall")
 
 [node name="WallS" type="StaticBody3D" parent="StoreInterior"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 6)
@@ -3294,6 +3365,7 @@ shape = SubResource("BoxShape3D_room_wall_ns")
 
 [node name="Mesh" type="MeshInstance3D" parent="StoreInterior/WallS"]
 mesh = SubResource("BoxMesh_room_wall_ns")
+surface_material_override/0 = SubResource("StandardMaterial3D_gunstore_wall")
 
 [node name="WallE" type="StaticBody3D" parent="StoreInterior"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.75, 0)
@@ -3303,6 +3375,7 @@ shape = SubResource("BoxShape3D_room_wall_ew")
 
 [node name="Mesh" type="MeshInstance3D" parent="StoreInterior/WallE"]
 mesh = SubResource("BoxMesh_room_wall_ew")
+surface_material_override/0 = SubResource("StandardMaterial3D_gunstore_wall")
 
 [node name="WallW" type="StaticBody3D" parent="StoreInterior"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 1.75, 0)
@@ -3312,6 +3385,7 @@ shape = SubResource("BoxShape3D_room_wall_ew")
 
 [node name="Mesh" type="MeshInstance3D" parent="StoreInterior/WallW"]
 mesh = SubResource("BoxMesh_room_wall_ew")
+surface_material_override/0 = SubResource("StandardMaterial3D_gunstore_wall")
 
 [node name="StoreSpawn" type="Marker3D" parent="StoreInterior"]
 unique_name_in_owner = true
@@ -3326,6 +3400,90 @@ shape = SubResource("SphereShape3D_interact")
 
 [node name="Mesh" type="MeshInstance3D" parent="StoreInterior/StoreCounter"]
 mesh = SubResource("BoxMesh_counter")
+
+[node name="Ceiling" type="StaticBody3D" parent="StoreInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.6, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StoreInterior/Ceiling"]
+shape = SubResource("BoxShape3D_gunstore_ceiling")
+
+[node name="Mesh" type="MeshInstance3D" parent="StoreInterior/Ceiling"]
+mesh = SubResource("BoxMesh_gunstore_ceiling")
+
+[node name="LightA" type="OmniLight3D" parent="StoreInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, 3.2, -2)
+light_color = Color(1, 0.95, 0.85, 1)
+light_energy = 1.3
+omni_range = 9.0
+
+[node name="LightB" type="OmniLight3D" parent="StoreInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 3.2, 2)
+light_color = Color(1, 0.95, 0.85, 1)
+light_energy = 1.3
+omni_range = 9.0
+
+[node name="Sign" type="MeshInstance3D" parent="StoreInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.15, -5.8)
+mesh = SubResource("BoxMesh_gunstore_sign")
+
+[node name="Label" type="Label3D" parent="StoreInterior/Sign"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.1)
+font_size = 40
+outline_size = 6
+modulate = Color(1, 1, 1, 1)
+text = "GUNS & AMMO"
+
+[node name="GunRack" type="MeshInstance3D" parent="StoreInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.0, -5.8)
+mesh = SubResource("BoxMesh_gunrack_frame")
+
+[node name="GunRackShelfTop" type="MeshInstance3D" parent="StoreInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.6, -5.6)
+mesh = SubResource("BoxMesh_gunrack_shelf")
+
+[node name="GunRackShelfBottom" type="MeshInstance3D" parent="StoreInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, -5.6)
+mesh = SubResource("BoxMesh_gunrack_shelf")
+
+[node name="RackShotgun1" type="MeshInstance3D" parent="StoreInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.8, 2.7, -5.55)
+mesh = SubResource("BoxMesh_rack_shotgun")
+
+[node name="RackMac10_1" type="MeshInstance3D" parent="StoreInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.6, 2.7, -5.55)
+mesh = SubResource("BoxMesh_rack_mac10")
+
+[node name="RackShotgun2" type="MeshInstance3D" parent="StoreInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.6, 2.7, -5.55)
+mesh = SubResource("BoxMesh_rack_shotgun")
+
+[node name="RackMac10_2" type="MeshInstance3D" parent="StoreInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8, 2.7, -5.55)
+mesh = SubResource("BoxMesh_rack_mac10")
+
+[node name="RackMac10_3" type="MeshInstance3D" parent="StoreInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.8, 1.5, -5.55)
+mesh = SubResource("BoxMesh_rack_mac10")
+
+[node name="RackShotgun3" type="MeshInstance3D" parent="StoreInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.6, 1.5, -5.55)
+mesh = SubResource("BoxMesh_rack_shotgun")
+
+[node name="RackMac10_4" type="MeshInstance3D" parent="StoreInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.6, 1.5, -5.55)
+mesh = SubResource("BoxMesh_rack_mac10")
+
+[node name="RackShotgun4" type="MeshInstance3D" parent="StoreInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8, 1.5, -5.55)
+mesh = SubResource("BoxMesh_rack_shotgun")
+
+[node name="AmmoCrate1" type="MeshInstance3D" parent="StoreInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.8, 0.35, 1.5)
+mesh = SubResource("BoxMesh_gunstore_crate")
+
+[node name="AmmoCrate2" type="MeshInstance3D" parent="StoreInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.8, 0.35, 2.5)
+mesh = SubResource("BoxMesh_gunstore_crate")
 
 [node name="ConvenienceInterior" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1120, 0, 0)

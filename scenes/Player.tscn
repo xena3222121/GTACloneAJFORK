@@ -240,10 +240,10 @@ layout_mode = 3
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -200.0
+offset_left = -300.0
 offset_top = 20.0
 offset_right = -20.0
-offset_bottom = 200.0
+offset_bottom = 300.0
 grow_horizontal = 0
 
 [node name="Border" type="ColorRect" parent="HUD/Minimap"]
@@ -271,7 +271,7 @@ stretch = true
 [node name="SubViewport" type="SubViewport" parent="HUD/Minimap/ViewportContainer"]
 transparent_bg = true
 own_world_3d = false
-size = Vector2i(300, 300)
+size = Vector2i(400, 400)
 
 [node name="MinimapCamera" type="Camera3D" parent="HUD/Minimap/ViewportContainer/SubViewport"]
 script = ExtResource("5")
@@ -446,7 +446,7 @@ theme_override_constants/separation = 12
 [node name="Title" type="Label" parent="HUD/StoreMenu/Panel/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 26
-text = "General Store"
+text = "Guns & Ammo"
 horizontal_alignment = 1
 
 [node name="BuyAmmoButton" type="Button" parent="HUD/StoreMenu/Panel/VBox"]

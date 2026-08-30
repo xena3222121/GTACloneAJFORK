@@ -7,7 +7,7 @@ extends Camera3D
 # without needing separate blip tracking. Fixed north-up rotation rather
 # than matching player facing - simpler, and standard for this style of map.
 const HEIGHT := 80.0
-const MAP_SIZE := 90.0
+const MAP_SIZE := 70.0 # was 90 - paired with the bigger on-screen minimap box, keeps icons/labels legible instead of just showing more tiny dots
 
 func _ready() -> void:
 	projection = PROJECTION_ORTHOGONAL
