@@ -878,6 +878,8 @@ func _fire_ray(origin: Vector3, forward: Vector3, damage: float) -> void:
 		fx.global_position = point
 
 		if is_damageable:
+			if "killed_by_player" in hit:
+				hit.killed_by_player = true
 			hit.take_damage(damage, point)
 			crosshair.flash_hit()
 			_maybe_play_kill_line(hit, is_person)
@@ -1047,6 +1049,7 @@ func open_npc_menu(npc: Node3D) -> void:
 	npc_menu_title.text = npc.name
 	var is_dealer: bool = npc.get("is_dealer") == true
 	var hired: bool = npc.get("hired") == true
+	var jailed: bool = npc.get("jailed") == true
 	# The dealer is someone you hire to sell FOR you, not a regular
 	# civilian - talking/selling to them directly doesn't fit, so they get
 	# a dedicated single-button menu instead of the normal talk/sell one.
@@ -1055,7 +1058,10 @@ func open_npc_menu(npc: Node3D) -> void:
 	sell_drugs_button.disabled = drugs <= 0 and pills <= 0
 	hire_button.visible = is_dealer
 	if is_dealer:
-		if hired:
+		if jailed:
+			hire_button.text = "Bail out of jail - $50"
+			hire_button.disabled = money < 50
+		elif hired:
 			hire_button.text = "Already hired - selling for you"
 			hire_button.disabled = true
 		else:
@@ -1081,10 +1087,16 @@ func _on_npc_sell_pressed() -> void:
 	close_npc_menu()
 
 func _on_npc_hire_pressed() -> void:
-	if current_npc and is_instance_valid(current_npc) and current_npc.has_method("hire") and money >= 200:
-		money -= 200
-		_update_money_label()
-		current_npc.hire()
+	if current_npc and is_instance_valid(current_npc):
+		var jailed: bool = current_npc.get("jailed") == true
+		if jailed and current_npc.has_method("bail_out") and money >= 50:
+			money -= 50
+			_update_money_label()
+			current_npc.bail_out()
+		elif not jailed and current_npc.has_method("hire") and money >= 200:
+			money -= 200
+			_update_money_label()
+			current_npc.hire()
 	close_npc_menu()
 
 func _buy_ammo() -> void:
@@ -1306,6 +1318,8 @@ func melee_attack() -> void:
 		get_tree().current_scene.add_child(fx)
 		fx.global_position = point
 
+		if "killed_by_player" in hit:
+			hit.killed_by_player = true
 		hit.take_damage(MELEE_DAMAGE, point)
 		crosshair.flash_hit()
 		_maybe_play_kill_line(hit, is_person)

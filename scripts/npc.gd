@@ -50,15 +50,19 @@ const CHATTER_RANGE := 5.0
 @export var chatter_clips_dir: String = ""
 const CHATTER_CHANCE := 0.12
 
-# A dealer NPC (see is_dealer below) auto-sells the player's drugs for them
-# once hired, on the same real-time-interval/undercover-risk terms as
-# selling in person - just passive instead of "walk up and press E" each time.
+# A dealer NPC (see is_dealer below) sells drugs out in the world for the
+# player once hired. A second "street" body (see _spawn_street_dealer)
+# spawns near the player's house door and visibly wanders while THIS NPC -
+# the one actually standing in the house, who the player talks to - keeps
+# the sell timer/payout/catch logic, so hiring or bailing out never depends
+# on chasing down wherever the street body has wandered off to.
 const HIRE_COST := 200
 const DEALER_SELL_INTERVAL := 45.0
-const DEALER_SELL_PRICE_MIN := 15
-const DEALER_SELL_PRICE_MAX := 45
-const DEALER_SNITCH_CHANCE := 0.10
-const DEALER_SNITCH_HEAT := 20.0
+const DEALER_SALE_PRICE := 50
+const DEALER_CUT := 10 # the dealer's pay - player nets SALE_PRICE - CUT per sale
+const DEALER_CATCH_CHANCE := 0.05
+const DEALER_BRIBE_COST := 50
+const STREET_DEALER_SCENE := preload("res://scenes/NPC_A.tscn")
 
 @onready var collision: CollisionShape3D = $CollisionShape3D
 @onready var model: Node3D = $Model
@@ -88,12 +92,31 @@ var attack_cooldown := 0.0
 # quietly sells the player's drugs for them over time instead of the player
 # walking it to a stranger themselves.
 @export var is_dealer := false
+# Fixture NPCs stuffed into a small, fully-furnished interior room (the
+# house's dealer, standing behind a counter, etc.) have nowhere to actually
+# wander - WANDER_RADIUS routinely picks a point past that room's walls,
+# and with no obstacle avoidance the NPC just walks into the wall forever
+# and never arrives, looking permanently stuck. Set false to have them
+# stand in place instead.
+@export var wanders := true
 var hired := false
+var jailed := false
+var street_dealer: Node3D = null
+# True only on the wandering street body _spawn_street_dealer() creates -
+# it's just a visible proxy the player can see out dealing; without this
+# guard its own is_dealer/hired (set so ITS menu also reads "already
+# hired") would make _physics_process run a second, duplicate sell timer.
+var is_street_proxy := false
 var dealer_sell_timer := 0.0
 var patron_aggro_timer := 0.0
 var player: Node3D = null
 var vehicle_hit_cooldown := 0.0
 var eject_stun_timer := 0.0
+# Set right before take_damage() by whatever actually dealt the hit, so
+# die() only raises the player's wanted heat when the player caused it -
+# a civilian run over by ambient AI traffic (or another car's driver)
+# used to blame the player just because they died near one.
+var killed_by_player := false
 var chatter_audio: AudioStreamPlayer3D
 var chatter_timer := 0.0
 var interact_zone: Area3D
@@ -178,7 +201,7 @@ func _physics_process(delta: float) -> void:
 	if dead:
 		return
 
-	if is_dealer and hired:
+	if is_dealer and hired and not is_street_proxy:
 		_process_dealer(delta)
 
 	attack_cooldown = max(0.0, attack_cooldown - delta)
@@ -202,7 +225,11 @@ func _physics_process(delta: float) -> void:
 	if hostile and player and is_instance_valid(player):
 		_process_hostile(delta)
 	else:
-		_process_wander(delta)
+		if wanders:
+			_process_wander(delta)
+		else:
+			velocity.x = 0.0
+			velocity.z = 0.0
 		_check_ambient_chatter(delta)
 		if is_bar_patron:
 			_check_patron_aggro(delta)
@@ -236,6 +263,7 @@ func _check_vehicle_collisions() -> void:
 		if car_speed < VEHICLE_HIT_MIN_SPEED:
 			continue
 		vehicle_hit_cooldown = VEHICLE_HIT_COOLDOWN
+		killed_by_player = collider.get("driver") == player
 		take_damage(clamp(car_speed * VEHICLE_HIT_DAMAGE_PER_SPEED, 0.0, VEHICLE_HIT_MAX_DAMAGE))
 		if dead:
 			return
@@ -301,14 +329,56 @@ func interact(player: Node3D) -> void:
 # HIRE_COST - this NPC doesn't need to know the price, just that it's paid.
 func hire() -> void:
 	hired = true
+	jailed = false
 	dealer_sell_timer = DEALER_SELL_INTERVAL
 	prompt_text = "Your dealer - selling for you"
+	_spawn_street_dealer()
+
+# Called by player.gd's _on_dealer_bribe_pressed after it's already deducted
+# DEALER_BRIBE_COST.
+func bail_out() -> void:
+	jailed = false
+	dealer_sell_timer = DEALER_SELL_INTERVAL
+	prompt_text = "Your dealer - selling for you"
+	_spawn_street_dealer()
+
+# The visible half of "hire a dealer" - a body that actually walks out the
+# door and wanders the block near the player's house, so hiring reads as
+# more than just a number ticking up. Spawned fresh each time (on hire and
+# again after a bail-out) since the previous one gets queue_free'd on
+# getting caught.
+func _spawn_street_dealer() -> void:
+	if street_dealer and is_instance_valid(street_dealer):
+		return
+	var world := get_tree().current_scene
+	var door := world.get_node_or_null("HouseEntrance")
+	# Exterior ground level is y=0.1 (see any street NPC's transform) -
+	# HouseEntrance itself sits at y=1, the door-trigger's chest height, so
+	# spawning directly at its position would drop the dealer in mid-air.
+	var spawn_pos: Vector3 = Vector3(door.global_position.x, 0.1, door.global_position.z) if door else global_position
+	var body: Node3D = STREET_DEALER_SCENE.instantiate()
+	# Position set before add_child (matches wanted_system.gd's reinforcement
+	# spawner) - _ready() runs the instant it enters the tree and latches
+	# home_position from wherever it's standing then, so setting position
+	# after add_child would have it wander around the scene's default
+	# instantiate spot instead of near the house.
+	body.position = spawn_pos
+	body.wanders = true
+	body.is_dealer = true
+	body.hired = true
+	body.is_street_proxy = true
+	world.add_child(body)
+	street_dealer = body
 
 # Passive income once hired: periodically sells one unit of the player's
-# drugs on their behalf, same price range and undercover-buyer risk as
-# selling in person (see player.gd's _sell_drugs_to) - just without the
-# player having to walk up to anyone themselves.
+# drugs on their behalf (no need to actually path to a buyer - the street
+# body wandering around already sells the idea), same undercover-buyer
+# risk framing as selling in person, just now with a flat chance the
+# dealer gets caught in the act instead of a snitch raising the player's
+# own heat - selling pauses until the player bails them out.
 func _process_dealer(delta: float) -> void:
+	if jailed:
+		return
 	dealer_sell_timer -= delta
 	if dealer_sell_timer > 0.0:
 		return
@@ -317,9 +387,16 @@ func _process_dealer(delta: float) -> void:
 	if not player or not is_instance_valid(player) or player.get("drugs") == null or player.drugs <= 0:
 		return
 	player.add_drugs(-1)
-	player.add_money(randi_range(DEALER_SELL_PRICE_MIN, DEALER_SELL_PRICE_MAX))
-	if randf() < DEALER_SNITCH_CHANCE:
-		WantedSystem.add_heat(DEALER_SNITCH_HEAT, global_position)
+	player.add_money(DEALER_SALE_PRICE - DEALER_CUT)
+	if randf() < DEALER_CATCH_CHANCE:
+		_get_caught()
+
+func _get_caught() -> void:
+	jailed = true
+	prompt_text = "Your dealer got busted - pay $%d to bail them out" % DEALER_BRIBE_COST
+	if street_dealer and is_instance_valid(street_dealer):
+		street_dealer.queue_free()
+	street_dealer = null
 
 # Reuses the ambient-chatter clip pool (see CHATTER_AUDIO_CLIPS) - only one
 # line exists to draw from right now, same limitation as the ambient bark.
@@ -391,10 +468,15 @@ func _process_hostile(delta: float) -> void:
 func take_damage(amount: float, _hit_point: Vector3 = Vector3.ZERO) -> void:
 	if dead:
 		return
+	# Consumed immediately so an unrelated later hit (e.g. car-explosion
+	# blast damage, which never sets this) can't inherit a stale true from
+	# whatever last set it.
+	var by_player := killed_by_player
+	killed_by_player = false
 	_play_hit_audio()
 	health -= amount
 	if health <= 0.0:
-		die()
+		die(by_player)
 
 func _play_hit_audio() -> void:
 	if hit_audio.playing:
@@ -402,7 +484,7 @@ func _play_hit_audio() -> void:
 	hit_audio.stream = load(HIT_AUDIO_CLIPS[randi() % HIT_AUDIO_CLIPS.size()])
 	hit_audio.play()
 
-func die() -> void:
+func die(by_player: bool = false) -> void:
 	dead = true
 	collision.disabled = true
 	interact_zone.monitoring = false
@@ -412,7 +494,8 @@ func die() -> void:
 	_play(anim_die)
 	_spawn_blood_pool()
 	_maybe_drop_money()
-	WantedSystem.add_heat(KILLED_HEAT, global_position)
+	if by_player:
+		WantedSystem.add_heat(KILLED_HEAT, global_position)
 
 func _maybe_drop_money() -> void:
 	if randf() < MONEY_DROP_CHANCE:

@@ -78,6 +78,10 @@ var investigate_timer := 0.0
 var fire_cooldown := 0.0
 var lost_sight_timer := 0.0
 var vehicle_hit_cooldown := 0.0
+# Set right before take_damage() by whatever actually dealt the hit - a cop
+# run over by ambient AI traffic (or shot by another cop's stray fire, if
+# that ever happens) shouldn't go hostile on the player or add heat.
+var killed_by_player := false
 var player: Node3D = null
 
 var anim_idle := ""
@@ -230,6 +234,7 @@ func _check_vehicle_collisions() -> void:
 		if car_speed < VEHICLE_HIT_MIN_SPEED:
 			continue
 		vehicle_hit_cooldown = VEHICLE_HIT_COOLDOWN
+		killed_by_player = collider.get("driver") == player
 		take_damage(clamp(car_speed * VEHICLE_HIT_DAMAGE_PER_SPEED, 0.0, VEHICLE_HIT_MAX_DAMAGE))
 		if dead:
 			return
@@ -420,14 +425,20 @@ func _shoot_at_player() -> void:
 func take_damage(amount: float, _hit_point: Vector3 = Vector3.ZERO) -> void:
 	if dead:
 		return
+	# Consumed immediately so an unrelated later hit (e.g. car-explosion
+	# blast damage, which never sets this) can't inherit a stale true from
+	# whatever last set it.
+	var by_player := killed_by_player
+	killed_by_player = false
 	_play_hit_audio()
-	if not hostile and player and player.has_method("play_cops_incoming_line"):
-		player.play_cops_incoming_line()
-	_engage()
-	WantedSystem.add_heat(HIT_HEAT, global_position)
+	if by_player:
+		if not hostile and player and player.has_method("play_cops_incoming_line"):
+			player.play_cops_incoming_line()
+		_engage()
+		WantedSystem.add_heat(HIT_HEAT, global_position)
 	health -= amount
 	if health <= 0.0:
-		die()
+		die(by_player)
 
 func _play_hit_audio() -> void:
 	if hit_audio.playing:
@@ -435,14 +446,15 @@ func _play_hit_audio() -> void:
 	hit_audio.stream = load(HIT_AUDIO_CLIPS[randi() % HIT_AUDIO_CLIPS.size()])
 	hit_audio.play()
 
-func die() -> void:
+func die(by_player: bool = false) -> void:
 	dead = true
 	collision.disabled = true
 	siren_audio.stop()
 	_play(anim_die)
 	_spawn_blood_pool()
 	_maybe_drop_loot()
-	WantedSystem.add_heat(KILLED_HEAT, global_position)
+	if by_player:
+		WantedSystem.add_heat(KILLED_HEAT, global_position)
 
 func _spawn_blood_pool() -> void:
 	var pool: Node3D = BLOOD_POOL.instantiate()
