@@ -816,3 +816,5 @@ text = "Quit to Desktop"
 
 [node name="SettingsMenu" parent="HUD/PauseMenu" instance=ExtResource("7")]
 layout_mode = 1
+
+[editable path="Model"]
