@@ -71,7 +71,19 @@ const DEALER_SALE_PRICE := 50
 const DEALER_CUT := 10 # the dealer's pay - player nets SALE_PRICE - CUT per sale
 const DEALER_CATCH_CHANCE := 0.05
 const DEALER_BRIBE_COST := 50
-const STREET_DEALER_SCENE := preload("res://scenes/NPC_A.tscn")
+# load(), not preload() - NPC_A.tscn's own script IS npc.gd, so a preload
+# here is a circular dependency (this file depends on a scene that depends
+# on this file). The editor tolerates it, but it broke resource loading
+# for this whole script in an actual exported build (confirmed via a real
+# export - a huge cascade of "can't load dependency" errors traced back to
+# exactly this line) - not just this one constant failing, the entire
+# script failed to load, which then affects everything else in the
+# exported game.
+static var _street_dealer_scene: PackedScene
+static func _get_street_dealer_scene() -> PackedScene:
+	if not _street_dealer_scene:
+		_street_dealer_scene = load("res://scenes/NPC_A.tscn")
+	return _street_dealer_scene
 
 @onready var collision: CollisionShape3D = $CollisionShape3D
 @onready var model: Node3D = $Model
@@ -370,7 +382,7 @@ func _spawn_street_dealer() -> void:
 	# HouseEntrance itself sits at y=1, the door-trigger's chest height, so
 	# spawning directly at its position would drop the dealer in mid-air.
 	var spawn_pos: Vector3 = Vector3(door.global_position.x, 0.1, door.global_position.z) if door else global_position
-	var body: Node3D = STREET_DEALER_SCENE.instantiate()
+	var body: Node3D = _get_street_dealer_scene().instantiate()
 	# Position set before add_child (matches wanted_system.gd's reinforcement
 	# spawner) - _ready() runs the instant it enters the tree and latches
 	# home_position from wherever it's standing then, so setting position
@@ -432,8 +444,17 @@ func _get_chatter_clips() -> Array:
 	var dir := DirAccess.open(chatter_clips_dir)
 	if dir:
 		for file_name in dir.get_files():
-			if file_name.get_extension().to_lower() == "wav":
-				clips.append(chatter_clips_dir.path_join(file_name))
+			# Exported builds list "name.wav.import" here instead of
+			# "name.wav" (the real audio data moves under .godot/imported/
+			# at export time) - strip that suffix before checking the
+			# extension, or this always comes back empty in an exported
+			# build and no voice line ever plays.
+			var real_name: String = file_name.trim_suffix(".import")
+			if real_name.get_extension().to_lower() != "wav":
+				continue
+			var full_path: String = chatter_clips_dir.path_join(real_name)
+			if not clips.has(full_path):
+				clips.append(full_path)
 	return clips
 
 # Occasional background bark when the player's standing near a peaceful

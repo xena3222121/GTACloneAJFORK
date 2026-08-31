@@ -1555,8 +1555,15 @@ func play_random_voice_clip(dir_path: String) -> void:
 		return
 	var clips: Array = []
 	for file_name in dir.get_files():
-		if file_name.get_extension().to_lower() == "wav":
-			clips.append(dir_path.path_join(file_name))
+		# See npc.gd's _get_chatter_clips for why the ".import" suffix
+		# needs stripping first - without it, this list is always empty
+		# in an exported build.
+		var real_name: String = file_name.trim_suffix(".import")
+		if real_name.get_extension().to_lower() != "wav":
+			continue
+		var full_path: String = dir_path.path_join(real_name)
+		if not clips.has(full_path):
+			clips.append(full_path)
 	if clips.is_empty():
 		return
 	voice_line_player.stream = load(clips[randi() % clips.size()])
