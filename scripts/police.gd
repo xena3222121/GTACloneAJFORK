@@ -425,6 +425,7 @@ func _process_hostile(delta: float) -> void:
 		model.rotation.y = lerp_angle(model.rotation.y, target_yaw, TURN_SPEED * delta)
 
 func _shoot_at_player() -> void:
+	NPC.scare_nearby(get_tree(), global_position)
 	fire_cooldown = fire_rate
 	_play(anim_attack)
 

@@ -952,6 +952,7 @@ func _fire_ray(origin: Vector3, forward: Vector3, damage: float) -> void:
 			_maybe_play_kill_line(hit, is_person)
 
 func shoot() -> void:
+	NPC.scare_nearby(get_tree(), global_position)
 	gunshot_player.play()
 	_flash_muzzle()
 

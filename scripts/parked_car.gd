@@ -131,6 +131,7 @@ func explode() -> void:
 	_spawn_explosion()
 	_spawn_scorch_mark()
 	_apply_blast_damage()
+	NPC.scare_nearby(get_tree(), global_position, blast_radius * 2.5)
 	_char_model()
 	_spawn_fire()
 

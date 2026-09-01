@@ -1,3 +1,4 @@
+class_name NPC
 extends CharacterBody3D
 
 const WALK_SPEED := 1.8
@@ -16,6 +17,20 @@ const CHASE_SPEED := 2.2
 const PATRON_AGGRO_CHECK_INTERVAL := 2.0
 const PATRON_AGGRO_RANGE := 4.0
 const PATRON_AGGRO_CHANCE := 0.35
+
+# The city used to feel like a shooting gallery - civilians stood around
+# wandering their own idle loop no matter how much gunfire or how many car
+# bombs went off next to them. scare_nearby() is called from player.gd's
+# shoot() and from car.gd/parked_car.gd's explode() so any civilian in
+# earshot breaks off whatever they were doing and runs.
+const PANIC_RADIUS := 14.0
+const PANIC_SPEED := 3.4
+const PANIC_DURATION := 3.5
+const PANIC_AUDIO_CLIPS := [
+	"res://Audio/Arnold/NPC Getting attacked/ahhhhhhhh.wav",
+	"res://Audio/Arnold/NPC Getting attacked/oh fml im getting attacked.wav",
+	"res://Audio/Arnold/NPC Getting attacked/Oh No This Guys Crazy.wav",
+]
 
 const VEHICLE_HIT_MIN_SPEED := 2.0
 const VEHICLE_HIT_DAMAGE_PER_SPEED := 4.0
@@ -120,6 +135,9 @@ var attack_cooldown := 0.0
 # and never arrives, looking permanently stuck. Set false to have them
 # stand in place instead.
 @export var wanders := true
+var panicking := false
+var panic_timer := 0.0
+var flee_dir := Vector3.ZERO
 var hired := false
 # Set by player.gd's _rob_npc - one attempt per person, so reopening the
 # same NPC's menu can't just be farmed for infinite money.
@@ -221,6 +239,30 @@ func _pick_new_target() -> void:
 	var dist := randf() * WANDER_RADIUS
 	target_position = home_position + Vector3(cos(angle) * dist, 0, sin(angle) * dist)
 
+# Called from wherever violence happens (player.gd's shoot(), car.gd/
+# parked_car.gd's explode()) rather than civilians polling for danger every
+# frame - a one-shot broadcast to whoever's in earshot is cheaper and reacts
+# the instant the gun goes off instead of on the next check interval.
+static func scare_nearby(tree: SceneTree, source_position: Vector3, radius: float = PANIC_RADIUS) -> void:
+	for body in tree.get_nodes_in_group("civilians"):
+		if is_instance_valid(body) and body.global_position.distance_to(source_position) <= radius:
+			body.panic(source_position)
+
+# Functional civilians (a hired dealer, their visible street proxy) keep
+# doing their job instead of running off - and anyone already fighting
+# (hostile) or already fleeing ignores a second, weaker scare.
+func panic(source_position: Vector3) -> void:
+	if dead or hostile or panicking or is_dealer or is_street_proxy:
+		return
+	panicking = true
+	panic_timer = PANIC_DURATION
+	var away := global_position - source_position
+	away.y = 0.0
+	flee_dir = away.normalized() if away.length() > 0.01 else Vector3(randf() - 0.5, 0, randf() - 0.5).normalized()
+	if not chatter_audio.playing:
+		chatter_audio.stream = load(PANIC_AUDIO_CLIPS[randi() % PANIC_AUDIO_CLIPS.size()])
+		chatter_audio.play()
+
 func _physics_process(delta: float) -> void:
 	if dead:
 		return
@@ -248,6 +290,8 @@ func _physics_process(delta: float) -> void:
 
 	if hostile and player and is_instance_valid(player):
 		_process_hostile(delta)
+	elif panicking:
+		_process_panic(delta)
 	else:
 		if wanders:
 			_process_wander(delta)
@@ -477,6 +521,22 @@ func _check_ambient_chatter(delta: float) -> void:
 			return
 		chatter_audio.stream = load(clips[randi() % clips.size()])
 		chatter_audio.play()
+
+# Runs flat-out away from wherever the scare came from for PANIC_DURATION,
+# no pathing or obstacle-avoidance (same simple direct-velocity approach as
+# _process_wander) - then drops back to normal wandering from wherever it
+# ended up.
+func _process_panic(delta: float) -> void:
+	panic_timer -= delta
+	if panic_timer <= 0.0:
+		panicking = false
+		_pick_new_target()
+		return
+	velocity.x = flee_dir.x * PANIC_SPEED
+	velocity.z = flee_dir.z * PANIC_SPEED
+	var target_yaw := atan2(flee_dir.x, flee_dir.z)
+	model.rotation.y = lerp_angle(model.rotation.y, target_yaw, 8.0 * delta)
+	_play(anim_walk)
 
 func _process_hostile(delta: float) -> void:
 	var to_player := player.global_position - global_position
