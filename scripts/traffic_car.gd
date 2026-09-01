@@ -27,6 +27,14 @@ const DRIVE_ACCEL := 10.0
 const DRIVE_BRAKE_DECEL := 18.0
 const DRIVE_TURN_SPEED := 2.2
 
+# Called from npc.gd's NPC.scare_nearby() - ambient traffic screeching down
+# to a crawl near a shooting/explosion/death instead of just cruising
+# obliviously through it. No steering/lane-change logic, just a temporary
+# speed cut on the existing back-and-forth patrol - a stopped car reads as
+# "reacting" without needing real swerve/avoidance behavior.
+const PANIC_BRAKE_TIME := 2.0
+const PANIC_BRAKE_SPEED_MULTIPLIER := 0.15
+
 @onready var model: Node3D = $Model
 @onready var driver_seat: Marker3D = _get_or_create_marker("DriverSeat", Vector3(0, 0.9, 0))
 @onready var exit_point: Marker3D = _get_or_create_marker("ExitPoint", Vector3(1.8, 0.1, 0))
@@ -34,6 +42,7 @@ const DRIVE_TURN_SPEED := 2.2
 var direction: float = 1.0
 var health: float
 var destroyed := false
+var panic_brake_timer := 0.0
 
 # Player-driven state. Traffic cars stay in the "traffic_cars" group (not
 # "vehicles") even though they're now stealable - the car-vs-pedestrian
@@ -111,6 +120,11 @@ func driver_exit() -> void:
 	driver = null
 	drive_speed = 0.0
 
+func panic_brake() -> void:
+	if driver or destroyed:
+		return
+	panic_brake_timer = PANIC_BRAKE_TIME
+
 # No ragdoll system exists, so this is the "thrown from the car" animation:
 # pop a generic pedestrian out and launch it (see npc.gd's launch()), which
 # lets gravity carry out an actual arc-and-land rather than a single-frame
@@ -168,8 +182,10 @@ func _physics_process(delta: float) -> void:
 	if driver:
 		_process_driving(delta)
 		return
+	panic_brake_timer = max(0.0, panic_brake_timer - delta)
+	var effective_speed: float = speed * (PANIC_BRAKE_SPEED_MULTIPLIER if panic_brake_timer > 0.0 else 1.0)
 	var pos: float = position.z if axis == 0 else position.x
-	pos += direction * speed * delta
+	pos += direction * effective_speed * delta
 	if pos >= max_pos:
 		pos = max_pos
 		direction = -1.0

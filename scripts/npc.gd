@@ -26,6 +26,12 @@ const PATRON_AGGRO_CHANCE := 0.35
 const PANIC_RADIUS := 14.0
 const PANIC_SPEED := 3.4
 const PANIC_DURATION := 3.5
+# How far a newly-panicking civilian's own scream spooks whoever's standing
+# right next to them - smaller than PANIC_RADIUS so it doesn't just
+# rebroadcast the original blast/gunshot radius from every panicking body,
+# but enough for panic to ripple further through a clustered crowd (Prism's
+# patrons, the Downtown plaza) than the original source alone could reach.
+const RIPPLE_RADIUS := 6.0
 const PANIC_AUDIO_CLIPS := [
 	"res://Audio/Arnold/NPC Getting attacked/ahhhhhhhh.wav",
 	"res://Audio/Arnold/NPC Getting attacked/oh fml im getting attacked.wav",
@@ -247,6 +253,13 @@ static func scare_nearby(tree: SceneTree, source_position: Vector3, radius: floa
 	for body in tree.get_nodes_in_group("civilians"):
 		if is_instance_valid(body) and body.global_position.distance_to(source_position) <= radius:
 			body.panic(source_position)
+	# Same broadcast also panic-brakes nearby ambient traffic (see
+	# traffic_car.gd's panic_brake) - one shared "something scary just
+	# happened here" call instead of every gunfire/explosion/death site
+	# needing to separately notify both civilians and traffic.
+	for car in tree.get_nodes_in_group("traffic_cars"):
+		if is_instance_valid(car) and car.has_method("panic_brake") and car.global_position.distance_to(source_position) <= radius:
+			car.panic_brake()
 
 # Functional civilians (a hired dealer, their visible street proxy) keep
 # doing their job instead of running off - and anyone already fighting
@@ -262,6 +275,7 @@ func panic(source_position: Vector3) -> void:
 	if not chatter_audio.playing:
 		chatter_audio.stream = load(PANIC_AUDIO_CLIPS[randi() % PANIC_AUDIO_CLIPS.size()])
 		chatter_audio.play()
+	NPC.scare_nearby(get_tree(), global_position, RIPPLE_RADIUS)
 
 func _physics_process(delta: float) -> void:
 	if dead:
