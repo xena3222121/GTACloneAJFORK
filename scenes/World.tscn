@@ -51,6 +51,7 @@
 [ext_resource type="Script" path="res://scripts/building_skin.gd" id="52"]
 [ext_resource type="PackedScene" path="res://scenes/HealthPack.tscn" id="53"]
 [ext_resource type="PackedScene" path="res://scenes/ArmorPickup.tscn" id="54"]
+[ext_resource type="Script" path="res://scripts/mission_giver.gd" id="55"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
 sky_top_color = Color(0.3, 0.5, 0.85, 1)
@@ -3450,6 +3451,27 @@ mesh = SubResource("CylinderMesh_mailbox_post")
 [node name="MailboxBox" type="MeshInstance3D" parent="HouseEntrance"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.8, 0.1, 4.0)
 mesh = SubResource("BoxMesh_mailbox_box")
+
+[node name="Fixer" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.3, 1, -6)
+script = ExtResource("55")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Fixer"]
+shape = SubResource("SphereShape3D_interact")
+
+[node name="Mesh" type="MeshInstance3D" parent="Fixer"]
+mesh = SubResource("BoxMesh_counter")
+
+[node name="MapLabel" type="Label3D" parent="Fixer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 21, 0)
+layers = 524288
+billboard = 1
+no_depth_test = true
+font_size = 64
+outline_size = 12
+pixel_size = 0.08
+modulate = Color(0.15, 0.75, 1, 1)
+text = "Fixer"
 
 [node name="Shops" type="Node3D" parent="."]
 

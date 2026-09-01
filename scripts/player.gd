@@ -194,6 +194,8 @@ const UPPER_BODY_BONES := [
 @onready var drugs_label: Label = $HUD/DrugsLabel
 @onready var pills_label: Label = $HUD/PillsLabel
 @onready var interact_prompt_label: Label = $HUD/InteractPromptLabel
+@onready var objective_label: Label = $HUD/ObjectiveLabel
+@onready var mission_banner_label: Label = $HUD/MissionBannerLabel
 @onready var drunk_overlay: ColorRect = $HUD/DrunkOverlay
 @onready var store_menu: Control = $HUD/StoreMenu
 @onready var buy_ammo_button: Button = $HUD/StoreMenu/Panel/VBox/BuyAmmoButton
@@ -478,6 +480,10 @@ func _ready() -> void:
 	quit_button.pressed.connect(_on_quit_pressed)
 	WantedSystem.tier_changed.connect(_on_wanted_tier_changed)
 	_on_wanted_tier_changed(0)
+	MissionSystem.mission_started.connect(_on_mission_started)
+	MissionSystem.mission_completed.connect(_on_mission_completed)
+	MissionSystem.mission_aborted.connect(_on_mission_aborted)
+	MissionSystem.objective_changed.connect(_on_objective_changed)
 	buy_ammo_button.pressed.connect(_buy_ammo)
 	buy_shotgun_button.pressed.connect(_buy_shotgun)
 	buy_mac10_button.pressed.connect(_buy_mac10)
@@ -496,6 +502,28 @@ func _ready() -> void:
 
 func _on_wanted_tier_changed(tier: int) -> void:
 	wanted_label.text = "★".repeat(tier)
+
+func _on_objective_changed(text: String) -> void:
+	objective_label.text = text
+
+func _on_mission_started(mission: Dictionary) -> void:
+	_show_mission_banner("%s\n%s" % [mission["title"], mission["briefing"]], 4.0)
+
+func _on_mission_completed(mission: Dictionary) -> void:
+	_show_mission_banner("MISSION COMPLETE\n+$%d" % int(mission["reward"]), 3.0)
+
+func _on_mission_aborted() -> void:
+	pass # objective_changed already clears the HUD line; nothing to announce, no reward
+
+# Same fade-in/hold/fade-out shape for both the briefing and the completion
+# banner - only the text and hold time differ.
+func _show_mission_banner(text: String, hold_time: float) -> void:
+	mission_banner_label.text = text
+	mission_banner_label.modulate = Color(1, 1, 1, 0)
+	var tween := create_tween()
+	tween.tween_property(mission_banner_label, "modulate:a", 1.0, 0.3)
+	tween.tween_interval(hold_time)
+	tween.tween_property(mission_banner_label, "modulate:a", 0.0, 0.6)
 
 func _on_restart_pressed() -> void:
 	WantedSystem.reset()

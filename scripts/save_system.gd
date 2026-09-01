@@ -52,6 +52,7 @@ func save_game(player: Node) -> void:
 		"weed_planted_at": weed.planted_at if weed else 0,
 		"dealer_hired": dealer.hired if dealer else false,
 		"outfit_tint": player.outfit_tint.to_html(true),
+		"mission_index": MissionSystem.mission_index,
 	}
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file:
@@ -88,6 +89,7 @@ func load_game(player: Node) -> bool:
 	player.mac10_ammo_in_mag = data.get("mac10_ammo_in_mag", player.mac10_ammo_in_mag)
 	player.mac10_reserve_ammo = data.get("mac10_reserve_ammo", player.mac10_reserve_ammo)
 	player.current_weapon = data.get("current_weapon", player.current_weapon)
+	MissionSystem.mission_index = data.get("mission_index", MissionSystem.mission_index)
 
 	var weed := _find_weed_plot(player)
 	if weed:

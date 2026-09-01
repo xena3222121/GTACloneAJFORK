@@ -297,6 +297,40 @@ theme_override_constants/outline_size = 5
 theme_override_font_sizes/font_size = 28
 text = ""
 
+[node name="ObjectiveLabel" type="Label" parent="HUD"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 20.0
+offset_top = 106.0
+offset_right = 320.0
+offset_bottom = 148.0
+theme_override_colors/font_color = Color(0.15, 0.75, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 5
+theme_override_constants/line_spacing = 2
+theme_override_font_sizes/font_size = 20
+text = ""
+autowrap_mode = 3
+
+[node name="MissionBannerLabel" type="Label" parent="HUD"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -400.0
+offset_top = 60.0
+offset_right = 400.0
+offset_bottom = 140.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.15, 0.75, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 32
+text = ""
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+modulate = Color(1, 1, 1, 0)
+
 [node name="Minimap" type="Control" parent="HUD"]
 layout_mode = 3
 anchors_preset = 1

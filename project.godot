@@ -28,6 +28,7 @@ DayNightCycle="*res://scripts/day_night_cycle.gd"
 Weather="*res://scripts/weather.gd"
 RampAssist="*res://scripts/ramp_assist.gd"
 Settings="*res://scripts/settings.gd"
+MissionSystem="*res://scripts/mission_system.gd"
 
 [physics]
 
