@@ -28,6 +28,12 @@ const MONEY_DROP_CHANCE := 0.4
 const AMMO_DROP_CHANCE := 0.4
 
 const DETECTION_RANGE := 9.0 # was 14 - wandering cops were piling onto an already-active incident too readily
+# Detection/engage used to be flat no matter how hot the player already was -
+# a cop at 1 star noticed you from exactly as far as one at max heat. Every
+# cop (patrol or reinforcement) now widens its own bubble with the current
+# tier, so a hot player gets spotted and shot at from further away instead
+# of the response staying static while only the reinforcement count changes.
+const TIER_RANGE_BONUS := 4.0
 const LEASH_RADIUS := 22.0 # was 30 - cops should back off sooner once you've actually put distance between you
 const GIVE_UP_TIME := 4.0 # was 6
 const HIT_HEAT := 5.0
@@ -102,6 +108,7 @@ var eject_stun_timer := 0.0
 # that ever happens) shouldn't go hostile on the player or add heat.
 var killed_by_player := false
 var player: Node3D = null
+var wanted_tier := 0
 
 var anim_idle := ""
 var anim_walk := ""
@@ -139,6 +146,8 @@ func _force_loop(anim_name: String) -> void:
 func _ready() -> void:
 	add_to_group("police")
 	health = max_health
+	wanted_tier = WantedSystem.get_tier()
+	WantedSystem.tier_changed.connect(_on_wanted_tier_changed)
 	home_position = global_position
 	_pick_new_target()
 	# Deferred rather than looked up directly here: the 4 hand-placed police
@@ -201,6 +210,15 @@ func _engage() -> void:
 
 func _resolve_player() -> void:
 	player = get_tree().get_first_node_in_group("player")
+
+func _on_wanted_tier_changed(tier: int) -> void:
+	wanted_tier = tier
+
+func _effective_detection_range() -> float:
+	return DETECTION_RANGE + wanted_tier * TIER_RANGE_BONUS
+
+func _effective_engage_range() -> float:
+	return ENGAGE_RANGE + wanted_tier * TIER_RANGE_BONUS
 
 func _pick_new_target() -> void:
 	var angle := randf() * TAU
@@ -297,7 +315,7 @@ func _check_proactive_detection() -> void:
 	if _player_is_unarmed():
 		return
 	var to_player := player.global_position - global_position
-	if to_player.length() <= DETECTION_RANGE and _has_line_of_sight(player.global_position):
+	if to_player.length() <= _effective_detection_range() and _has_line_of_sight(player.global_position):
 		_engage()
 
 func _player_is_unarmed() -> bool:
@@ -314,7 +332,7 @@ func alert(source_position: Vector3) -> void:
 	if dead or hostile:
 		return
 	if player and is_instance_valid(player) and not _player_is_unarmed() \
-			and global_position.distance_to(player.global_position) <= ENGAGE_RANGE \
+			and global_position.distance_to(player.global_position) <= _effective_engage_range() \
 			and _has_line_of_sight(player.global_position):
 		_engage()
 	else:
@@ -360,7 +378,7 @@ func _process_investigate(delta: float) -> void:
 
 	var to_player := player.global_position - global_position
 	to_player.y = 0
-	if not _player_is_unarmed() and to_player.length() <= DETECTION_RANGE and _has_line_of_sight(player.global_position):
+	if not _player_is_unarmed() and to_player.length() <= _effective_detection_range() and _has_line_of_sight(player.global_position):
 		_engage()
 		return
 
@@ -399,7 +417,7 @@ func _process_hostile(delta: float) -> void:
 	# AND put real distance between the cop and its post. Without the leash
 	# check a cop hiding just around a corner from home would give up almost
 	# immediately; without the sight check it'd never give up at all.
-	if dist <= ENGAGE_RANGE and _has_line_of_sight(player.global_position):
+	if dist <= _effective_engage_range() and _has_line_of_sight(player.global_position):
 		lost_sight_timer = 0.0
 		WantedSystem.report_sighting()
 	elif global_position.distance_to(home_position) > LEASH_RADIUS:
@@ -417,7 +435,7 @@ func _process_hostile(delta: float) -> void:
 	else:
 		velocity.x = 0.0
 		velocity.z = 0.0
-		if fire_cooldown <= 0.0 and dist <= ENGAGE_RANGE:
+		if fire_cooldown <= 0.0 and dist <= _effective_engage_range():
 			_shoot_at_player()
 
 	if to_player.length() > 0.01:
@@ -493,6 +511,7 @@ func die(by_player: bool = false) -> void:
 	_play(anim_die)
 	_spawn_blood_pool()
 	_maybe_drop_loot()
+	NPC.scare_nearby(get_tree(), global_position)
 	if by_player:
 		WantedSystem.add_heat(KILLED_HEAT, global_position)
 

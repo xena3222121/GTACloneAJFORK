@@ -50,6 +50,9 @@ var _tier := 0
 var _spawn_timer := 0.0
 var _spawned: Array = []
 
+func get_tier() -> int:
+	return _tier
+
 func add_heat(amount: float, source_position: Vector3) -> void:
 	heat = clamp(heat + amount, 0.0, MAX_HEAT)
 	_grace_timer = DECAY_GRACE
