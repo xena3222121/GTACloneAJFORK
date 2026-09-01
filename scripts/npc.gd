@@ -589,6 +589,10 @@ func die(by_player: bool = false) -> void:
 	_play(anim_die)
 	_spawn_blood_pool()
 	_maybe_drop_money()
+	# scare_nearby is also called directly from gunfire/explosions (see
+	# player.gd/car.gd), but a knife kill or a run-over is silent - this is
+	# what makes THOSE scatter a crowd too, not just louder deaths.
+	NPC.scare_nearby(get_tree(), global_position)
 	if by_player:
 		WantedSystem.add_heat(KILLED_HEAT, global_position)
 
