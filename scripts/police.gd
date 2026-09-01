@@ -10,6 +10,7 @@ const TURN_SPEED := 8.0
 const ENGAGE_RANGE := 13.0 # was 16 - cops opened fire from further away than a player could reasonably react to
 const STOP_DISTANCE := 7.0
 const RAY_LENGTH := 60.0
+const HIT_STAGGER_TIME := 0.25
 
 # Every cop used to be identical regardless of how much heat called them in -
 # a 1-star beat cop and a 3-star response were the same guy. Exported so
@@ -103,6 +104,7 @@ var fire_cooldown := 0.0
 var lost_sight_timer := 0.0
 var vehicle_hit_cooldown := 0.0
 var eject_stun_timer := 0.0
+var hit_stagger_timer := 0.0
 # Set right before take_damage() by whatever actually dealt the hit - a cop
 # run over by ambient AI traffic (or shot by another cop's stray fire, if
 # that ever happens) shouldn't go hostile on the player or add heat.
@@ -238,6 +240,7 @@ func _physics_process(delta: float) -> void:
 
 	fire_cooldown = max(0.0, fire_cooldown - delta)
 	vehicle_hit_cooldown = max(0.0, vehicle_hit_cooldown - delta)
+	hit_stagger_timer = max(0.0, hit_stagger_timer - delta)
 
 	if eject_stun_timer > 0.0:
 		eject_stun_timer -= delta
@@ -261,7 +264,14 @@ func _physics_process(delta: float) -> void:
 		velocity.y = 0.0
 
 	if hostile and player and is_instance_valid(player):
-		_process_hostile(delta)
+		# A landed hit briefly freezes movement/firing instead of the cop
+		# shrugging it off mid-stride - short enough it's not a real combat
+		# advantage, just enough to actually sell the impact.
+		if hit_stagger_timer > 0.0:
+			velocity.x = 0.0
+			velocity.z = 0.0
+		else:
+			_process_hostile(delta)
 	elif alerted and player and is_instance_valid(player):
 		_process_investigate(delta)
 	else:
@@ -420,9 +430,12 @@ func _process_hostile(delta: float) -> void:
 	if dist <= _effective_engage_range() and _has_line_of_sight(player.global_position):
 		lost_sight_timer = 0.0
 		WantedSystem.report_sighting()
-	elif global_position.distance_to(home_position) > LEASH_RADIUS:
+	# SWAT roam further from their spawn point and take longer to give up
+	# once they've lost sight - they were called in specifically for this
+	# chase, unlike a patrol cop who was just standing post nearby.
+	elif global_position.distance_to(home_position) > LEASH_RADIUS * (1.6 if is_swat else 1.0):
 		lost_sight_timer += delta
-		if lost_sight_timer >= GIVE_UP_TIME:
+		if lost_sight_timer >= GIVE_UP_TIME * (1.75 if is_swat else 1.0):
 			hostile = false
 			lost_sight_timer = 0.0
 			return
@@ -460,7 +473,9 @@ func _shoot_at_player() -> void:
 	# GUN_DAMAGE, no way to feel "lucky" getting shot at from across the
 	# street. This adds a cone of inaccuracy that widens with range (tight
 	# up close, sprays wide at ENGAGE_RANGE) so distant shots often miss.
-	var spread_amount: float = clamp(dist_to_target / ENGAGE_RANGE, 0.0, 1.0) * 1.1
+	# SWAT (see is_swat) shoot noticeably straighter than a regular beat cop -
+	# tactical training, not just bigger numbers elsewhere.
+	var spread_amount: float = clamp(dist_to_target / ENGAGE_RANGE, 0.0, 1.0) * 1.1 * (0.55 if is_swat else 1.0)
 	var right: Vector3 = forward.cross(Vector3.UP).normalized()
 	var up: Vector3 = right.cross(forward)
 	var spread_offset: Vector3 = (right * randf_range(-1.0, 1.0) + up * randf_range(-1.0, 1.0)) * spread_amount
@@ -494,6 +509,7 @@ func take_damage(amount: float, _hit_point: Vector3 = Vector3.ZERO) -> void:
 			player.play_cops_incoming_line()
 		_engage()
 		WantedSystem.add_heat(HIT_HEAT, global_position)
+		hit_stagger_timer = HIT_STAGGER_TIME
 	health -= amount
 	if health <= 0.0:
 		die(by_player)
