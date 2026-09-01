@@ -45,6 +45,32 @@ const MISSIONS := [
 		"objective": "Destroy the marked car",
 		"reward": 1000,
 	},
+	{
+		"id": "double_or_nothing",
+		"title": "Double or Nothing",
+		"briefing": "Somebody owes somebody money and it isn't getting paid back. Handle it.",
+		"type": "kill",
+		"objective": "Find and kill the marked target",
+		"reward": 1250,
+	},
+	{
+		"id": "one_more_job",
+		"title": "One More Job",
+		"briefing": "Same deal as before - grab the marked car, bring it to the Downtown plaza. Try not to scratch it this time.",
+		"type": "steal_deliver",
+		"objective": "Steal the marked car and deliver it to the Downtown plaza",
+		"reward": 1500,
+		"drop_position": Vector3(10, 0, 115),
+		"drop_radius": 8.0,
+	},
+	{
+		"id": "endgame",
+		"title": "Endgame",
+		"briefing": "This is the one that ends the beef for good. Torch their ride and walk away.",
+		"type": "wreck",
+		"objective": "Destroy the marked car",
+		"reward": 2000,
+	},
 ]
 
 # How many missions have been completed - also the index of the next one.
