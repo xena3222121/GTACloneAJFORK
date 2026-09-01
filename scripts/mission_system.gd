@@ -46,6 +46,15 @@ const MISSIONS := [
 		"reward": 1000,
 	},
 	{
+		"id": "clean_sweep",
+		"title": "Clean Sweep",
+		"briefing": "Three loose ends. Tie them all up before somebody talks.",
+		"type": "kill",
+		"objective": "Find and kill the marked targets",
+		"reward": 1100,
+		"kill_count": 3,
+	},
+	{
 		"id": "double_or_nothing",
 		"title": "Double or Nothing",
 		"briefing": "Somebody owes somebody money and it isn't getting paid back. Handle it.",
@@ -81,21 +90,39 @@ var active_mission: Dictionary = {}
 var active_target: Node3D = null
 var contracted_player: Node3D = null
 var target_marker: Label3D = null
+# Only meaningful for "kill" missions with a "kill_count" above 1 (see
+# Clean Sweep) - how many of the required kills are done so far, and the
+# required total for this run, cached from the mission dict so _process
+# doesn't have to re-read it every frame.
+var kills_done := 0
+var kill_count := 1
+
+# Once the story chain (MISSIONS) runs out, the Fixer doesn't just go quiet -
+# same pattern job_board.gd already established (a repeatable random job),
+# just from the Fixer instead of the board, at a flat high payout befitting
+# someone who already finished the actual story.
+const ENDLESS_REWARD_MIN := 1800
+const ENDLESS_REWARD_MAX := 2500
+const ENDLESS_BRIEFINGS := [
+	"Story's done, but the work never stops. One more for the road.",
+	"Another day, another job. You know the drill by now.",
+	"No shortage of people who need a problem handled.",
+]
 
 func has_next_mission() -> bool:
-	return not active_mission and mission_index < MISSIONS.size()
+	return not active_mission
 
 func get_next_mission() -> Dictionary:
 	if mission_index < MISSIONS.size():
 		return MISSIONS[mission_index]
 	return {}
 
-func start_mission(player: Node3D) -> bool:
-	if active_mission or mission_index >= MISSIONS.size():
-		return false
-	var mission: Dictionary = MISSIONS[mission_index]
+# Shared by start_mission() and the mid-mission re-pick Clean Sweep-style
+# multi-kill missions need after each kill - null if nothing valid is left
+# to target (e.g. every civilian on the map is already dead).
+func _pick_target_for_type(mission_type: String) -> Node3D:
 	var candidates: Array = []
-	if mission["type"] == "kill":
+	if mission_type == "kill":
 		for npc in get_tree().get_nodes_in_group("civilians"):
 			if is_instance_valid(npc) and not npc.dead and npc.get("is_dealer") != true:
 				candidates.append(npc)
@@ -104,11 +131,11 @@ func start_mission(player: Node3D) -> bool:
 			if is_instance_valid(car) and not car.destroyed:
 				candidates.append(car)
 	if candidates.is_empty():
-		return false
+		return null
+	return candidates[randi() % candidates.size()]
 
-	active_mission = mission
-	contracted_player = player
-	active_target = candidates[randi() % candidates.size()]
+func _set_target(target: Node3D) -> void:
+	active_target = target
 
 	var mat := StandardMaterial3D.new()
 	mat.albedo_color = TARGET_COLOR
@@ -129,8 +156,39 @@ func start_mission(player: Node3D) -> bool:
 	target_marker.position = Vector3(0, 2.2, 0)
 	active_target.add_child(target_marker)
 
+func _emit_objective() -> void:
+	var text: String = String(active_mission["objective"])
+	if kill_count > 1:
+		text += " (%d/%d)" % [kills_done, kill_count]
+	objective_changed.emit(text)
+
+func _make_endless_mission() -> Dictionary:
+	var mtype := "kill" if randf() < 0.5 else "wreck"
+	return {
+		"id": "fixer_job",
+		"title": "Fixer Job",
+		"briefing": ENDLESS_BRIEFINGS[randi() % ENDLESS_BRIEFINGS.size()],
+		"type": mtype,
+		"objective": "Find and kill the marked target" if mtype == "kill" else "Destroy the marked car",
+		"reward": randi_range(ENDLESS_REWARD_MIN, ENDLESS_REWARD_MAX),
+	}
+
+func start_mission(player: Node3D) -> bool:
+	if active_mission:
+		return false
+	var mission: Dictionary = MISSIONS[mission_index] if mission_index < MISSIONS.size() else _make_endless_mission()
+	var target := _pick_target_for_type(mission["type"])
+	if not target:
+		return false
+
+	active_mission = mission
+	contracted_player = player
+	kills_done = 0
+	kill_count = int(mission.get("kill_count", 1))
+	_set_target(target)
+
 	mission_started.emit(mission)
-	objective_changed.emit(String(mission["objective"]))
+	_emit_objective()
 	return true
 
 func _process(_delta: float) -> void:
@@ -142,7 +200,19 @@ func _process(_delta: float) -> void:
 	match active_mission["type"]:
 		"kill":
 			if active_target.dead:
-				_complete_mission()
+				kills_done += 1
+				if kills_done >= kill_count:
+					_complete_mission()
+					return
+				_clear_target()
+				var next_target := _pick_target_for_type("kill")
+				if not next_target:
+					# Ran out of civilians to mark before hitting kill_count -
+					# pay out for what's done rather than softlocking the chain.
+					_complete_mission()
+					return
+				_set_target(next_target)
+				_emit_objective()
 		"wreck":
 			if active_target.destroyed:
 				_complete_mission()
