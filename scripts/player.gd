@@ -779,22 +779,34 @@ func _check_vehicle_collisions() -> void:
 		var collider: Object = collision.get_collider()
 		if not collider:
 			continue
-		var car_speed := 0.0
-		if collider.is_in_group("vehicles"):
-			car_speed = collider.linear_velocity.length()
-		elif collider.is_in_group("traffic_cars"):
-			car_speed = absf(collider.drive_speed) if collider.driver else collider.speed
-		elif collider.is_in_group("parked_vehicles"):
-			car_speed = absf(collider.drive_speed)
-		else:
-			continue
+		var car_speed := _speed_of_vehicle(collider)
 		if car_speed < VEHICLE_HIT_MIN_SPEED:
 			continue
-		vehicle_hit_cooldown = VEHICLE_HIT_COOLDOWN
-		take_damage(clamp(car_speed * VEHICLE_HIT_DAMAGE_PER_SPEED, 0.0, VEHICLE_HIT_MAX_DAMAGE))
-		var away: Vector3 = global_position - collider.global_position
-		away.y = 0.0
-		velocity += (away.normalized() if away.length() > 0.01 else -collision.get_normal()) * VEHICLE_HIT_KNOCKBACK
+		register_vehicle_hit(collider, car_speed)
+		break
+
+func _speed_of_vehicle(collider: Object) -> float:
+	if collider.is_in_group("vehicles"):
+		return collider.linear_velocity.length()
+	elif collider.is_in_group("traffic_cars"):
+		return absf(collider.drive_speed) if collider.driver else collider.speed
+	elif collider.is_in_group("parked_vehicles"):
+		return absf(collider.drive_speed)
+	return -1.0
+
+# Called either from _check_vehicle_collisions above (the player moved into
+# a car) or directly by parked_car.gd/traffic_car.gd when THEIR own
+# move_and_collide rams a stationary player - a StaticBody3D/AnimatableBody3D
+# driven car never pushes a CharacterBody3D on its own, unlike car.gd's real
+# RigidBody3D.
+func register_vehicle_hit(car: Object, car_speed: float) -> void:
+	if vehicle_hit_cooldown > 0.0 or car_speed < VEHICLE_HIT_MIN_SPEED:
+		return
+	vehicle_hit_cooldown = VEHICLE_HIT_COOLDOWN
+	take_damage(clamp(car_speed * VEHICLE_HIT_DAMAGE_PER_SPEED, 0.0, VEHICLE_HIT_MAX_DAMAGE))
+	var away: Vector3 = global_position - car.global_position
+	away.y = 0.0
+	velocity += (away.normalized() if away.length() > 0.01 else Vector3.FORWARD) * VEHICLE_HIT_KNOCKBACK
 		break
 
 func _mag_size() -> int:

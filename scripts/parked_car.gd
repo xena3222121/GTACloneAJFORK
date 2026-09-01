@@ -148,9 +148,19 @@ func _physics_process(delta: float) -> void:
 	# buildings, other cars, anything. move_and_collide (available on any
 	# PhysicsBody3D, not just CharacterBody3D) actually stops the car at
 	# whatever it hits instead of tunneling through it.
+	var impact_speed := absf(drive_speed)
 	var motion := Vector3(sin(rotation.y), 0.0, cos(rotation.y)) * drive_speed * delta
-	if move_and_collide(motion):
+	var collision := move_and_collide(motion)
+	if collision:
 		drive_speed = 0.0
+		# A StaticBody3D never pushes/notifies a CharacterBody3D just by
+		# touching it (unlike car.gd's real RigidBody3D), so a pedestrian/
+		# cop/the player standing still in the road would otherwise block
+		# this car with zero reaction. register_vehicle_hit (npc.gd/
+		# police.gd/player.gd) applies the hit directly from this side.
+		var hit: Object = collision.get_collider()
+		if hit and hit.has_method("register_vehicle_hit"):
+			hit.register_vehicle_hit(self, impact_speed)
 
 func take_damage(amount: float, _hit_point: Vector3 = Vector3.ZERO) -> void:
 	if destroyed:

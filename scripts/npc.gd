@@ -324,9 +324,12 @@ func launch(impulse: Vector3, stun_duration: float = 1.1) -> void:
 	velocity = impulse
 	eject_stun_timer = stun_duration
 
-# Same technique as player.gd's car-collision check - cars never look for
-# pedestrians themselves, so this runs from the pedestrian's own
-# move_and_slide() results instead.
+# Pedestrian-initiated side: cars never used to look for pedestrians
+# themselves, so this runs from the pedestrian's own move_and_slide()
+# results. Only catches a car that the NPC itself moved into/through -
+# see register_vehicle_hit() for the car-initiated side (a moving car
+# ramming a stationary NPC, which never shows up in this NPC's own slide
+# collisions since the NPC never moved).
 func _check_vehicle_collisions() -> void:
 	if vehicle_hit_cooldown > 0.0:
 		return
@@ -335,28 +338,40 @@ func _check_vehicle_collisions() -> void:
 		var collider: Object = collision.get_collider()
 		if not collider:
 			continue
-		var car_speed := 0.0
-		if collider.is_in_group("vehicles"):
-			car_speed = collider.linear_velocity.length()
-		elif collider.is_in_group("traffic_cars"):
-			car_speed = absf(collider.drive_speed) if collider.driver else collider.speed
-		elif collider.is_in_group("parked_vehicles"):
-			car_speed = absf(collider.drive_speed)
-		else:
-			continue
+		var car_speed := _speed_of_vehicle(collider)
 		if car_speed < VEHICLE_HIT_MIN_SPEED:
 			continue
-		vehicle_hit_cooldown = VEHICLE_HIT_COOLDOWN
-		killed_by_player = collider.get("driver") == player
-		take_damage(clamp(car_speed * VEHICLE_HIT_DAMAGE_PER_SPEED, 0.0, VEHICLE_HIT_MAX_DAMAGE))
-		if dead:
-			return
-		var away: Vector3 = global_position - collider.global_position
-		away.y = 0.0
-		var horizontal_dir: Vector3 = away.normalized() if away.length() > 0.01 else -collision.get_normal()
-		var knockback_speed: float = VEHICLE_HIT_KNOCKBACK_BASE + car_speed * VEHICLE_HIT_KNOCKBACK_PER_SPEED
-		launch(horizontal_dir * knockback_speed + Vector3(0, VEHICLE_HIT_LAUNCH_UP, 0), VEHICLE_HIT_STUN_TIME)
+		register_vehicle_hit(collider, car_speed)
 		break
+
+func _speed_of_vehicle(collider: Object) -> float:
+	if collider.is_in_group("vehicles"):
+		return collider.linear_velocity.length()
+	elif collider.is_in_group("traffic_cars"):
+		return absf(collider.drive_speed) if collider.driver else collider.speed
+	elif collider.is_in_group("parked_vehicles"):
+		return absf(collider.drive_speed)
+	return -1.0
+
+# Called either from _check_vehicle_collisions above (this NPC moved into a
+# car) or directly by parked_car.gd/traffic_car.gd when THEIR own
+# move_and_collide rams a stationary NPC - a StaticBody3D/AnimatableBody3D
+# driven car never pushes a CharacterBody3D the way a real RigidBody3D
+# (car.gd) does, so without this direct call a standing-still NPC getting
+# rammed would just silently block the car and take no hit at all.
+func register_vehicle_hit(car: Object, car_speed: float) -> void:
+	if dead or vehicle_hit_cooldown > 0.0 or car_speed < VEHICLE_HIT_MIN_SPEED:
+		return
+	vehicle_hit_cooldown = VEHICLE_HIT_COOLDOWN
+	killed_by_player = car.get("driver") == player
+	take_damage(clamp(car_speed * VEHICLE_HIT_DAMAGE_PER_SPEED, 0.0, VEHICLE_HIT_MAX_DAMAGE))
+	if dead:
+		return
+	var away: Vector3 = global_position - car.global_position
+	away.y = 0.0
+	var horizontal_dir: Vector3 = away.normalized() if away.length() > 0.01 else Vector3.FORWARD
+	var knockback_speed: float = VEHICLE_HIT_KNOCKBACK_BASE + car_speed * VEHICLE_HIT_KNOCKBACK_PER_SPEED
+	launch(horizontal_dir * knockback_speed + Vector3(0, VEHICLE_HIT_LAUNCH_UP, 0), VEHICLE_HIT_STUN_TIME)
 
 func _process_wander(delta: float) -> void:
 	var to_target := target_position - global_position

@@ -281,6 +281,11 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	_check_vehicle_collisions()
 
+# See npc.gd's register_vehicle_hit() - same split: this catches the cop
+# moving into a car, register_vehicle_hit() below also gets called directly
+# by parked_car.gd/traffic_car.gd when a driven car rams a stationary cop
+# (a StaticBody3D/AnimatableBody3D driven car never pushes a CharacterBody3D
+# on its own, unlike car.gd's real RigidBody3D).
 func _check_vehicle_collisions() -> void:
 	if vehicle_hit_cooldown > 0.0:
 		return
@@ -289,28 +294,34 @@ func _check_vehicle_collisions() -> void:
 		var collider: Object = collision.get_collider()
 		if not collider:
 			continue
-		var car_speed := 0.0
-		if collider.is_in_group("vehicles"):
-			car_speed = collider.linear_velocity.length()
-		elif collider.is_in_group("traffic_cars"):
-			car_speed = absf(collider.drive_speed) if collider.driver else collider.speed
-		elif collider.is_in_group("parked_vehicles"):
-			car_speed = absf(collider.drive_speed)
-		else:
-			continue
+		var car_speed := _speed_of_vehicle(collider)
 		if car_speed < VEHICLE_HIT_MIN_SPEED:
 			continue
-		vehicle_hit_cooldown = VEHICLE_HIT_COOLDOWN
-		killed_by_player = collider.get("driver") == player
-		take_damage(clamp(car_speed * VEHICLE_HIT_DAMAGE_PER_SPEED, 0.0, VEHICLE_HIT_MAX_DAMAGE))
-		if dead:
-			return
-		var away: Vector3 = global_position - collider.global_position
-		away.y = 0.0
-		var horizontal_dir: Vector3 = away.normalized() if away.length() > 0.01 else -collision.get_normal()
-		var knockback_speed: float = VEHICLE_HIT_KNOCKBACK_BASE + car_speed * VEHICLE_HIT_KNOCKBACK_PER_SPEED
-		launch(horizontal_dir * knockback_speed + Vector3(0, VEHICLE_HIT_LAUNCH_UP, 0), VEHICLE_HIT_STUN_TIME)
+		register_vehicle_hit(collider, car_speed)
 		break
+
+func _speed_of_vehicle(collider: Object) -> float:
+	if collider.is_in_group("vehicles"):
+		return collider.linear_velocity.length()
+	elif collider.is_in_group("traffic_cars"):
+		return absf(collider.drive_speed) if collider.driver else collider.speed
+	elif collider.is_in_group("parked_vehicles"):
+		return absf(collider.drive_speed)
+	return -1.0
+
+func register_vehicle_hit(car: Object, car_speed: float) -> void:
+	if vehicle_hit_cooldown > 0.0 or car_speed < VEHICLE_HIT_MIN_SPEED:
+		return
+	vehicle_hit_cooldown = VEHICLE_HIT_COOLDOWN
+	killed_by_player = car.get("driver") == player
+	take_damage(clamp(car_speed * VEHICLE_HIT_DAMAGE_PER_SPEED, 0.0, VEHICLE_HIT_MAX_DAMAGE))
+	if dead:
+		return
+	var away: Vector3 = global_position - car.global_position
+	away.y = 0.0
+	var horizontal_dir: Vector3 = away.normalized() if away.length() > 0.01 else Vector3.FORWARD
+	var knockback_speed: float = VEHICLE_HIT_KNOCKBACK_BASE + car_speed * VEHICLE_HIT_KNOCKBACK_PER_SPEED
+	launch(horizontal_dir * knockback_speed + Vector3(0, VEHICLE_HIT_LAUNCH_UP, 0), VEHICLE_HIT_STUN_TIME)
 
 # A wandering cop only joins an already-in-progress incident it happens to
 # physically spot nearby (WantedSystem.heat > 0) - it doesn't go hostile

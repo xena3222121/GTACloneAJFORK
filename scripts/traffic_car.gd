@@ -170,9 +170,18 @@ func _process_driving(delta: float) -> void:
 	# Same fix as parked_car.gd - a raw `position +=` never tests for
 	# collisions, so a stolen traffic car could drive straight through
 	# walls/buildings/other cars.
+	var impact_speed := absf(drive_speed)
 	var motion := Vector3(sin(rotation.y), 0.0, cos(rotation.y)) * drive_speed * delta
-	if move_and_collide(motion):
+	var collision := move_and_collide(motion)
+	if collision:
 		drive_speed = 0.0
+		# Same reasoning as parked_car.gd's driven branch - with
+		# sync_to_physics off (required for move_and_collide, see _ready),
+		# this AnimatableBody3D no longer pushes/notifies a CharacterBody3D
+		# just by touching it, so apply the hit directly from this side.
+		var hit: Object = collision.get_collider()
+		if hit and hit.has_method("register_vehicle_hit"):
+			hit.register_vehicle_hit(self, impact_speed)
 
 func _update_facing() -> void:
 	if axis == 0:
