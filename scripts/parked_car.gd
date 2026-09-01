@@ -13,6 +13,9 @@ extends StaticBody3D
 @export var drive_brake_decel: float = 18.0
 @export var drive_turn_speed: float = 2.2
 
+const HANDBRAKE_TURN_MULTIPLIER := 1.8
+const HANDBRAKE_DECEL_MULTIPLIER := 2.2
+
 const INSTANT_KILL_DAMAGE := 99999.0
 const EXPLOSION := preload("res://scenes/Explosion.tscn")
 const SCORCH_MARK := preload("res://scenes/ScorchMark.tscn")
@@ -106,13 +109,21 @@ func _physics_process(delta: float) -> void:
 		steer -= joy_x
 	steer = clamp(steer, -1.0, 1.0)
 
-	if absf(throttle) > 0.01:
+	# Handbrake turn - the classic arcade GTA move (same SPACE/A-button brake
+	# key car.gd already uses for its own VehicleBody3D). Cuts throttle and
+	# bleeds speed hard, but sharpens the turn rate while it does, so
+	# stomping it into a corner reads as a slide instead of just braking.
+	var handbrake := Input.is_key_pressed(KEY_SPACE) or Input.is_joy_button_pressed(0, JOY_BUTTON_A)
+
+	if absf(throttle) > 0.01 and not handbrake:
 		drive_speed = move_toward(drive_speed, throttle * drive_max_speed, drive_accel * delta)
 	else:
-		drive_speed = move_toward(drive_speed, 0.0, drive_brake_decel * delta)
+		var decel: float = drive_brake_decel * (HANDBRAKE_DECEL_MULTIPLIER if handbrake else 1.0)
+		drive_speed = move_toward(drive_speed, 0.0, decel * delta)
 
 	if absf(drive_speed) > 0.1:
-		rotation.y += steer * drive_turn_speed * delta * sign(drive_speed)
+		var turn_rate: float = drive_turn_speed * (HANDBRAKE_TURN_MULTIPLIER if handbrake else 1.0)
+		rotation.y += steer * turn_rate * delta * sign(drive_speed)
 
 	position += Vector3(sin(rotation.y), 0.0, cos(rotation.y)) * drive_speed * delta
 
