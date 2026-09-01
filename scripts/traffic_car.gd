@@ -167,7 +167,12 @@ func _process_driving(delta: float) -> void:
 	if absf(drive_speed) > 0.1:
 		rotation.y += steer * DRIVE_TURN_SPEED * delta * sign(drive_speed)
 
-	position += Vector3(sin(rotation.y), 0.0, cos(rotation.y)) * drive_speed * delta
+	# Same fix as parked_car.gd - a raw `position +=` never tests for
+	# collisions, so a stolen traffic car could drive straight through
+	# walls/buildings/other cars.
+	var motion := Vector3(sin(rotation.y), 0.0, cos(rotation.y)) * drive_speed * delta
+	if move_and_collide(motion):
+		drive_speed = 0.0
 
 func _update_facing() -> void:
 	if axis == 0:

@@ -143,7 +143,14 @@ func _physics_process(delta: float) -> void:
 		var turn_rate: float = drive_turn_speed * (HANDBRAKE_TURN_MULTIPLIER if handbrake else 1.0)
 		rotation.y += steer * turn_rate * delta * sign(drive_speed)
 
-	position += Vector3(sin(rotation.y), 0.0, cos(rotation.y)) * drive_speed * delta
+	# Was a raw `position +=` - a StaticBody3D moved that way never tests for
+	# collisions at all, so a driven car could pass straight through walls,
+	# buildings, other cars, anything. move_and_collide (available on any
+	# PhysicsBody3D, not just CharacterBody3D) actually stops the car at
+	# whatever it hits instead of tunneling through it.
+	var motion := Vector3(sin(rotation.y), 0.0, cos(rotation.y)) * drive_speed * delta
+	if move_and_collide(motion):
+		drive_speed = 0.0
 
 func take_damage(amount: float, _hit_point: Vector3 = Vector3.ZERO) -> void:
 	if destroyed:
