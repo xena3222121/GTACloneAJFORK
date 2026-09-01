@@ -63,6 +63,17 @@ func _setup_urban_grade() -> void:
 	env.fog_sun_scatter = 0.15
 	env.ambient_light_color = Color(0.58, 0.55, 0.5)
 
+	# Ambient occlusion for actual contact shadows/depth where geometry
+	# meets (building bases, under cars) instead of everything looking
+	# uniformly flat-lit, plus screen-space reflections so glossy car paint
+	# and wet rainy streets actually pick up a reflection instead of just
+	# being a flat specular highlight.
+	env.ssao_enabled = true
+	env.ssao_radius = 1.0
+	env.ssao_intensity = 1.2
+	env.ssr_enabled = true
+	env.ssr_max_steps = 32
+
 func _spawn_in_house(player: Node) -> void:
 	var house_entrance := get_node_or_null("HouseEntrance")
 	if house_entrance and house_entrance.has_method("get_interior_spawn") and player.has_method("enter_building"):
