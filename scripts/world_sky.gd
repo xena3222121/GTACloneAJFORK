@@ -5,14 +5,20 @@ extends Node3D
 # rendering state themselves - keeps "what time/weather is it" separate
 # from "how does that look".
 
-const DAY_SKY_TOP := Color(0.3, 0.5, 0.85, 1)
-const DAY_SKY_HORIZON := Color(0.75, 0.85, 0.95, 1)
+# Was a clean, saturated postcard-blue sky (0.3, 0.5, 0.85 top / crisp
+# near-white horizon) - AJ asked for a GTA IV-esque look, whose Liberty City
+# is defined by a hazy, desaturated, slightly warm-gray overcast mood, not
+# a bright clear day. Tuned toward that: a muted gray-blue top, a warm smog
+# horizon instead of white, and a night horizon with a faint warm glow
+# (streetlight light-pollution) instead of clean cool blue.
+const DAY_SKY_TOP := Color(0.42, 0.48, 0.55, 1)
+const DAY_SKY_HORIZON := Color(0.72, 0.7, 0.65, 1)
 const NIGHT_SKY_TOP := Color(0.02, 0.03, 0.08, 1)
-const NIGHT_SKY_HORIZON := Color(0.05, 0.07, 0.15, 1)
+const NIGHT_SKY_HORIZON := Color(0.1, 0.08, 0.09, 1)
 
-const DAY_AMBIENT_ENERGY := 0.6
+const DAY_AMBIENT_ENERGY := 0.5
 const NIGHT_AMBIENT_ENERGY := 0.12
-const DAY_SUN_ENERGY := 1.1
+const DAY_SUN_ENERGY := 0.95
 const NIGHT_SUN_ENERGY := 0.05
 
 @onready var sun: DirectionalLight3D = $DirectionalLight3D
@@ -23,6 +29,7 @@ const NIGHT_SUN_ENERGY := 0.05
 # that doesn't exist yet - by the time THIS node's _ready() runs, every
 # descendant (Player included) has already had its own _ready() called.
 func _ready() -> void:
+	_setup_urban_grade()
 	var player := get_tree().get_first_node_in_group("player")
 	if SaveSystem.load_on_next_ready:
 		SaveSystem.load_on_next_ready = false
@@ -35,6 +42,26 @@ func _ready() -> void:
 		# inside the safehouse instead is always clear and matches
 		# Continue's own "wake up at the safehouse" spawn.
 		_spawn_in_house(player)
+
+# One-time setup for the parts of the GTA IV look that don't need to change
+# per-frame the way the day/night lerp below does: color grading (pulled-
+# down saturation, a touch more contrast, so nothing reads as postcard-
+# bright), a warm-gray fog tint instead of the engine's default blue, and a
+# soft glow so streetlights/neon actually bloom at night instead of just
+# being flat-lit geometry.
+func _setup_urban_grade() -> void:
+	var env: Environment = world_env.environment
+	env.adjustment_enabled = true
+	env.adjustment_saturation = 0.78
+	env.adjustment_contrast = 1.08
+	env.adjustment_brightness = 0.97
+	env.glow_enabled = true
+	env.glow_intensity = 0.55
+	env.glow_bloom = 0.05
+	env.glow_hdr_threshold = 1.1
+	env.fog_light_color = Color(0.55, 0.52, 0.48)
+	env.fog_sun_scatter = 0.15
+	env.ambient_light_color = Color(0.58, 0.55, 0.5)
 
 func _spawn_in_house(player: Node) -> void:
 	var house_entrance := get_node_or_null("HouseEntrance")
@@ -76,8 +103,11 @@ func _weather_dim() -> float:
 func _fog_density() -> float:
 	match Weather.state:
 		Weather.State.CLOUDY:
-			return 0.0015
+			return 0.002
 		Weather.State.RAIN:
-			return 0.004
+			return 0.0045
 		_:
-			return 0.0
+			# Was 0.0 (fog fully off on a clear day) - a perfectly crisp sky
+			# reads as too clean for the grimy Liberty City look; a faint
+			# permanent haze even in "sunny" state is what actually sells it.
+			return 0.0008
