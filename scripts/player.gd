@@ -783,7 +783,9 @@ func _check_vehicle_collisions() -> void:
 		if collider.is_in_group("vehicles"):
 			car_speed = collider.linear_velocity.length()
 		elif collider.is_in_group("traffic_cars"):
-			car_speed = collider.speed
+			car_speed = absf(collider.drive_speed) if collider.driver else collider.speed
+		elif collider.is_in_group("parked_vehicles"):
+			car_speed = absf(collider.drive_speed)
 		else:
 			continue
 		if car_speed < VEHICLE_HIT_MIN_SPEED:
