@@ -1,19 +1,29 @@
 extends CharacterBody3D
 
 const WALK_SPEED := 1.8
-const CHASE_SPEED := 3.4
 const WANDER_RADIUS := 14.0 # was 3.0 - too tight a bubble around a fixed post made cops nearly impossible to stumble across in a city this size
 const ARRIVE_DIST := 0.6
 const IDLE_TIME_MIN := 1.5
 const IDLE_TIME_MAX := 4.0
-const MAX_HEALTH := 120.0
 const TURN_SPEED := 8.0
 
 const ENGAGE_RANGE := 13.0 # was 16 - cops opened fire from further away than a player could reasonably react to
 const STOP_DISTANCE := 7.0
-const FIRE_COOLDOWN := 1.5 # was 1.3
-const GUN_DAMAGE := 9.0 # was 12 - stacked up brutally once 2-3 cops were shooting at once
 const RAY_LENGTH := 60.0
+
+# Every cop used to be identical regardless of how much heat called them in -
+# a 1-star beat cop and a 3-star response were the same guy. Exported so
+# WantedSystem can hand tougher, faster, harder-hitting numbers to
+# reinforcements spawned at high tiers (see SWAT_* constants there) while
+# the 4 hand-placed patrol cops in World.tscn just keep these defaults
+# (the original hardcoded values).
+@export var max_health: float = 120.0
+@export var chase_speed: float = 3.4
+@export var fire_rate: float = 1.5 # was 1.3
+@export var gun_damage: float = 9.0 # was 12 - stacked up brutally once 2-3 cops were shooting at once
+# Set true only by WantedSystem's top-tier reinforcement spawns - swaps the
+# uniform tint to tactical black and nothing else (no separate model exists).
+@export var is_swat: bool = false
 const MONEY_DROP_CHANCE := 0.4
 const AMMO_DROP_CHANCE := 0.4
 
@@ -77,7 +87,7 @@ var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var home_position: Vector3
 var target_position: Vector3
 var idle_timer := 0.0
-var health := MAX_HEALTH
+var health: float
 var dead := false
 var hostile := false
 var alerted := false
@@ -128,6 +138,7 @@ func _force_loop(anim_name: String) -> void:
 
 func _ready() -> void:
 	add_to_group("police")
+	health = max_health
 	home_position = global_position
 	_pick_new_target()
 	# Deferred rather than looked up directly here: the 4 hand-placed police
@@ -159,9 +170,9 @@ func _ready() -> void:
 # named clothing surfaces keeps skin/eyes/hair looking like an actual face.
 func _tint_uniform() -> void:
 	var shirt := StandardMaterial3D.new()
-	shirt.albedo_color = Color(0.08, 0.11, 0.22)
+	shirt.albedo_color = Color(0.03, 0.03, 0.04) if is_swat else Color(0.08, 0.11, 0.22)
 	var pants := StandardMaterial3D.new()
-	pants.albedo_color = Color(0.05, 0.05, 0.07)
+	pants.albedo_color = Color(0.02, 0.02, 0.025) if is_swat else Color(0.05, 0.05, 0.07)
 	_tint_surfaces(model, {"Shirt": shirt, "Pants": pants, "Details": pants})
 
 func _tint_surfaces(node: Node, by_surface_name: Dictionary) -> void:
@@ -400,8 +411,8 @@ func _process_hostile(delta: float) -> void:
 
 	if dist > STOP_DISTANCE:
 		var dir := to_player.normalized()
-		velocity.x = dir.x * CHASE_SPEED
-		velocity.z = dir.z * CHASE_SPEED
+		velocity.x = dir.x * chase_speed
+		velocity.z = dir.z * chase_speed
 		_play(anim_walk)
 	else:
 		velocity.x = 0.0
@@ -414,7 +425,7 @@ func _process_hostile(delta: float) -> void:
 		model.rotation.y = lerp_angle(model.rotation.y, target_yaw, TURN_SPEED * delta)
 
 func _shoot_at_player() -> void:
-	fire_cooldown = FIRE_COOLDOWN
+	fire_cooldown = fire_rate
 	_play(anim_attack)
 
 	gunshot_audio.stream = _make_gunshot_sound()
@@ -448,7 +459,7 @@ func _shoot_at_player() -> void:
 	# way, result.collider is that obstruction, not the player, so cover
 	# actually blocks their shots rather than damage going through it.
 	if result and result.collider == player and player.has_method("take_damage"):
-		player.take_damage(GUN_DAMAGE, result.position)
+		player.take_damage(gun_damage, result.position)
 
 func take_damage(amount: float, _hit_point: Vector3 = Vector3.ZERO) -> void:
 	if dead:

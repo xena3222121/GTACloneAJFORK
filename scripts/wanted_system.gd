@@ -24,10 +24,25 @@ const POLICE_SCENE := preload("res://scenes/Police.tscn")
 # sustained heat before backup gets called at all, arrives far less often,
 # and caps much lower.
 const MIN_SPAWN_HEAT := 20.0
-const SPAWN_COOLDOWN := 16.0
-const MAX_SPAWNED := 3
 const SPAWN_RADIUS_MIN := 16.0
 const SPAWN_RADIUS_MAX := 26.0
+
+# Response used to be flat regardless of how hot the player was - the exact
+# same trickle of cops at 1 star as at max heat. Indexed by _tier (0..3,
+# matching TIER_THRESHOLDS.size()) so it actually escalates: more cops
+# allowed, called in faster, the higher the heat climbs.
+const MAX_SPAWNED_BY_TIER := [2, 2, 3, 5]
+const SPAWN_COOLDOWN_BY_TIER := [16.0, 16.0, 11.0, 7.0]
+
+# At max heat, reinforcements stop being regular beat cops and come in as
+# SWAT - tougher, faster, hits harder (see police.gd's exported max_health/
+# chase_speed/fire_rate/gun_damage). Only reinforcements get this; the 4
+# hand-placed patrol cops stay regular no matter how hot the player gets.
+const SWAT_TIER := 3
+const SWAT_HEALTH := 180.0
+const SWAT_CHASE_SPEED := 4.2
+const SWAT_FIRE_RATE := 0.9
+const SWAT_GUN_DAMAGE := 14.0
 
 var heat := 0.0
 var _grace_timer := 0.0
@@ -62,7 +77,7 @@ func _process(delta: float) -> void:
 	if heat >= MIN_SPAWN_HEAT:
 		_spawn_timer -= delta
 		if _spawn_timer <= 0.0:
-			_spawn_timer = SPAWN_COOLDOWN
+			_spawn_timer = SPAWN_COOLDOWN_BY_TIER[_tier]
 			_maybe_spawn_reinforcement()
 	else:
 		_spawn_timer = 0.0
@@ -76,7 +91,7 @@ func _maybe_spawn_reinforcement() -> void:
 	if heat < MIN_SPAWN_HEAT:
 		return
 	_spawned = _spawned.filter(func(c): return is_instance_valid(c) and not c.dead)
-	if _spawned.size() >= MAX_SPAWNED:
+	if _spawned.size() >= MAX_SPAWNED_BY_TIER[_tier]:
 		return
 	var player := get_tree().get_first_node_in_group("player")
 	if not player or not is_instance_valid(player) or player.get("current_interior") != null:
@@ -87,6 +102,12 @@ func _maybe_spawn_reinforcement() -> void:
 
 	var cop: Node3D = POLICE_SCENE.instantiate()
 	cop.position = spawn_pos
+	if _tier >= SWAT_TIER:
+		cop.max_health = SWAT_HEALTH
+		cop.chase_speed = SWAT_CHASE_SPEED
+		cop.fire_rate = SWAT_FIRE_RATE
+		cop.gun_damage = SWAT_GUN_DAMAGE
+		cop.is_swat = true
 	get_tree().current_scene.add_child(cop)
 	_spawned.append(cop)
 	cop.alert(player.global_position)
