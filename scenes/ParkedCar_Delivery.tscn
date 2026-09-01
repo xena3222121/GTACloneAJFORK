@@ -8,6 +8,11 @@ size = Vector3(2.11, 1.84, 4.2)
 
 [node name="ParkedCar" type="StaticBody3D"]
 script = ExtResource("2")
+max_health = 160.0
+drive_max_speed = 12.0
+drive_accel = 6.0
+drive_brake_decel = 13.0
+drive_turn_speed = 1.5
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.59, 0)

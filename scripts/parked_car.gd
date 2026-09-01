@@ -3,15 +3,20 @@ extends StaticBody3D
 @export var max_health: float = 100.0
 @export var blast_radius: float = 5.0
 
+# Every stealable/buyable car used these same 4 numbers regardless of model -
+# a Camaro drove identically to a delivery SUV. Exported so each
+# ParkedCar_*.tscn can set its own feel (see the per-scene values there):
+# sports cars quick and fast but fragile, SUVs/vans heavy and stable but
+# sluggish, everything else at these defaults (the old hardcoded baseline).
+@export var drive_max_speed: float = 14.0
+@export var drive_accel: float = 10.0
+@export var drive_brake_decel: float = 18.0
+@export var drive_turn_speed: float = 2.2
+
 const INSTANT_KILL_DAMAGE := 99999.0
 const EXPLOSION := preload("res://scenes/Explosion.tscn")
 const SCORCH_MARK := preload("res://scenes/ScorchMark.tscn")
 const FIRE := preload("res://scenes/Fire.tscn")
-
-const DRIVE_MAX_SPEED := 14.0
-const DRIVE_ACCEL := 10.0
-const DRIVE_BRAKE_DECEL := 18.0
-const DRIVE_TURN_SPEED := 2.2
 
 @onready var model: Node3D = $Model
 @onready var driver_seat: Marker3D = _get_or_create_marker("DriverSeat", Vector3(0, 0.9, 0))
@@ -54,7 +59,7 @@ func _update_engine_audio() -> void:
 		if engine_audio.playing:
 			engine_audio.stop()
 		return
-	var speed_ratio: float = clamp(absf(drive_speed) / DRIVE_MAX_SPEED, 0.0, 1.0)
+	var speed_ratio: float = clamp(absf(drive_speed) / drive_max_speed, 0.0, 1.0)
 	engine_audio.pitch_scale = lerp(0.8, 2.0, speed_ratio)
 	engine_audio.volume_db = lerp(-14.0, -6.0, speed_ratio)
 	if not engine_audio.playing:
@@ -102,12 +107,12 @@ func _physics_process(delta: float) -> void:
 	steer = clamp(steer, -1.0, 1.0)
 
 	if absf(throttle) > 0.01:
-		drive_speed = move_toward(drive_speed, throttle * DRIVE_MAX_SPEED, DRIVE_ACCEL * delta)
+		drive_speed = move_toward(drive_speed, throttle * drive_max_speed, drive_accel * delta)
 	else:
-		drive_speed = move_toward(drive_speed, 0.0, DRIVE_BRAKE_DECEL * delta)
+		drive_speed = move_toward(drive_speed, 0.0, drive_brake_decel * delta)
 
 	if absf(drive_speed) > 0.1:
-		rotation.y += steer * DRIVE_TURN_SPEED * delta * sign(drive_speed)
+		rotation.y += steer * drive_turn_speed * delta * sign(drive_speed)
 
 	position += Vector3(sin(rotation.y), 0.0, cos(rotation.y)) * drive_speed * delta
 
