@@ -16,6 +16,17 @@ extends StaticBody3D
 const HANDBRAKE_TURN_MULTIPLIER := 1.8
 const HANDBRAKE_DECEL_MULTIPLIER := 2.2
 
+# Nitro - a temporary multiplier on top of whatever drive_max_speed/
+# drive_accel this specific car already has, so a boosted Camaro is still
+# faster than a boosted delivery van rather than every car converging on
+# the same top speed. Same Shift key player.gd already uses for on-foot
+# sprint (only one of the two contexts is ever active at once).
+const BOOST_SPEED_MULTIPLIER := 1.5
+const BOOST_ACCEL_MULTIPLIER := 1.4
+const BOOST_FUEL_MAX := 3.0
+const BOOST_DRAIN_RATE := 1.0
+const BOOST_REGEN_RATE := 0.5
+
 const INSTANT_KILL_DAMAGE := 99999.0
 const EXPLOSION := preload("res://scenes/Explosion.tscn")
 const SCORCH_MARK := preload("res://scenes/ScorchMark.tscn")
@@ -36,6 +47,7 @@ var destroyed := false
 # body moves at all.
 var driver: Node3D = null
 var drive_speed := 0.0
+var boost_fuel := BOOST_FUEL_MAX
 var engine_audio: AudioStreamPlayer3D
 
 # Same real recorded engine loop as car.gd/traffic_car.gd - a parked car
@@ -115,8 +127,14 @@ func _physics_process(delta: float) -> void:
 	# stomping it into a corner reads as a slide instead of just braking.
 	var handbrake := Input.is_key_pressed(KEY_SPACE) or Input.is_joy_button_pressed(0, JOY_BUTTON_A)
 
+	var boosting := (Input.is_key_pressed(KEY_SHIFT) or Input.is_joy_button_pressed(0, JOY_BUTTON_RIGHT_SHOULDER)) \
+			and boost_fuel > 0.0 and throttle > 0.01 and not handbrake
+	boost_fuel = clamp(boost_fuel + (-BOOST_DRAIN_RATE if boosting else BOOST_REGEN_RATE) * delta, 0.0, BOOST_FUEL_MAX)
+	var effective_max_speed: float = drive_max_speed * (BOOST_SPEED_MULTIPLIER if boosting else 1.0)
+	var effective_accel: float = drive_accel * (BOOST_ACCEL_MULTIPLIER if boosting else 1.0)
+
 	if absf(throttle) > 0.01 and not handbrake:
-		drive_speed = move_toward(drive_speed, throttle * drive_max_speed, drive_accel * delta)
+		drive_speed = move_toward(drive_speed, throttle * effective_max_speed, effective_accel * delta)
 	else:
 		var decel: float = drive_brake_decel * (HANDBRAKE_DECEL_MULTIPLIER if handbrake else 1.0)
 		drive_speed = move_toward(drive_speed, 0.0, decel * delta)

@@ -1,13 +1,26 @@
 class_name Car
 extends VehicleBody3D
 
-const MAX_ENGINE_FORCE := 150.0
-const MAX_BRAKE_FORCE := 4.0
-const MAX_STEER := 0.6
-const STEER_SPEED := 3.0
-
 @export var max_health: float = 100.0
 @export var blast_radius: float = 5.0
+
+# Was hardcoded (150/4/0.6/3.0) - exported for the same reason
+# parked_car.gd's driving consts were: this VehicleBody3D is currently
+# only used for the one hero car near the safehouse, but future car.gd
+# instances can now be tuned individually instead of being stuck identical.
+@export var max_engine_force: float = 150.0
+@export var max_brake_force: float = 4.0
+@export var max_steer: float = 0.6
+@export var steer_speed: float = 3.0
+
+# Same nitro mechanic as parked_car.gd, adapted to a real VehicleBody3D -
+# boosts engine_force directly rather than a speed cap, since this car has
+# actual physics-driven acceleration instead of the kinematic model's
+# move_toward. Same Shift/right-shoulder input as parked_car.gd.
+const BOOST_MULTIPLIER := 1.6
+const BOOST_FUEL_MAX := 3.0
+const BOOST_DRAIN_RATE := 1.0
+const BOOST_REGEN_RATE := 0.5
 
 const INSTANT_KILL_DAMAGE := 99999.0
 const EXPLOSION := preload("res://scenes/Explosion.tscn")
@@ -21,6 +34,7 @@ const FIRE := preload("res://scenes/Fire.tscn")
 
 var driver: Node3D = null
 var steer_target := 0.0
+var boost_fuel := BOOST_FUEL_MAX
 var health: float
 var destroyed := false
 var engine_audio: AudioStreamPlayer3D
@@ -178,7 +192,11 @@ func _physics_process(delta: float) -> void:
 	if Input.is_key_pressed(KEY_S):
 		throttle_input -= 1.0
 	throttle_input = clamp(throttle_input - joy_y, -1.0, 1.0)
-	engine_force = throttle_input * MAX_ENGINE_FORCE
+
+	var boosting := (Input.is_key_pressed(KEY_SHIFT) or Input.is_joy_button_pressed(0, JOY_BUTTON_RIGHT_SHOULDER)) \
+			and boost_fuel > 0.0 and throttle_input > 0.01
+	boost_fuel = clamp(boost_fuel + (-BOOST_DRAIN_RATE if boosting else BOOST_REGEN_RATE) * delta, 0.0, BOOST_FUEL_MAX)
+	engine_force = throttle_input * max_engine_force * (BOOST_MULTIPLIER if boosting else 1.0)
 
 	var steer_input := 0.0
 	if Input.is_key_pressed(KEY_A):
@@ -186,7 +204,7 @@ func _physics_process(delta: float) -> void:
 	if Input.is_key_pressed(KEY_D):
 		steer_input -= 1.0
 	steer_input = clamp(steer_input - joy_x, -1.0, 1.0)
-	steer_target = steer_input * MAX_STEER
-	steering = move_toward(steering, steer_target, STEER_SPEED * delta)
+	steer_target = steer_input * max_steer
+	steering = move_toward(steering, steer_target, steer_speed * delta)
 
-	brake = MAX_BRAKE_FORCE if (Input.is_key_pressed(KEY_SPACE) or Input.is_joy_button_pressed(0, JOY_BUTTON_A)) else 0.0
+	brake = max_brake_force if (Input.is_key_pressed(KEY_SPACE) or Input.is_joy_button_pressed(0, JOY_BUTTON_A)) else 0.0
