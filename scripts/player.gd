@@ -807,7 +807,6 @@ func register_vehicle_hit(car: Object, car_speed: float) -> void:
 	var away: Vector3 = global_position - car.global_position
 	away.y = 0.0
 	velocity += (away.normalized() if away.length() > 0.01 else Vector3.FORWARD) * VEHICLE_HIT_KNOCKBACK
-		break
 
 func _mag_size() -> int:
 	match current_weapon:
