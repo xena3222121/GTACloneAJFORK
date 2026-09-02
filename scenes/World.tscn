@@ -1150,6 +1150,36 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.1, -22)
 [node name="Flair" parent="NPCs" instance=ExtResource("60")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.1, -2)
 
+[node name="NPC3" parent="NPCs" instance=ExtResource("57")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.9, 0.1, 18)
+
+[node name="NPC4" parent="NPCs" instance=ExtResource("56")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.9, 0.1, -12)
+
+[node name="NPC5" parent="NPCs" instance=ExtResource("58")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.9, 0.1, 8)
+
+[node name="NPC6" parent="NPCs" instance=ExtResource("59")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.9, 0.1, 26)
+
+[node name="NPC8" parent="NPCs" instance=ExtResource("60")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.1, 34)
+
+[node name="NPC9" parent="NPCs" instance=ExtResource("57")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 37)
+
+[node name="NPC10" parent="NPCs" instance=ExtResource("56")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.9, 0.1, -38)
+
+[node name="NPC11" parent="NPCs" instance=ExtResource("58")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.9, 0.1, -30)
+
+[node name="NPC12" parent="NPCs" instance=ExtResource("59")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.9, 0.1, 30)
+
+[node name="NPC13" parent="NPCs" instance=ExtResource("60")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.9, 0.1, 40)
+
 [node name="Highway" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6, 0)
 
@@ -2008,6 +2038,36 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 63.9, 0.1, -2)
 [node name="NPC7" parent="NPCsB" instance=ExtResource("56")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 0.1, 34)
 
+[node name="NPC3" parent="NPCsB" instance=ExtResource("58")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 63.9, 0.1, 18)
+
+[node name="NPC4" parent="NPCsB" instance=ExtResource("59")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56.1, 0.1, -12)
+
+[node name="NPC5" parent="NPCsB" instance=ExtResource("60")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56.1, 0.1, 8)
+
+[node name="NPC6" parent="NPCsB" instance=ExtResource("57")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56.1, 0.1, 26)
+
+[node name="NPC8" parent="NPCsB" instance=ExtResource("56")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 0.1, 34)
+
+[node name="NPC9" parent="NPCsB" instance=ExtResource("58")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0.1, 37)
+
+[node name="NPC10" parent="NPCsB" instance=ExtResource("59")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 63.9, 0.1, -38)
+
+[node name="NPC11" parent="NPCsB" instance=ExtResource("60")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56.1, 0.1, -30)
+
+[node name="NPC12" parent="NPCsB" instance=ExtResource("57")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 63.9, 0.1, 30)
+
+[node name="NPC13" parent="NPCsB" instance=ExtResource("56")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56.1, 0.1, 40)
+
 [node name="Police" type="Node3D" parent="."]
 
 [node name="Police1" parent="Police" instance=ExtResource("22")]
@@ -2487,6 +2547,36 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 123.9, 0.1, -2)
 [node name="NPC7" parent="NPCsC" instance=ExtResource("56")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 125, 0.1, 34)
 
+[node name="NPC3" parent="NPCsC" instance=ExtResource("59")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 123.9, 0.1, 18)
+
+[node name="NPC4" parent="NPCsC" instance=ExtResource("60")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 116.1, 0.1, -12)
+
+[node name="NPC5" parent="NPCsC" instance=ExtResource("57")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 116.1, 0.1, 8)
+
+[node name="NPC6" parent="NPCsC" instance=ExtResource("58")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 116.1, 0.1, 26)
+
+[node name="NPC8" parent="NPCsC" instance=ExtResource("59")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 115, 0.1, 34)
+
+[node name="NPC9" parent="NPCsC" instance=ExtResource("60")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 120, 0.1, 37)
+
+[node name="NPC10" parent="NPCsC" instance=ExtResource("57")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 123.9, 0.1, -38)
+
+[node name="NPC11" parent="NPCsC" instance=ExtResource("58")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 116.1, 0.1, -30)
+
+[node name="NPC12" parent="NPCsC" instance=ExtResource("59")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 123.9, 0.1, 30)
+
+[node name="NPC13" parent="NPCsC" instance=ExtResource("60")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 116.1, 0.1, 40)
+
 [node name="StreetD" type="Node3D" parent="."]
 
 [node name="Road_n45" parent="StreetD" instance=ExtResource("6")]
@@ -2933,6 +3023,36 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 183.9, 0.1, -2)
 
 [node name="NPC7" parent="NPCsD" instance=ExtResource("56")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 185, 0.1, 34)
+
+[node name="NPC3" parent="NPCsD" instance=ExtResource("60")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 183.9, 0.1, 18)
+
+[node name="NPC4" parent="NPCsD" instance=ExtResource("57")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 176.1, 0.1, -12)
+
+[node name="NPC5" parent="NPCsD" instance=ExtResource("58")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 176.1, 0.1, 8)
+
+[node name="NPC6" parent="NPCsD" instance=ExtResource("59")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 176.1, 0.1, 26)
+
+[node name="NPC8" parent="NPCsD" instance=ExtResource("60")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 175, 0.1, 34)
+
+[node name="NPC9" parent="NPCsD" instance=ExtResource("57")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 180, 0.1, 37)
+
+[node name="NPC10" parent="NPCsD" instance=ExtResource("58")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 183.9, 0.1, -38)
+
+[node name="NPC11" parent="NPCsD" instance=ExtResource("59")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 176.1, 0.1, -30)
+
+[node name="NPC12" parent="NPCsD" instance=ExtResource("60")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 183.9, 0.1, 30)
+
+[node name="NPC13" parent="NPCsD" instance=ExtResource("57")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 176.1, 0.1, 40)
 
 [node name="Player" parent="." unique_id=821898990 instance=ExtResource("1")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.3, 0.1, 0)
@@ -4169,6 +4289,22 @@ price = 35
 [node name="CollisionShape3D" type="CollisionShape3D" parent="BarInterior/HorseSemenShelf"]
 shape = SubResource("SphereShape3D_interact")
 
+[node name="Patron1" parent="BarInterior" instance=ExtResource("57")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.1, -1)
+is_bar_patron = true
+
+[node name="Patron2" parent="BarInterior" instance=ExtResource("56")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.1, 1)
+is_bar_patron = true
+
+[node name="Patron3" parent="BarInterior" instance=ExtResource("59")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0.1, -3)
+is_bar_patron = true
+
+[node name="Patron4" parent="BarInterior" instance=ExtResource("60")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0.1, -3)
+is_bar_patron = true
+
 [node name="Mesh" type="MeshInstance3D" parent="BarInterior/HorseSemenShelf"]
 mesh = SubResource("BoxMesh_counter")
 
@@ -5164,6 +5300,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0.1, 100)
 
 [node name="NPC2" parent="Downtown" instance=ExtResource("56")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0.1, 115)
+
+[node name="NPC3" parent="Downtown" instance=ExtResource("58")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 0.1, 130)
+
+[node name="NPC4" parent="Downtown" instance=ExtResource("59")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 90)
 
 [node name="Light_p57_E" type="MeshInstance3D" parent="Downtown"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2.5, 57)
