@@ -80,6 +80,14 @@ const CHATTER_RANGE := 5.0
 @export var chatter_clips_dir: String = ""
 const CHATTER_CHANCE := 0.12
 
+# Swaps hit/panic AND chatter audio together to an alternate voice pack -
+# e.g. "res://Audio/Female" for the female NPC variants, which mirrors
+# Audio/Arnold's own "NPC Getting attacked"/"Random Lines" subfolder layout.
+# Leave empty to keep the default Arnold-voiced consts. chatter_clips_dir
+# above still wins if BOTH are set (e.g. a female club patron keeps the
+# club-specific chatter, but still screams in her own voice when hit).
+@export var voice_pack_dir: String = ""
+
 # A dealer NPC (see is_dealer below) sells drugs out in the world for the
 # player once hired. A second "street" body (see _spawn_street_dealer)
 # spawns near the player's house door and visibly wanders while THIS NPC -
@@ -273,8 +281,12 @@ func panic(source_position: Vector3) -> void:
 	away.y = 0.0
 	flee_dir = away.normalized() if away.length() > 0.01 else Vector3(randf() - 0.5, 0, randf() - 0.5).normalized()
 	if not chatter_audio.playing:
-		chatter_audio.stream = load(PANIC_AUDIO_CLIPS[randi() % PANIC_AUDIO_CLIPS.size()])
-		chatter_audio.play()
+		# voice_pack_dir NPCs reuse their (already varied) hit-clip pool for
+		# panic too, rather than needing a second, smaller recorded set.
+		var clips: Array = _hit_clips() if voice_pack_dir != "" else PANIC_AUDIO_CLIPS
+		if not clips.is_empty():
+			chatter_audio.stream = load(clips[randi() % clips.size()])
+			chatter_audio.play()
 	NPC.scare_nearby(get_tree(), global_position, RIPPLE_RADIUS)
 
 func _physics_process(delta: float) -> void:
@@ -511,12 +523,23 @@ func say_hello() -> void:
 	chatter_audio.play()
 
 # Folder scan when chatter_clips_dir is set (per-instance override, e.g.
-# club patrons), otherwise the shared default list.
+# club patrons) or voice_pack_dir names an alternate voice's "Random Lines"
+# subfolder, otherwise the shared default list.
 func _get_chatter_clips() -> Array:
-	if chatter_clips_dir == "":
-		return CHATTER_AUDIO_CLIPS
+	if chatter_clips_dir != "":
+		return _scan_wav_folder(chatter_clips_dir)
+	if voice_pack_dir != "":
+		return _scan_wav_folder(voice_pack_dir.path_join("Random Lines"))
+	return CHATTER_AUDIO_CLIPS
+
+func _hit_clips() -> Array:
+	if voice_pack_dir == "":
+		return HIT_AUDIO_CLIPS
+	return _scan_wav_folder(voice_pack_dir.path_join("NPC Getting attacked"))
+
+func _scan_wav_folder(folder_path: String) -> Array:
 	var clips: Array = []
-	var dir := DirAccess.open(chatter_clips_dir)
+	var dir := DirAccess.open(folder_path)
 	if dir:
 		for file_name in dir.get_files():
 			# Exported builds list "name.wav.import" here instead of
@@ -527,7 +550,7 @@ func _get_chatter_clips() -> Array:
 			var real_name: String = file_name.trim_suffix(".import")
 			if real_name.get_extension().to_lower() != "wav":
 				continue
-			var full_path: String = chatter_clips_dir.path_join(real_name)
+			var full_path: String = folder_path.path_join(real_name)
 			if not clips.has(full_path):
 				clips.append(full_path)
 	return clips
@@ -607,7 +630,10 @@ func take_damage(amount: float, _hit_point: Vector3 = Vector3.ZERO) -> void:
 func _play_hit_audio() -> void:
 	if hit_audio.playing:
 		return
-	hit_audio.stream = load(HIT_AUDIO_CLIPS[randi() % HIT_AUDIO_CLIPS.size()])
+	var clips: Array = _hit_clips()
+	if clips.is_empty():
+		return
+	hit_audio.stream = load(clips[randi() % clips.size()])
 	hit_audio.play()
 
 func die(by_player: bool = false) -> void:

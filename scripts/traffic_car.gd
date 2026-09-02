@@ -18,6 +18,7 @@ const EJECTED_NPC_SCENES := [
 	preload("res://scenes/NPC_B.tscn"),
 	preload("res://scenes/NPC_C.tscn"),
 	preload("res://scenes/NPC_D.tscn"),
+	preload("res://scenes/NPC_Megan.tscn"),
 ]
 const EJECT_KNOCKBACK := 7.0
 const EJECT_UP := 4.5
