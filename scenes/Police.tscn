@@ -54,10 +54,18 @@ unit_size = 16.0
 volume_db = -8.0
 autoplay = false
 
-[node name="Badge" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.14, 1.35, 0.16)
+[node name="BadgeAttachment" type="BoneAttachment3D" parent="Model/Skeleton3D"]
+bone_name = "mixamorig_Spine2"
+bone_idx = 3
+
+[node name="Badge" type="MeshInstance3D" parent="Model/Skeleton3D/BadgeAttachment"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.06, 0.05, 0.1)
 mesh = SubResource("BoxMesh_badge")
 
-[node name="Belt" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.98, 0)
+[node name="BeltAttachment" type="BoneAttachment3D" parent="Model/Skeleton3D"]
+bone_name = "mixamorig_Hips"
+bone_idx = 0
+
+[node name="Belt" type="MeshInstance3D" parent="Model/Skeleton3D/BeltAttachment"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.02)
 mesh = SubResource("BoxMesh_belt")

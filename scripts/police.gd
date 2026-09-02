@@ -190,7 +190,11 @@ func _tint_surfaces(node: Node, by_surface_name: Dictionary) -> void:
 	if node is MeshInstance3D:
 		var mi := node as MeshInstance3D
 		var mesh := mi.mesh
-		if mesh:
+		# Only imported ArrayMesh surfaces carry names (Skin/Shirt/Pants/etc) -
+		# primitive meshes like the Badge/Belt BoxMesh props don't implement
+		# surface_get_name at all and would crash here once they're nested
+		# under Model (as bone attachments) alongside the real character mesh.
+		if mesh and mesh is ArrayMesh:
 			for i in range(mesh.get_surface_count()):
 				var surface_name: String = mesh.surface_get_name(i)
 				if by_surface_name.has(surface_name):

@@ -86,13 +86,19 @@ const PLAYER_HURT_LINE_CHANCE := 0.3
 
 const IMPACT_EFFECT := preload("res://scenes/ImpactEffect.tscn")
 const IMPACT_HIT := preload("res://scenes/ImpactHit.tscn")
-const PISTOL_ANIM_SOURCE := "res://assets/animations/UAL1_Standard.glb"
-# "Idle"/"Walk" (unarmed-looking but same rig/wrist convention as the Pistol_*
-# set) are used for the relaxed base pose instead of the character's own
-# bundled Man_Idle/Man_Walk, which come from a differently-rigged pack whose
-# wrist rotation doesn't match — mixing them made the gun's fixed hand offset
-# look wrong (pointing sideways/up) whenever those animations were active.
-const PISTOL_ANIMS := ["Pistol_Idle", "Pistol_Shoot", "Pistol_Reload", "Pistol_Aim_Neutral", "Idle", "Walk", "Punch_Cross"]
+# James's model (James_Idle.fbx) ships only his own idle animation - his other
+# 4 clips are separate Mixamo downloads, each a full mesh+skeleton+single-clip
+# export sharing the same skeleton (same bone names/rest pose), so their
+# AnimationPlayer tracks retarget cleanly onto James's own skeleton once
+# copied into his AnimationLibrary. No dedicated aim-only or reload pose
+# exists in this set - James_Shoot doubles as both the held-aim pose and the
+# fire one-shot (see _setup_animation_tree/_ready below).
+const JAMES_ANIM_SOURCES := {
+	"Walk": "res://assets/characters-james/James_Walk.fbx",
+	"Death": "res://assets/characters-james/James_Death.fbx",
+	"Shoot": "res://assets/characters-james/James_Shoot.fbx",
+	"Jump": "res://assets/characters-james/James_Jump.fbx",
+}
 
 const PISTOL_MAG_SIZE := 12
 const STARTING_RESERVE_AMMO := 36
@@ -143,30 +149,36 @@ const AIM_BLEND_SPEED := 8.0
 # parent-relative, so a hand spliced in from a different clip than its own
 # arm produces a kinematically-incoherent pose (the gun ends up pointing the
 # wrong way).
+# Mixamo bone names for James's rig (note the "mixamorig9_" prefix - Mixamo
+# stamps a per-download-batch number on the prefix, and James's batch got 9;
+# it is NOT the generic "mixamorig_" prefix other characters in this project
+# use, so this list can't be shared with them). Spine1/Spine2 stand in for
+# the old rig's Chest/UpperChest - Mixamo's spine chain has no separate
+# named chest bone.
 const UPPER_BODY_BONES := [
-	"Chest", "UpperChest", "Neck", "Head",
-	"LeftShoulder", "LeftUpperArm", "LeftLowerArm", "LeftHand",
-	"index_01_l", "index_02_l", "index_03_l",
-	"middle_01_l", "middle_02_l", "middle_03_l",
-	"pinky_01_l", "pinky_02_l", "pinky_03_l",
-	"ring_01_l", "ring_02_l", "ring_03_l",
-	"thumb_01_l", "thumb_02_l", "thumb_03_l",
-	"RightShoulder", "RightUpperArm", "RightLowerArm", "RightHand",
-	"index_01_r", "index_02_r", "index_03_r", "index_04_leaf_r",
-	"middle_01_r", "middle_02_r", "middle_03_r", "middle_04_leaf_r",
-	"pinky_01_r", "pinky_02_r", "pinky_03_r", "pinky_04_leaf_r",
-	"ring_01_r", "ring_02_r", "ring_03_r", "ring_04_leaf_r",
-	"thumb_01_r", "thumb_02_r", "thumb_03_r",
+	"mixamorig9_Spine1", "mixamorig9_Spine2", "mixamorig9_Neck", "mixamorig9_Head",
+	"mixamorig9_LeftShoulder", "mixamorig9_LeftArm", "mixamorig9_LeftForeArm", "mixamorig9_LeftHand",
+	"mixamorig9_LeftHandThumb1", "mixamorig9_LeftHandThumb2", "mixamorig9_LeftHandThumb3", "mixamorig9_LeftHandThumb4",
+	"mixamorig9_LeftHandIndex1", "mixamorig9_LeftHandIndex2", "mixamorig9_LeftHandIndex3", "mixamorig9_LeftHandIndex4",
+	"mixamorig9_LeftHandMiddle1", "mixamorig9_LeftHandMiddle2", "mixamorig9_LeftHandMiddle3", "mixamorig9_LeftHandMiddle4",
+	"mixamorig9_LeftHandRing1", "mixamorig9_LeftHandRing2", "mixamorig9_LeftHandRing3", "mixamorig9_LeftHandRing4",
+	"mixamorig9_LeftHandPinky1", "mixamorig9_LeftHandPinky2", "mixamorig9_LeftHandPinky3", "mixamorig9_LeftHandPinky4",
+	"mixamorig9_RightShoulder", "mixamorig9_RightArm", "mixamorig9_RightForeArm", "mixamorig9_RightHand",
+	"mixamorig9_RightHandThumb1", "mixamorig9_RightHandThumb2", "mixamorig9_RightHandThumb3", "mixamorig9_RightHandThumb4",
+	"mixamorig9_RightHandIndex1", "mixamorig9_RightHandIndex2", "mixamorig9_RightHandIndex3", "mixamorig9_RightHandIndex4",
+	"mixamorig9_RightHandMiddle1", "mixamorig9_RightHandMiddle2", "mixamorig9_RightHandMiddle3", "mixamorig9_RightHandMiddle4",
+	"mixamorig9_RightHandRing1", "mixamorig9_RightHandRing2", "mixamorig9_RightHandRing3", "mixamorig9_RightHandRing4",
+	"mixamorig9_RightHandPinky1", "mixamorig9_RightHandPinky2", "mixamorig9_RightHandPinky3", "mixamorig9_RightHandPinky4",
 ]
 
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var spring_arm: SpringArm3D = $CameraPivot/SpringArm3D
 @onready var camera: Camera3D = $CameraPivot/SpringArm3D/Camera3D
 @onready var rain: GPUParticles3D = $CameraPivot/Rain
-@onready var pistol_viewmodel: Node3D = $Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/PistolViewmodel
-@onready var shotgun_viewmodel: Node3D = $Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/ShotgunViewmodel
-@onready var mac10_viewmodel: Node3D = $Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/Mac10Viewmodel
-@onready var knife_viewmodel: Node3D = $Model/HumanArmature/GeneralSkeleton/BoneAttachment3D/KnifeViewmodel
+@onready var pistol_viewmodel: Node3D = $Model/Skeleton3D/BoneAttachment3D/PistolViewmodel
+@onready var shotgun_viewmodel: Node3D = $Model/Skeleton3D/BoneAttachment3D/ShotgunViewmodel
+@onready var mac10_viewmodel: Node3D = $Model/Skeleton3D/BoneAttachment3D/Mac10Viewmodel
+@onready var knife_viewmodel: Node3D = $Model/Skeleton3D/BoneAttachment3D/KnifeViewmodel
 # Each real gun model (from styloo's guns pack) replaced one shared,
 # re-tinted Pistol_2.glb doing duty as all 3 guns - keyed by Weapon so
 # _current_gun_viewmodel()/_current_muzzle_point() below can look up
@@ -225,9 +237,19 @@ const UPPER_BODY_BONES := [
 # straight down at rest holds the gun upside-down once raised to aim, and
 # vice versa. So the gun's attachment blends between two authored
 # orientations using the same aim_blend the animation tree already tracks.
-const GUN_SCALE := 0.84
-const GUNS_PACK_VIEWMODEL_SCALE := 3.0
-const GUN_ORIGIN := Vector3(0, 0.22, 0.05)
+# The old Male_Suit rig's whole Model node was scaled to 0.372 (a DAZ/Character
+# Creator export at a different unit scale than the rest of the project), so
+# every gun-viewmodel constant below was empirically tuned WITHIN that already
+# 0.372-shrunk local space. James's Mixamo rig needs no such correction on the
+# body itself (already human-scale), so Model carries no scale anymore - which
+# means these same constants, unscaled, blow the gun up to roughly 1/0.372
+# (~2.7x) too big and too far from the hand. Reapplying that same factor here,
+# scoped to just the gun attachment rather than the whole body, keeps the
+# numbers below unchanged from their original tuning.
+const JAMES_VIEWMODEL_SCALE_CORRECTION := 0.372
+const GUN_SCALE := 0.84 * JAMES_VIEWMODEL_SCALE_CORRECTION
+const GUNS_PACK_VIEWMODEL_SCALE := 3.0 * JAMES_VIEWMODEL_SCALE_CORRECTION
+const GUN_ORIGIN := Vector3(0, 0.22, 0.05) * JAMES_VIEWMODEL_SCALE_CORRECTION
 # Basis.slerp() requires pure (unscaled) rotation matrices, so scale is kept
 # separate here and reapplied after blending rather than baked into these.
 var gun_rot_idle := Basis(Vector3(0, 1, 0), Vector3(1, 0, 0), Vector3(0, 0, -1))
@@ -320,34 +342,48 @@ func _force_loop(anim_name: String) -> void:
 	if anim and anim.has_animation(anim_name):
 		anim.get_animation(anim_name).loop_mode = Animation.LOOP_LINEAR
 
-func _load_pistol_animations() -> void:
-	var packed: PackedScene = load(PISTOL_ANIM_SOURCE)
-	var source: Node3D = packed.instantiate()
-	var source_anim: AnimationPlayer = source.find_child("AnimationPlayer", true, false)
-	if not source_anim:
-		source.free()
-		return
+# James's model only ships his own idle clip natively - his walk/death/shoot/
+# jump each live in a separate Mixamo download (own AnimationPlayer) that
+# shares James's exact skeleton, so their tracks are copied wholesale into
+# one "james" library on his own AnimationPlayer rather than kept as 4
+# separate players. Each source file actually carries the same clip twice
+# under two different names - "Take 001" (a degenerate single-keyframe stub,
+# effectively just the rest/T-pose held for the clip's whole duration) and
+# "mixamo_com" (the real, fully-keyframed clip) - verified by inspecting
+# track key counts (1 key/track on "Take 001" vs 30-40+ on "mixamo_com").
+# Grabbing "Take 001" silently produces a frozen T-pose with no error, so
+# "mixamo_com" is the one that must be used.
+const JAMES_SOURCE_ANIM_NAME := "mixamo_com"
 
+func _load_character_animations() -> void:
 	var lib: AnimationLibrary
-	if anim.has_animation_library("pistol"):
-		lib = anim.get_animation_library("pistol")
+	if anim.has_animation_library("james"):
+		lib = anim.get_animation_library("james")
 	else:
 		lib = AnimationLibrary.new()
-		anim.add_animation_library("pistol", lib)
+		anim.add_animation_library("james", lib)
 
-	for anim_name in PISTOL_ANIMS:
-		if source_anim.has_animation(anim_name) and not lib.has_animation(anim_name):
-			lib.add_animation(anim_name, source_anim.get_animation(anim_name))
+	if anim.has_animation(JAMES_SOURCE_ANIM_NAME) and not lib.has_animation("Idle"):
+		lib.add_animation("Idle", anim.get_animation(JAMES_SOURCE_ANIM_NAME))
 
-	source.free()
+	for anim_name in JAMES_ANIM_SOURCES:
+		if lib.has_animation(anim_name):
+			continue
+		var source_path: String = JAMES_ANIM_SOURCES[anim_name]
+		var packed: PackedScene = load(source_path)
+		var source: Node3D = packed.instantiate()
+		var source_anim: AnimationPlayer = source.find_child("AnimationPlayer", true, false)
+		if source_anim and source_anim.has_animation(JAMES_SOURCE_ANIM_NAME):
+			lib.add_animation(anim_name, source_anim.get_animation(JAMES_SOURCE_ANIM_NAME))
+		source.free()
 
 # Builds a blend tree where the upper body (arms/torso, via UPPER_BODY_BONES)
 # can independently follow the aim pose / shoot / reload animations while the
 # lower body always keeps following Idle/Walk locomotion underneath.
 func _setup_animation_tree() -> void:
-	has_shoot_anim = anim.has_animation("pistol/Pistol_Shoot")
-	has_reload_anim = anim.has_animation("pistol/Pistol_Reload")
-	has_punch_anim = anim.has_animation("pistol/Punch_Cross")
+	has_shoot_anim = anim.has_animation("james/Shoot")
+	has_reload_anim = anim.has_animation("james/Reload")
+	has_punch_anim = anim.has_animation("james/Punch")
 
 	var bt := AnimationNodeBlendTree.new()
 
@@ -384,7 +420,7 @@ func _setup_animation_tree() -> void:
 	var upper := AnimationNodeBlend2.new()
 	upper.filter_enabled = true
 	for bone_name in UPPER_BODY_BONES:
-		upper.set_filter_path(NodePath("%GeneralSkeleton:" + bone_name), true)
+		upper.set_filter_path(NodePath("%Skeleton3D:" + bone_name), true)
 	bt.add_node("UpperAim", upper)
 	bt.connect_node("UpperAim", 0, "Locomotion")
 	bt.connect_node("UpperAim", 1, "Aim")
@@ -393,12 +429,12 @@ func _setup_animation_tree() -> void:
 
 	if has_shoot_anim:
 		var n_shoot := AnimationNodeAnimation.new()
-		n_shoot.animation = "pistol/Pistol_Shoot"
+		n_shoot.animation = "james/Shoot"
 		bt.add_node("Shoot", n_shoot)
 		var shoot_shot := AnimationNodeOneShot.new()
 		shoot_shot.filter_enabled = true
 		for bone_name in UPPER_BODY_BONES:
-			shoot_shot.set_filter_path(NodePath("%GeneralSkeleton:" + bone_name), true)
+			shoot_shot.set_filter_path(NodePath("%Skeleton3D:" + bone_name), true)
 		shoot_shot.fadein_time = 0.02
 		shoot_shot.fadeout_time = 0.15
 		bt.add_node("ShootShot", shoot_shot)
@@ -408,12 +444,12 @@ func _setup_animation_tree() -> void:
 
 	if has_reload_anim:
 		var n_reload := AnimationNodeAnimation.new()
-		n_reload.animation = "pistol/Pistol_Reload"
+		n_reload.animation = "james/Reload"
 		bt.add_node("Reload", n_reload)
 		var reload_shot := AnimationNodeOneShot.new()
 		reload_shot.filter_enabled = true
 		for bone_name in UPPER_BODY_BONES:
-			reload_shot.set_filter_path(NodePath("%GeneralSkeleton:" + bone_name), true)
+			reload_shot.set_filter_path(NodePath("%Skeleton3D:" + bone_name), true)
 		reload_shot.fadein_time = 0.05
 		reload_shot.fadeout_time = 0.2
 		bt.add_node("ReloadShot", reload_shot)
@@ -423,12 +459,12 @@ func _setup_animation_tree() -> void:
 
 	if has_punch_anim:
 		var n_punch := AnimationNodeAnimation.new()
-		n_punch.animation = "pistol/Punch_Cross"
+		n_punch.animation = "james/Punch"
 		bt.add_node("Punch", n_punch)
 		var punch_shot := AnimationNodeOneShot.new()
 		punch_shot.filter_enabled = true
 		for bone_name in UPPER_BODY_BONES:
-			punch_shot.set_filter_path(NodePath("%GeneralSkeleton:" + bone_name), true)
+			punch_shot.set_filter_path(NodePath("%Skeleton3D:" + bone_name), true)
 		punch_shot.fadein_time = 0.03
 		punch_shot.fadeout_time = 0.2
 		bt.add_node("PunchShot", punch_shot)
@@ -447,17 +483,15 @@ func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	if anim:
 		_strip_armature_root_tracks()
-		_load_pistol_animations()
-		# The base resting stance stays relaxed (gun down, not pointed forward);
-		# Pistol_Idle already holds the gun up/forward, which is what the
-		# UpperAim layer should only bring in while aiming or shooting. Use
-		# "pistol/Idle" and "pistol/Walk" (same rig as the Pistol_* set) rather
-		# than the character's own Man_Idle/Man_Walk, which is a differently
-		# rigged pack that holds the wrist at an incompatible angle for the gun.
-		anim_idle = "pistol/Idle" if anim.has_animation("pistol/Idle") else _find_anim("idle")
-		anim_walk = "pistol/Walk" if anim.has_animation("pistol/Walk") else _find_anim("walk")
-		anim_aim = "pistol/Pistol_Aim_Neutral" if anim.has_animation("pistol/Pistol_Aim_Neutral") else anim_idle
-		anim_die = _find_anim("death")
+		_load_character_animations()
+		# James has no dedicated held-aim pose or reload clip - Shoot doubles
+		# as the continuous aim pose (see _setup_animation_tree) as well as
+		# the fire one-shot, so aiming without firing just holds James's
+		# shooting stance instead of a relaxed aim-ready pose.
+		anim_idle = "james/Idle" if anim.has_animation("james/Idle") else _find_anim("idle")
+		anim_walk = "james/Walk" if anim.has_animation("james/Walk") else _find_anim("walk")
+		anim_aim = "james/Shoot" if anim.has_animation("james/Shoot") else anim_idle
+		anim_die = "james/Death" if anim.has_animation("james/Death") else _find_anim("death")
 		_force_loop(anim_walk)
 		_force_loop(anim_aim)
 		_force_loop(anim_idle)
