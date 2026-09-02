@@ -315,6 +315,27 @@ var has_shoot_anim := false
 var has_reload_anim := false
 var has_punch_anim := false
 
+# James's Mixamo export left some materials (body/skin) with an alpha < 1
+# and TRANSPARENCY_ALPHA_DEPTH_PRE_PASS baked in (confirmed by inspecting
+# the imported StandardMaterial3D directly - transparency=4, albedo alpha
+# 0.8), making him render see-through. Forced opaque per-surface via
+# set_surface_override_material so the shared imported material resource
+# (used by every James instance) isn't mutated.
+func _fix_transparent_materials(node: Node) -> void:
+	if node is MeshInstance3D:
+		var mi := node as MeshInstance3D
+		var mesh := mi.mesh
+		if mesh:
+			for i in range(mesh.get_surface_count()):
+				var mat := mi.get_active_material(i)
+				if mat is StandardMaterial3D and (mat as StandardMaterial3D).transparency != BaseMaterial3D.TRANSPARENCY_DISABLED:
+					var fixed := (mat as StandardMaterial3D).duplicate() as StandardMaterial3D
+					fixed.transparency = BaseMaterial3D.TRANSPARENCY_DISABLED
+					fixed.albedo_color.a = 1.0
+					mi.set_surface_override_material(i, fixed)
+	for child in node.get_children():
+		_fix_transparent_materials(child)
+
 func _find_anim(keyword: String) -> String:
 	if not anim:
 		return ""
@@ -481,6 +502,7 @@ func _setup_animation_tree() -> void:
 func _ready() -> void:
 	add_to_group("player")
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	_fix_transparent_materials(model)
 	if anim:
 		_strip_armature_root_tracks()
 		_load_character_animations()
