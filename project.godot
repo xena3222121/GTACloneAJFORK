@@ -36,9 +36,5 @@ MissionSystem="*res://scripts/mission_system.gd"
 
 [rendering]
 
-; No anti-aliasing was ever configured (this section didn't exist) - every
-; edge in the city rendered jagged. MSAA 4x plus FXAA on top is a cheap,
-; low-risk combo (unlike TAA, no ghosting risk on fast-moving traffic/
-; gunfire) that meaningfully cleans up edges without a big performance cost.
 anti_aliasing/quality/msaa_3d=2
 anti_aliasing/quality/screen_space_aa=1
