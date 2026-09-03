@@ -869,6 +869,16 @@ func _try_step_up(motion: Vector3) -> void:
 	var result := PhysicsTestMotionResult3D.new()
 	if not PhysicsServer3D.body_test_motion(get_rid(), params, result):
 		return
+	# A walkable slope (a highway on-ramp, any gentle hill) blocks this flat
+	# horizontal probe too, even though move_and_slide already climbs it fine
+	# on its own via ordinary slope sliding - without this check, walking up
+	# any ramp turned into a violent per-frame 0.35m pogo-hop that eventually
+	# launched the player off the ramp entirely (confirmed via headless sim).
+	# Only a collision face steeper than floor_max_angle - a near-vertical
+	# curb or stair riser move_and_slide can't climb by itself - should ever
+	# trigger a step.
+	if result.get_collision_normal().angle_to(Vector3.UP) <= floor_max_angle:
+		return
 	params.from = global_transform.translated(Vector3.UP * STEP_HEIGHT)
 	if PhysicsServer3D.body_test_motion(get_rid(), params, result):
 		return
