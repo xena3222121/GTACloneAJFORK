@@ -74,16 +74,6 @@ const IDLE_VARIANT_SOURCES := [
 	"res://assets/characters-pete/Pete_Idle4.fbx",
 	"res://assets/characters-pete/Pete_Idle5.fbx",
 ]
-const TURN_LEFT_SOURCE := "res://assets/characters-pete/Pete_LeftTurn.fbx"
-const TURN_RIGHT_SOURCE := "res://assets/characters-pete/Pete_RightTurn.fbx"
-# A wander leg that reverses direction used to just start walking immediately
-# while lerp_angle slowly caught the model's facing up over the next several
-# frames - for a big heading change that reads as sliding/moonwalking into
-# the turn instead of actually pivoting. Past this angle (radians - roughly
-# 80 degrees), play an in-place turn clip and hold movement for TURN_ANIM_TIME
-# before setting off walking, instead of relying on the lerp alone.
-const TURN_ANIM_THRESHOLD := 1.4
-const TURN_ANIM_TIME := 0.45
 
 const HIT_AUDIO_CLIPS := [
 	"res://Audio/Arnold/NPC Getting attacked/ahhhhhhhh.wav",
@@ -213,10 +203,6 @@ var anim_die := ""
 var anim_run := ""
 var anim_hit_react := ""
 var anim_land := ""
-var anim_turn_left := ""
-var anim_turn_right := ""
-var turn_timer := 0.0
-var turn_target_yaw := 0.0
 var idle_variants: Array = []
 
 func _find_anim(keyword: String) -> String:
@@ -374,19 +360,6 @@ func _load_extra_animations() -> void:
 	anim_run = "Run" if anim.has_animation("Run") else anim_walk
 	_force_loop(anim_run)
 
-	_merge_external_clip(lib, "TurnLeft", TURN_LEFT_SOURCE)
-	_merge_external_clip(lib, "TurnRight", TURN_RIGHT_SOURCE)
-	anim_turn_left = "TurnLeft" if anim.has_animation("TurnLeft") else ""
-	anim_turn_right = "TurnRight" if anim.has_animation("TurnRight") else ""
-	# If only one direction's clip actually merged (shouldn't normally happen -
-	# both come from the same source pack - but keeps this from being an all-
-	# or-nothing feature if it ever does), mirror it for the missing side
-	# rather than losing the whole in-place-turn behavior over one direction.
-	if anim_turn_left == "" and anim_turn_right != "":
-		anim_turn_left = anim_turn_right
-	elif anim_turn_right == "" and anim_turn_left != "":
-		anim_turn_right = anim_turn_left
-
 	for i in range(IDLE_VARIANT_SOURCES.size()):
 		var target_name := "Idle%d" % (i + 2)
 		_merge_external_clip(lib, target_name, IDLE_VARIANT_SOURCES[i])
@@ -451,27 +424,6 @@ func _pick_new_target() -> void:
 	var dist := randf() * WANDER_RADIUS
 	target_position = home_position + Vector3(cos(angle) * dist, 0, sin(angle) * dist)
 
-# Called right after picking a new wander target - if the new leg is a sharp
-# enough heading change from however the NPC is currently facing, pivot in
-# place with a real turn clip first instead of setting off walking while
-# lerp_angle plays catch-up over the next several strides.
-func _maybe_start_turn() -> void:
-	if anim_turn_left == "" and anim_turn_right == "":
-		return
-	var to_target := target_position - global_position
-	to_target.y = 0
-	if to_target.length() < 0.01:
-		return
-	var target_yaw := atan2(to_target.x, to_target.z)
-	var diff := wrapf(target_yaw - model.rotation.y, -PI, PI)
-	if absf(diff) < TURN_ANIM_THRESHOLD:
-		return
-	turn_timer = TURN_ANIM_TIME
-	turn_target_yaw = target_yaw
-	# Sign convention here (diff > 0 => right) is a best guess, not verified
-	# against actual left/right foot-crossing in the source clips - if it
-	# reads as backwards in-game, swap which clip each branch plays.
-	_play_once(anim_turn_right if diff > 0.0 else anim_turn_left)
 
 # Called from wherever violence happens (player.gd's shoot(), car.gd/
 # parked_car.gd's explode()) rather than civilians polling for danger every
@@ -614,13 +566,6 @@ func register_vehicle_hit(car: Object, car_speed: float) -> void:
 	launch(horizontal_dir * knockback_speed + Vector3(0, VEHICLE_HIT_LAUNCH_UP, 0), VEHICLE_HIT_STUN_TIME)
 
 func _process_wander(delta: float) -> void:
-	if turn_timer > 0.0:
-		turn_timer -= delta
-		velocity.x = 0.0
-		velocity.z = 0.0
-		model.rotation.y = lerp_angle(model.rotation.y, turn_target_yaw, 10.0 * delta)
-		return
-
 	var to_target := target_position - global_position
 	to_target.y = 0
 
@@ -632,7 +577,6 @@ func _process_wander(delta: float) -> void:
 		idle_timer = randf_range(IDLE_TIME_MIN, IDLE_TIME_MAX)
 		_play(_pick_idle_anim())
 		_pick_new_target()
-		_maybe_start_turn()
 	else:
 		var dir := to_target.normalized()
 		velocity.x = dir.x * WALK_SPEED
@@ -821,12 +765,6 @@ func _process_panic(delta: float) -> void:
 	if panic_timer <= 0.0:
 		panicking = false
 		_pick_new_target()
-		# Same pivot-in-place treatment as the normal wander idle-arrival
-		# branch - a civilian coming out of a flat-out sprint away from
-		# danger is facing wherever the flee direction happened to be, which
-		# is just as likely to need a sharp turn onto the new wander leg as
-		# the idle case is.
-		_maybe_start_turn()
 		return
 	velocity.x = flee_dir.x * PANIC_SPEED
 	velocity.z = flee_dir.z * PANIC_SPEED

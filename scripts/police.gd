@@ -73,13 +73,6 @@ const RUN_SOURCE := "res://assets/characters-pete/Pete_Run.fbx"
 # dedicated police model/weapon - still true, but the pose reads far more like
 # "cop shooting a gun" than a haymaker).
 const SHOOT_SOURCE := "res://assets/characters-james/James_Shoot.fbx"
-const TURN_LEFT_SOURCE := "res://assets/characters-pete/Pete_LeftTurn.fbx"
-const TURN_RIGHT_SOURCE := "res://assets/characters-pete/Pete_RightTurn.fbx"
-# See npc.gd's identical consts/_maybe_start_turn - past this heading change
-# (radians, ~80 degrees), pivot in place with a real turn clip instead of
-# setting off walking while lerp_angle slowly catches the model's facing up.
-const TURN_ANIM_THRESHOLD := 1.4
-const TURN_ANIM_TIME := 0.45
 
 # No dedicated police model/rig exists (only the generic civilian
 # characters), and giving them a properly bone-attached, correctly-oriented
@@ -140,10 +133,6 @@ var anim_attack := ""
 var anim_run := ""
 var anim_hit_react := ""
 var anim_land := ""
-var anim_turn_left := ""
-var anim_turn_right := ""
-var turn_timer := 0.0
-var turn_target_yaw := 0.0
 
 func _find_anim(keyword: String) -> String:
 	if not anim:
@@ -289,15 +278,6 @@ func _load_extra_animations() -> void:
 	if anim.has_animation("Shoot"):
 		anim_attack = "Shoot"
 
-	_merge_external_clip(lib, "TurnLeft", TURN_LEFT_SOURCE)
-	_merge_external_clip(lib, "TurnRight", TURN_RIGHT_SOURCE)
-	anim_turn_left = "TurnLeft" if anim.has_animation("TurnLeft") else ""
-	anim_turn_right = "TurnRight" if anim.has_animation("TurnRight") else ""
-	if anim_turn_left == "" and anim_turn_right != "":
-		anim_turn_left = anim_turn_right
-	elif anim_turn_right == "" and anim_turn_left != "":
-		anim_turn_right = anim_turn_left
-
 func _ready() -> void:
 	add_to_group("police")
 	health = max_health
@@ -384,22 +364,6 @@ func _pick_new_target() -> void:
 	var angle := randf() * TAU
 	var dist := randf() * WANDER_RADIUS
 	target_position = home_position + Vector3(cos(angle) * dist, 0, sin(angle) * dist)
-
-# See npc.gd's identical function.
-func _maybe_start_turn() -> void:
-	if anim_turn_left == "" and anim_turn_right == "":
-		return
-	var to_target := target_position - global_position
-	to_target.y = 0
-	if to_target.length() < 0.01:
-		return
-	var target_yaw := atan2(to_target.x, to_target.z)
-	var diff := wrapf(target_yaw - model.rotation.y, -PI, PI)
-	if absf(diff) < TURN_ANIM_THRESHOLD:
-		return
-	turn_timer = TURN_ANIM_TIME
-	turn_target_yaw = target_yaw
-	_play_once(anim_turn_right if diff > 0.0 else anim_turn_left)
 
 # Mirrors npc.gd's launch() - a car-hit impulse strong enough to send a cop
 # flying needs to survive at least a few frames without the movement AI
@@ -552,13 +516,6 @@ func _has_line_of_sight(target_pos: Vector3) -> bool:
 	return result.is_empty() or result.get("collider") == player
 
 func _process_wander(delta: float) -> void:
-	if turn_timer > 0.0:
-		turn_timer -= delta
-		velocity.x = 0.0
-		velocity.z = 0.0
-		model.rotation.y = lerp_angle(model.rotation.y, turn_target_yaw, 10.0 * delta)
-		return
-
 	var to_target := target_position - global_position
 	to_target.y = 0
 
@@ -570,7 +527,6 @@ func _process_wander(delta: float) -> void:
 		idle_timer = randf_range(IDLE_TIME_MIN, IDLE_TIME_MAX)
 		_play(anim_idle)
 		_pick_new_target()
-		_maybe_start_turn()
 	else:
 		var dir := to_target.normalized()
 		velocity.x = dir.x * WALK_SPEED
