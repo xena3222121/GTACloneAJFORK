@@ -59,6 +59,7 @@ func _ready() -> void:
 	health = max_health
 	add_to_group("parked_vehicles")
 	_setup_engine_audio()
+	_setup_headlights()
 
 func _setup_engine_audio() -> void:
 	engine_audio = AudioStreamPlayer3D.new()
@@ -89,6 +90,42 @@ func _get_or_create_marker(marker_name: String, local_pos: Vector3) -> Marker3D:
 	m.position = local_pos
 	return m
 
+# See car.gd's identical headlight setup/comment - nothing in this project's
+# car scripts had any light source at all, which reads as broken now that
+# streetlights actually go dark/light with time of day.
+const HEADLIGHT_FORWARD_OFFSET := 2.0
+const HEADLIGHT_SIDE_OFFSET := 0.6
+const HEADLIGHT_HEIGHT := 0.5
+const HEADLIGHT_RANGE := 18.0
+const HEADLIGHT_SPOT_ANGLE := 35.0
+const HEADLIGHT_ENERGY := 6.0
+const HEADLIGHT_COLOR := Color(1.0, 0.97, 0.85)
+const HEADLIGHT_ON_THRESHOLD := 0.4
+
+var headlight_left: SpotLight3D
+var headlight_right: SpotLight3D
+
+func _setup_headlights() -> void:
+	headlight_left = _make_headlight(-HEADLIGHT_SIDE_OFFSET)
+	headlight_right = _make_headlight(HEADLIGHT_SIDE_OFFSET)
+
+func _make_headlight(x_offset: float) -> SpotLight3D:
+	var light := SpotLight3D.new()
+	light.position = Vector3(x_offset, HEADLIGHT_HEIGHT, HEADLIGHT_FORWARD_OFFSET)
+	light.rotation_degrees = Vector3(0, 180, 0)
+	light.spot_range = HEADLIGHT_RANGE
+	light.spot_angle = HEADLIGHT_SPOT_ANGLE
+	light.light_energy = HEADLIGHT_ENERGY
+	light.light_color = HEADLIGHT_COLOR
+	light.visible = false
+	add_child(light)
+	return light
+
+func _update_headlights() -> void:
+	var should_be_on: bool = driver != null and not destroyed and DayNightCycle.sun_altitude() < HEADLIGHT_ON_THRESHOLD
+	headlight_left.visible = should_be_on
+	headlight_right.visible = should_be_on
+
 func driver_enter(who: Node3D) -> void:
 	driver = who
 
@@ -98,6 +135,7 @@ func driver_exit() -> void:
 
 func _physics_process(delta: float) -> void:
 	_update_engine_audio()
+	_update_headlights()
 	if destroyed or not driver:
 		return
 

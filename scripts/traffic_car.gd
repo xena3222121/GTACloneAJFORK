@@ -68,6 +68,7 @@ func _ready() -> void:
 	_update_facing()
 	health = max_health
 	_setup_engine_audio()
+	_setup_headlights()
 
 # Same real recorded engine loop as car.gd (see Audio/Ambience/
 # ATTRIBUTION.md), kept duplicated rather than shared, matching this
@@ -102,6 +103,44 @@ func _update_engine_audio() -> void:
 	engine_audio.volume_db = lerp(-14.0, -6.0, speed_ratio)
 	if not engine_audio.playing:
 		engine_audio.play()
+
+# See car.gd's identical headlight setup/comment. Unlike car.gd/
+# parked_car.gd, gated on night alone rather than `driver` too - a wandering
+# traffic car is always "being driven" by its own AI patrol regardless of
+# whether a player has stolen it, unlike a player-owned car sitting empty
+# and parked.
+const HEADLIGHT_FORWARD_OFFSET := 2.0
+const HEADLIGHT_SIDE_OFFSET := 0.6
+const HEADLIGHT_HEIGHT := 0.5
+const HEADLIGHT_RANGE := 18.0
+const HEADLIGHT_SPOT_ANGLE := 35.0
+const HEADLIGHT_ENERGY := 6.0
+const HEADLIGHT_COLOR := Color(1.0, 0.97, 0.85)
+const HEADLIGHT_ON_THRESHOLD := 0.4
+
+var headlight_left: SpotLight3D
+var headlight_right: SpotLight3D
+
+func _setup_headlights() -> void:
+	headlight_left = _make_headlight(-HEADLIGHT_SIDE_OFFSET)
+	headlight_right = _make_headlight(HEADLIGHT_SIDE_OFFSET)
+
+func _make_headlight(x_offset: float) -> SpotLight3D:
+	var light := SpotLight3D.new()
+	light.position = Vector3(x_offset, HEADLIGHT_HEIGHT, HEADLIGHT_FORWARD_OFFSET)
+	light.rotation_degrees = Vector3(0, 180, 0)
+	light.spot_range = HEADLIGHT_RANGE
+	light.spot_angle = HEADLIGHT_SPOT_ANGLE
+	light.light_energy = HEADLIGHT_ENERGY
+	light.light_color = HEADLIGHT_COLOR
+	light.visible = false
+	add_child(light)
+	return light
+
+func _update_headlights() -> void:
+	var should_be_on: bool = not destroyed and DayNightCycle.sun_altitude() < HEADLIGHT_ON_THRESHOLD
+	headlight_left.visible = should_be_on
+	headlight_right.visible = should_be_on
 
 func _get_or_create_marker(marker_name: String, local_pos: Vector3) -> Marker3D:
 	if has_node(marker_name):
@@ -193,6 +232,7 @@ func _update_facing() -> void:
 
 func _physics_process(delta: float) -> void:
 	_update_engine_audio()
+	_update_headlights()
 	if destroyed:
 		return
 	if driver:
