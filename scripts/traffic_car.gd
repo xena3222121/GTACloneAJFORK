@@ -37,6 +37,10 @@ const DRIVE_TURN_SPEED := 2.2
 const PANIC_BRAKE_TIME := 2.0
 const PANIC_BRAKE_SPEED_MULTIPLIER := 0.15
 
+# How long a patrol car will just sit blocked (waiting, like real traffic)
+# before giving up and reversing as an escape valve for a genuine dead end.
+const PATROL_STUCK_REVERSE_TIME := 1.5
+
 @onready var model: Node3D = $Model
 @onready var driver_seat: Marker3D = _get_or_create_marker("DriverSeat", Vector3(0, 0.9, 0))
 @onready var exit_point: Marker3D = _get_or_create_marker("ExitPoint", Vector3(1.8, 0.1, 0))
@@ -45,6 +49,7 @@ var direction: float = 1.0
 var health: float
 var destroyed := false
 var panic_brake_timer := 0.0
+var patrol_stuck_timer := 0.0
 
 # Player-driven state. Traffic cars stay in the "traffic_cars" group (not
 # "vehicles") even though they're now stealable - the car-vs-pedestrian
@@ -263,15 +268,25 @@ func _physics_process(delta: float) -> void:
 	var motion: Vector3 = Vector3(0, 0, delta_pos) if axis == 0 else Vector3(delta_pos, 0, 0)
 	var collision := move_and_collide(motion)
 	if collision:
-		# Hit something solid mid-patrol (a wreck, a stalled car) - reverse
-		# like reaching the patrol bound rather than getting stuck shoving
-		# against it forever, and register the hit the same way the player-
-		# driven branch does.
 		var hit: Object = collision.get_collider()
 		if hit and hit.has_method("register_vehicle_hit"):
 			hit.register_vehicle_hit(self, effective_speed)
-		direction *= -1.0
-		reached_bound = true
+		# A first version reversed direction the instant it touched anything -
+		# two patrol cars meeting nose-to-nose would flip toward each other
+		# again, meet again, flip again: a visible ping-pong bounce between
+		# them. move_and_collide already stops the car right at the contact
+		# point on its own (partial motion), so no extra reaction is needed
+		# for the common case of another car just passing through - only
+		# reverse (an escape valve for a genuine dead end) after sitting
+		# blocked for a while, same as a real driver eventually giving up
+		# and backing out instead of nudging forward over and over.
+		patrol_stuck_timer += delta
+		if patrol_stuck_timer >= PATROL_STUCK_REVERSE_TIME:
+			direction *= -1.0
+			patrol_stuck_timer = 0.0
+			reached_bound = true
+	else:
+		patrol_stuck_timer = 0.0
 
 	if reached_bound:
 		_update_facing()
