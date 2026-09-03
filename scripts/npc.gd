@@ -821,6 +821,12 @@ func _process_panic(delta: float) -> void:
 	if panic_timer <= 0.0:
 		panicking = false
 		_pick_new_target()
+		# Same pivot-in-place treatment as the normal wander idle-arrival
+		# branch - a civilian coming out of a flat-out sprint away from
+		# danger is facing wherever the flee direction happened to be, which
+		# is just as likely to need a sharp turn onto the new wander leg as
+		# the idle case is.
+		_maybe_start_turn()
 		return
 	velocity.x = flee_dir.x * PANIC_SPEED
 	velocity.z = flee_dir.z * PANIC_SPEED
