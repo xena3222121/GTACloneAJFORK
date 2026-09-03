@@ -241,19 +241,40 @@ func _physics_process(delta: float) -> void:
 	panic_brake_timer = max(0.0, panic_brake_timer - delta)
 	var effective_speed: float = speed * (PANIC_BRAKE_SPEED_MULTIPLIER if panic_brake_timer > 0.0 else 1.0)
 	var pos: float = position.z if axis == 0 else position.x
-	pos += direction * effective_speed * delta
-	if pos >= max_pos:
-		pos = max_pos
+	var target_pos: float = pos + direction * effective_speed * delta
+	var reached_bound := false
+	if target_pos >= max_pos:
+		target_pos = max_pos
 		direction = -1.0
-		_update_facing()
-	elif pos <= min_pos:
-		pos = min_pos
+		reached_bound = true
+	elif target_pos <= min_pos:
+		target_pos = min_pos
 		direction = 1.0
+		reached_bound = true
+
+	# The ambient AI patrol used to just set position.z/x directly - no
+	# collision test at all, so a wandering traffic car could drive straight
+	# through walls, buildings, wrecks, other cars, anything in its path.
+	# _process_driving (the player-stolen branch, below) already fixed this
+	# the same way move_and_collide fixed it for parked_car.gd - this is the
+	# same pattern applied to the AI's own default patrol state, which is
+	# what almost every traffic car in the city is doing almost all the time.
+	var delta_pos: float = target_pos - pos
+	var motion: Vector3 = Vector3(0, 0, delta_pos) if axis == 0 else Vector3(delta_pos, 0, 0)
+	var collision := move_and_collide(motion)
+	if collision:
+		# Hit something solid mid-patrol (a wreck, a stalled car) - reverse
+		# like reaching the patrol bound rather than getting stuck shoving
+		# against it forever, and register the hit the same way the player-
+		# driven branch does.
+		var hit: Object = collision.get_collider()
+		if hit and hit.has_method("register_vehicle_hit"):
+			hit.register_vehicle_hit(self, effective_speed)
+		direction *= -1.0
+		reached_bound = true
+
+	if reached_bound:
 		_update_facing()
-	if axis == 0:
-		position.z = pos
-	else:
-		position.x = pos
 
 func take_damage(amount: float, _hit_point: Vector3 = Vector3.ZERO) -> void:
 	if destroyed:

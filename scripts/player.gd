@@ -5,6 +5,13 @@ enum Weapon { KNIFE, PISTOL, SHOTGUN, MAC10, UNARMED }
 const WALK_SPEED := 5.0
 const SPRINT_SPEED := 8.5
 const JUMP_VELOCITY := 5.5
+# CharacterBody3D has no built-in step-up assist (unlike Unity's
+# CharacterController) - without this, any curb/step lip taller than the
+# capsule's own collision margin just flatly blocks horizontal movement,
+# forcing a jump to cross a sidewalk curb. STEP_HEIGHT is generous enough for
+# a curb or a stair step but well under knee height, so it can't be used to
+# skip real obstacles like a fence or a car.
+const STEP_HEIGHT := 0.35
 const MOUSE_SENSITIVITY := 0.003
 const JOY_LOOK_SENSITIVITY := 3.0
 const JOY_DEADZONE := 0.2
@@ -841,8 +848,31 @@ func _physics_process(delta: float) -> void:
 	knife_viewmodel.transform.basis = gun_rot.scaled(Vector3.ONE * GUN_SCALE)
 	knife_viewmodel.transform.origin = GUN_ORIGIN
 
+	if is_on_floor():
+		_try_step_up(Vector3(velocity.x, 0, velocity.z) * delta)
 	move_and_slide()
 	_check_vehicle_collisions()
+
+# Standard Godot 4 CharacterBody3D step-up recipe: test the intended
+# horizontal move at the current height, then again lifted by STEP_HEIGHT.
+# If lifting clears the obstruction, it's a low lip (curb, stair) - hop the
+# body up onto it and let the normal move_and_slide()/gravity below settle
+# it back down onto the raised surface. If it's still blocked even lifted,
+# it's a real wall/prop, and nothing changes - only on_floor so a mid-air
+# jump arc can't get snapped upward by this.
+func _try_step_up(motion: Vector3) -> void:
+	if motion.length() < 0.001:
+		return
+	var params := PhysicsTestMotionParameters3D.new()
+	params.from = global_transform
+	params.motion = motion
+	var result := PhysicsTestMotionResult3D.new()
+	if not PhysicsServer3D.body_test_motion(get_rid(), params, result):
+		return
+	params.from = global_transform.translated(Vector3.UP * STEP_HEIGHT)
+	if PhysicsServer3D.body_test_motion(get_rid(), params, result):
+		return
+	global_position.y += STEP_HEIGHT
 
 # Cars never used to check for the player at all (no contact_monitor, no
 # body_entered signal on any of car.gd/traffic_car.gd/parked_car.gd), so

@@ -45,6 +45,27 @@ func _ready() -> void:
 	health = max_health
 	_setup_engine_audio()
 	_setup_headlights()
+	_setup_collision_detection()
+
+# Every other drivable car (parked_car.gd's StaticBody3D, traffic_car.gd's
+# AnimatableBody3D) registers a hit on whatever it rams via its own
+# move_and_collide result each frame - but this is a real RigidBody3D, which
+# never moves that way and never had contact_monitor on at all. That meant
+# ramming a standing-still pedestrian with THIS car (the one already parked
+# outside the safehouse the player starts with) did nothing whatsoever - no
+# damage, no knockback - while every other car type in the game worked fine.
+# contact_monitor + body_entered is the RigidBody3D-native equivalent; the
+# driver's own CharacterBody3D collision is disabled while driving (see
+# player.gd's enter_vehicle), so this never fires on the player driving it.
+func _setup_collision_detection() -> void:
+	contact_monitor = true
+	max_contacts_reported = 8
+	body_entered.connect(_on_body_entered)
+
+func _on_body_entered(body: Node3D) -> void:
+	if destroyed or not body.has_method("register_vehicle_hit"):
+		return
+	body.register_vehicle_hit(self, linear_velocity.length())
 
 # City streets were dead silent otherwise - every moving car (player's and
 # traffic's alike) gets a real recorded engine loop (see
