@@ -832,6 +832,12 @@ custom_minimum_size = Vector2(0, 40)
 theme_override_font_sizes/font_size = 18
 text = "Settings"
 
+[node name="MapButton" type="Button" parent="HUD/PauseMenu/Panel/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 40)
+theme_override_font_sizes/font_size = 18
+text = "Map"
+
 [node name="SaveButton" type="Button" parent="HUD/PauseMenu/Panel/VBox"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 40)
@@ -852,5 +858,22 @@ text = "Quit to Desktop"
 
 [node name="SettingsMenu" parent="HUD/PauseMenu" instance=ExtResource("7")]
 layout_mode = 1
+
+[node name="CloseMapButton" type="Button" parent="HUD/PauseMenu"]
+visible = false
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -70.0
+offset_top = -70.0
+offset_right = 70.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 18
+text = "Close Map"
 
 [editable path="Model"]
