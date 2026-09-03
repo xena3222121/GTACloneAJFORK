@@ -62,6 +62,7 @@
 [ext_resource type="PackedScene" path="res://scenes/BeachUmbrella.tscn" id="107"]
 [ext_resource type="PackedScene" path="res://scenes/BeachChair.tscn" id="108"]
 [ext_resource type="PackedScene" path="res://scenes/LifeguardTower.tscn" id="109"]
+[ext_resource type="Script" path="res://scripts/wave_ambience.gd" id="110"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wetsand"]
 albedo_color = Color(0.58, 0.5, 0.36, 1)
@@ -5669,6 +5670,18 @@ transform = Transform3D(0.985, 0, 0.174, 0, 1, 0, -0.174, 0, 0.985, 113.5, 0.1, 
 
 [node name="LifeguardTower1" parent="Waterfront" instance=ExtResource("109")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.1, 166)
+
+[node name="WaveAmbience1" type="AudioStreamPlayer3D" parent="Waterfront"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40, 1.0, 172)
+script = ExtResource("110")
+
+[node name="WaveAmbience2" type="AudioStreamPlayer3D" parent="Waterfront"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 1.0, 172)
+script = ExtResource("110")
+
+[node name="WaveAmbience3" type="AudioStreamPlayer3D" parent="Waterfront"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 170, 1.0, 172)
+script = ExtResource("110")
 
 [node name="RiverTree1" parent="Waterfront" instance=ExtResource("21")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -84, 0.1, -50)
