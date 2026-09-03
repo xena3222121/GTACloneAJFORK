@@ -141,6 +141,15 @@ const MODEL_FORWARD_OFFSET := PI
 const RAY_LENGTH := 1000.0
 const LOCO_BLEND_SPEED := 6.0
 const AIM_BLEND_SPEED := 8.0
+# Velocity used to snap straight to full WALK/SPRINT_SPEED (or straight to 0)
+# the instant a key was pressed/released, while the Locomotion blend above
+# only reaches full Walk weight gradually over ~1/LOCO_BLEND_SPEED sec - so
+# for that beat, the body was translating at full speed on legs still mid-way
+# through the idle->walk blend (or gliding to a dead stop on legs still
+# mid-stride), reading as a foot-sliding pop every time movement started or
+# stopped. Ramping velocity at roughly the same rate as the animation blend
+# keeps the two in step instead.
+const MOVE_ACCEL := 45.0
 
 # Bones driven by the upper-body layer (aim pose / shoot / reload) so the
 # lower body always keeps following the Idle/Walk locomotion animation
@@ -768,8 +777,10 @@ func _physics_process(delta: float) -> void:
 	move_dir.y = 0
 	move_dir = move_dir.normalized() if move_dir.length() > 0.01 else Vector3.ZERO
 
-	velocity.x = move_dir.x * speed
-	velocity.z = move_dir.z * speed
+	var target_horizontal_velocity := Vector3(move_dir.x * speed, 0, move_dir.z * speed)
+	var horizontal_velocity := Vector3(velocity.x, 0, velocity.z).move_toward(target_horizontal_velocity, MOVE_ACCEL * delta)
+	velocity.x = horizontal_velocity.x
+	velocity.z = horizontal_velocity.z
 
 	var moving := move_dir.length() > 0.01
 	if aiming:

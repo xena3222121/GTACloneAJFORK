@@ -56,6 +56,24 @@ const VEHICLE_HIT_COOLDOWN := 0.6
 const BLOOD_POOL := preload("res://scenes/BloodPool.tscn")
 const MONEY_PICKUP := preload("res://scenes/MoneyPickup.tscn")
 
+# Extra Mixamo clips pulled in on top of whatever the character's own model
+# ships with, same cross-file retarget trick npc_pete.gd/npc_josh.gd/player.gd
+# already use (every Mixamo download shares the same skeleton/bone names, so
+# a clip exported for one character's rig plays back correctly on any other).
+# Sourced from Pete's own "Action Adventure Pack" (assets/characters-pete/)
+# since it's the one download in this project with real variety already sitting
+# unused - Pete himself gets perfect-fidelity playback since these ARE his own
+# files; every other character gets the same clips retargeted onto their rig.
+const EXTRA_ANIM_SOURCE_NAME := "mixamo_com"
+const HIT_REACT_SOURCE := "res://assets/characters-pete/Pete_FallingIdle.fbx"
+const RUN_SOURCE := "res://assets/characters-pete/Pete_Run.fbx"
+const IDLE_VARIANT_SOURCES := [
+	"res://assets/characters-pete/Pete_Idle2.fbx",
+	"res://assets/characters-pete/Pete_Idle3.fbx",
+	"res://assets/characters-pete/Pete_Idle4.fbx",
+	"res://assets/characters-pete/Pete_Idle5.fbx",
+]
+
 const HIT_AUDIO_CLIPS := [
 	"res://Audio/Arnold/NPC Getting attacked/ahhhhhhhh.wav",
 	"res://Audio/Arnold/NPC Getting attacked/Im dying someone fucking help.wav",
@@ -181,6 +199,9 @@ var prompt_text := "Press E to talk"
 var anim_idle := ""
 var anim_walk := ""
 var anim_die := ""
+var anim_run := ""
+var anim_hit_react := ""
+var idle_variants: Array = []
 
 func _find_anim(keyword: String) -> String:
 	if not anim:
@@ -205,6 +226,58 @@ func _play(anim_name: String) -> void:
 	if anim and anim_name != "" and anim.current_animation != anim_name:
 		anim.play(anim_name)
 
+# Unlike _play() above, always restarts from frame 0 even if this is already
+# the current animation - needed for a one-off reaction (getting launched by
+# a car) that has to replay in full each time it's triggered, not silently
+# no-op because the last stun already left current_animation on this name.
+func _play_once(anim_name: String) -> void:
+	if anim and anim_name != "":
+		anim.stop()
+		anim.play(anim_name)
+
+func _merge_external_clip(lib: AnimationLibrary, target_name: String, source_path: String) -> void:
+	if lib.has_animation(target_name):
+		return
+	var packed: PackedScene = load(source_path)
+	if not packed:
+		return
+	var source := packed.instantiate()
+	var source_ap: AnimationPlayer = source.find_child("AnimationPlayer", true, false)
+	if source_ap and source_ap.has_animation(EXTRA_ANIM_SOURCE_NAME):
+		lib.add_animation(target_name, source_ap.get_animation(EXTRA_ANIM_SOURCE_NAME))
+	source.free()
+
+func _load_extra_animations() -> void:
+	var lib: AnimationLibrary
+	if anim.has_animation_library(""):
+		lib = anim.get_animation_library("")
+	else:
+		lib = AnimationLibrary.new()
+		anim.add_animation_library("", lib)
+
+	_merge_external_clip(lib, "HitReact", HIT_REACT_SOURCE)
+	anim_hit_react = "HitReact" if anim.has_animation("HitReact") else anim_idle
+	_force_loop(anim_hit_react)
+
+	_merge_external_clip(lib, "Run", RUN_SOURCE)
+	anim_run = "Run" if anim.has_animation("Run") else anim_walk
+	_force_loop(anim_run)
+
+	for i in range(IDLE_VARIANT_SOURCES.size()):
+		var target_name := "Idle%d" % (i + 2)
+		_merge_external_clip(lib, target_name, IDLE_VARIANT_SOURCES[i])
+		if anim.has_animation(target_name):
+			idle_variants.append(target_name)
+
+# Called from the idle branch of _process_wander/_process_panic settling back
+# down - mostly the plain looping idle, but occasionally one of Pete's other
+# idle poses (checking phone, stretching, etc.) so a street full of civilians
+# doesn't read as the same handful of characters stuck in the same loop.
+func _pick_idle_anim() -> String:
+	if idle_variants.is_empty() or randf() > 0.4:
+		return anim_idle
+	return idle_variants[randi() % idle_variants.size()]
+
 # Cycle animations (walk, idle) import with loop_mode NONE, so once played to
 # the end they freeze on the last frame instead of restarting — the NPC keeps
 # moving via velocity while its legs stay frozen mid-step (looks like gliding)
@@ -224,6 +297,7 @@ func _ready() -> void:
 		anim_die = _find_anim("death")
 		_force_loop(anim_idle)
 		_force_loop(anim_walk)
+		_load_extra_animations()
 	_play(anim_idle)
 	chatter_audio = AudioStreamPlayer3D.new()
 	chatter_audio.unit_size = 8.0
@@ -310,6 +384,11 @@ func _physics_process(delta: float) -> void:
 	# instead of being overwritten by wander logic on the very next frame.
 	if eject_stun_timer > 0.0:
 		eject_stun_timer -= delta
+		# Getting launched by a car used to just freeze whatever anim was
+		# already playing (idle/walk) while the body sailed through the air -
+		# looked like a glitch, not a hit. This sells the airborne
+		# tumble/bounce for the whole stun window instead.
+		_play(anim_hit_react)
 		move_and_slide()
 		_check_vehicle_collisions()
 		return
@@ -395,7 +474,7 @@ func _process_wander(delta: float) -> void:
 		velocity.z = 0.0
 	elif to_target.length() < ARRIVE_DIST:
 		idle_timer = randf_range(IDLE_TIME_MIN, IDLE_TIME_MAX)
-		_play(anim_idle)
+		_play(_pick_idle_anim())
 		_pick_new_target()
 	else:
 		var dir := to_target.normalized()
@@ -590,7 +669,7 @@ func _process_panic(delta: float) -> void:
 	velocity.z = flee_dir.z * PANIC_SPEED
 	var target_yaw := atan2(flee_dir.x, flee_dir.z)
 	model.rotation.y = lerp_angle(model.rotation.y, target_yaw, 8.0 * delta)
-	_play(anim_walk)
+	_play(anim_run)
 
 func _process_hostile(delta: float) -> void:
 	var to_player := player.global_position - global_position
@@ -601,7 +680,7 @@ func _process_hostile(delta: float) -> void:
 		var dir := to_player.normalized()
 		velocity.x = dir.x * CHASE_SPEED
 		velocity.z = dir.z * CHASE_SPEED
-		_play(anim_walk)
+		_play(anim_run)
 	else:
 		velocity.x = 0.0
 		velocity.z = 0.0

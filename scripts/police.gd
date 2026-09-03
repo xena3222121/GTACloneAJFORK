@@ -60,6 +60,19 @@ const IMPACT_EFFECT := preload("res://scenes/ImpactEffect.tscn")
 const MONEY_PICKUP := preload("res://scenes/MoneyPickup.tscn")
 const AMMO_PICKUP := preload("res://scenes/AmmoPickup.tscn")
 
+# Same cross-file Mixamo retarget trick as npc.gd/player.gd - every Mixamo
+# download shares the same skeleton/bone names, so these clips (borrowed from
+# James's and Pete's own downloads) play back correctly on the cop's generic
+# Male_LongSleeve rig too even though neither was exported for it.
+const EXTRA_ANIM_SOURCE_NAME := "mixamo_com"
+const HIT_REACT_SOURCE := "res://assets/characters-pete/Pete_FallingIdle.fbx"
+const RUN_SOURCE := "res://assets/characters-pete/Pete_Run.fbx"
+# James's own aim-and-fire clip - a real held-pistol pose instead of the flat
+# "punch" reuse this used to fall back to (see the old comment above about no
+# dedicated police model/weapon - still true, but the pose reads far more like
+# "cop shooting a gun" than a haymaker).
+const SHOOT_SOURCE := "res://assets/characters-james/James_Shoot.fbx"
+
 # No dedicated police model/rig exists (only the generic civilian
 # characters), and giving them a properly bone-attached, correctly-oriented
 # held pistol would mean redoing the entire multi-hour player gun-attachment
@@ -116,6 +129,8 @@ var anim_idle := ""
 var anim_walk := ""
 var anim_die := ""
 var anim_attack := ""
+var anim_run := ""
+var anim_hit_react := ""
 
 func _find_anim(keyword: String) -> String:
 	if not anim:
@@ -141,9 +156,53 @@ func _play(anim_name: String) -> void:
 	if anim and anim_name != "" and anim.current_animation != anim_name:
 		anim.play(anim_name)
 
+# Unlike _play() above, always restarts from frame 0 even if this is already
+# the current animation. Firing was previously routed through _play(), which
+# played the attack pose exactly once - after that first shot,
+# current_animation stayed on anim_attack forever (fire_cooldown just
+# gated the shot itself), so every following shot in the same firefight was
+# silently mute: the cop stood there in the frozen end-pose while gunshots
+# kept firing. This forces the pose to actually replay every time.
+func _play_once(anim_name: String) -> void:
+	if anim and anim_name != "":
+		anim.stop()
+		anim.play(anim_name)
+
 func _force_loop(anim_name: String) -> void:
 	if anim and anim.has_animation(anim_name):
 		anim.get_animation(anim_name).loop_mode = Animation.LOOP_LINEAR
+
+func _merge_external_clip(lib: AnimationLibrary, target_name: String, source_path: String) -> void:
+	if lib.has_animation(target_name):
+		return
+	var packed: PackedScene = load(source_path)
+	if not packed:
+		return
+	var source := packed.instantiate()
+	var source_ap: AnimationPlayer = source.find_child("AnimationPlayer", true, false)
+	if source_ap and source_ap.has_animation(EXTRA_ANIM_SOURCE_NAME):
+		lib.add_animation(target_name, source_ap.get_animation(EXTRA_ANIM_SOURCE_NAME))
+	source.free()
+
+func _load_extra_animations() -> void:
+	var lib: AnimationLibrary
+	if anim.has_animation_library(""):
+		lib = anim.get_animation_library("")
+	else:
+		lib = AnimationLibrary.new()
+		anim.add_animation_library("", lib)
+
+	_merge_external_clip(lib, "HitReact", HIT_REACT_SOURCE)
+	anim_hit_react = "HitReact" if anim.has_animation("HitReact") else anim_idle
+	_force_loop(anim_hit_react)
+
+	_merge_external_clip(lib, "Run", RUN_SOURCE)
+	anim_run = "Run" if anim.has_animation("Run") else anim_walk
+	_force_loop(anim_run)
+
+	_merge_external_clip(lib, "Shoot", SHOOT_SOURCE)
+	if anim.has_animation("Shoot"):
+		anim_attack = "Shoot"
 
 func _ready() -> void:
 	add_to_group("police")
@@ -168,6 +227,7 @@ func _ready() -> void:
 		anim_attack = _find_anim("punch")
 		_force_loop(anim_idle)
 		_force_loop(anim_walk)
+		_load_extra_animations()
 	_play(anim_idle)
 	_tint_uniform()
 
@@ -248,6 +308,10 @@ func _physics_process(delta: float) -> void:
 
 	if eject_stun_timer > 0.0:
 		eject_stun_timer -= delta
+		# Same fix as npc.gd - getting launched by a car used to just freeze
+		# whatever anim was already playing while the cop sailed through the
+		# air. This sells the airborne tumble/bounce for the stun window.
+		_play(anim_hit_react)
 		if not is_on_floor():
 			velocity.y -= gravity * delta
 		else:
@@ -461,7 +525,7 @@ func _process_hostile(delta: float) -> void:
 		var dir := to_player.normalized()
 		velocity.x = dir.x * chase_speed
 		velocity.z = dir.z * chase_speed
-		_play(anim_walk)
+		_play(anim_run)
 	else:
 		velocity.x = 0.0
 		velocity.z = 0.0
@@ -475,7 +539,7 @@ func _process_hostile(delta: float) -> void:
 func _shoot_at_player() -> void:
 	NPC.scare_nearby(get_tree(), global_position)
 	fire_cooldown = fire_rate
-	_play(anim_attack)
+	_play_once(anim_attack)
 
 	gunshot_audio.stream = _make_gunshot_sound()
 	gunshot_audio.play()
