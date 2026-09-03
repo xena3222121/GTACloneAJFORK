@@ -755,7 +755,7 @@ transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 0, 0.02, 9)
 [node name="Road_p15" parent="Street" unique_id=384542659 instance=ExtResource("6")]
 transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 0, 0.02, 15)
 
-[node name="Road_p21" parent="Street" unique_id=1903088108 instance=ExtResource("6")]
+[node name="Road_p21" parent="Street" unique_id=1903088108 instance=ExtResource("25")]
 transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 0, 0.02, 21)
 
 [node name="Road_p27" parent="Street" unique_id=996501865 instance=ExtResource("6")]
@@ -1663,7 +1663,7 @@ transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 60, 0.02, 9)
 [node name="Road_p15" parent="StreetB" instance=ExtResource("6")]
 transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 60, 0.02, 15)
 
-[node name="Road_p21" parent="StreetB" instance=ExtResource("6")]
+[node name="Road_p21" parent="StreetB" instance=ExtResource("25")]
 transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 60, 0.02, 21)
 
 [node name="Road_p27" parent="StreetB" instance=ExtResource("6")]
@@ -2175,7 +2175,7 @@ transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 120, 0.02, 9)
 [node name="Road_p15" parent="StreetC" instance=ExtResource("6")]
 transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 120, 0.02, 15)
 
-[node name="Road_p21" parent="StreetC" instance=ExtResource("6")]
+[node name="Road_p21" parent="StreetC" instance=ExtResource("25")]
 transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 120, 0.02, 21)
 
 [node name="Road_p27" parent="StreetC" instance=ExtResource("6")]
@@ -2661,7 +2661,7 @@ transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 180, 0.02, 9)
 [node name="Road_p15" parent="StreetD" instance=ExtResource("6")]
 transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 180, 0.02, 15)
 
-[node name="Road_p21" parent="StreetD" instance=ExtResource("6")]
+[node name="Road_p21" parent="StreetD" instance=ExtResource("25")]
 transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 180, 0.02, 21)
 
 [node name="Road_p27" parent="StreetD" instance=ExtResource("6")]
@@ -5733,3 +5733,86 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -84, 0.1, 30)
 
 [node name="RiverTree4" parent="Waterfront" instance=ExtResource("21")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -46, 0.1, 90)
+
+[node name="CrossStreet1" type="Node3D" parent="."]
+
+[node name="EW1_Tile1" parent="CrossStreet1" instance=ExtResource("6")]
+transform = Transform3D(0, 0, -6, 0, 1, 0, 6, 0, 0, 6, 0.02, 21)
+
+[node name="EW1_Tile2" parent="CrossStreet1" instance=ExtResource("6")]
+transform = Transform3D(0, 0, -6, 0, 1, 0, 6, 0, 0, 12, 0.02, 21)
+
+[node name="EW1_Tile3" parent="CrossStreet1" instance=ExtResource("6")]
+transform = Transform3D(0, 0, -6, 0, 1, 0, 6, 0, 0, 18, 0.02, 21)
+
+[node name="EW1_Tile4" parent="CrossStreet1" instance=ExtResource("6")]
+transform = Transform3D(0, 0, -6, 0, 1, 0, 6, 0, 0, 24, 0.02, 21)
+
+[node name="EW1_Tile5" parent="CrossStreet1" instance=ExtResource("6")]
+transform = Transform3D(0, 0, -6, 0, 1, 0, 6, 0, 0, 30, 0.02, 21)
+
+[node name="EW1_Tile6" parent="CrossStreet1" instance=ExtResource("6")]
+transform = Transform3D(0, 0, -6, 0, 1, 0, 6, 0, 0, 36, 0.02, 21)
+
+[node name="EW1_Tile7" parent="CrossStreet1" instance=ExtResource("6")]
+transform = Transform3D(0, 0, -6, 0, 1, 0, 6, 0, 0, 42, 0.02, 21)
+
+[node name="EW1_Tile8" parent="CrossStreet1" instance=ExtResource("6")]
+transform = Transform3D(0, 0, -6, 0, 1, 0, 6, 0, 0, 48, 0.02, 21)
+
+[node name="EW1_Tile9" parent="CrossStreet1" instance=ExtResource("6")]
+transform = Transform3D(0, 0, -6, 0, 1, 0, 6, 0, 0, 54, 0.02, 21)
+
+[node name="EW1_Tile10" parent="CrossStreet1" instance=ExtResource("6")]
+transform = Transform3D(0, 0, -6, 0, 1, 0, 6, 0, 0, 66, 0.02, 21)
+
+[node name="EW1_Tile11" parent="CrossStreet1" instance=ExtResource("6")]
+transform = Transform3D(0, 0, -6, 0, 1, 0, 6, 0, 0, 72, 0.02, 21)
+
+[node name="EW1_Tile12" parent="CrossStreet1" instance=ExtResource("6")]
+transform = Transform3D(0, 0, -6, 0, 1, 0, 6, 0, 0, 78, 0.02, 21)
+
+[node name="EW1_Tile13" parent="CrossStreet1" instance=ExtResource("6")]
+transform = Transform3D(0, 0, -6, 0, 1, 0, 6, 0, 0, 84, 0.02, 21)
+
+[node name="EW1_Tile14" parent="CrossStreet1" instance=ExtResource("6")]
+transform = Transform3D(0, 0, -6, 0, 1, 0, 6, 0, 0, 90, 0.02, 21)
+
+[node name="EW1_Tile15" parent="CrossStreet1" instance=ExtResource("6")]
+transform = Transform3D(0, 0, -6, 0, 1, 0, 6, 0, 0, 96, 0.02, 21)
+
+[node name="EW1_Tile16" parent="CrossStreet1" instance=ExtResource("6")]
+transform = Transform3D(0, 0, -6, 0, 1, 0, 6, 0, 0, 102, 0.02, 21)
+
+[node name="EW1_Tile17" parent="CrossStreet1" instance=ExtResource("6")]
+transform = Transform3D(0, 0, -6, 0, 1, 0, 6, 0, 0, 108, 0.02, 21)
+
+[node name="EW1_Tile18" parent="CrossStreet1" instance=ExtResource("6")]
+transform = Transform3D(0, 0, -6, 0, 1, 0, 6, 0, 0, 114, 0.02, 21)
+
+[node name="EW1_Tile19" parent="CrossStreet1" instance=ExtResource("6")]
+transform = Transform3D(0, 0, -6, 0, 1, 0, 6, 0, 0, 126, 0.02, 21)
+
+[node name="EW1_Tile20" parent="CrossStreet1" instance=ExtResource("6")]
+transform = Transform3D(0, 0, -6, 0, 1, 0, 6, 0, 0, 132, 0.02, 21)
+
+[node name="EW1_Tile21" parent="CrossStreet1" instance=ExtResource("6")]
+transform = Transform3D(0, 0, -6, 0, 1, 0, 6, 0, 0, 138, 0.02, 21)
+
+[node name="EW1_Tile22" parent="CrossStreet1" instance=ExtResource("6")]
+transform = Transform3D(0, 0, -6, 0, 1, 0, 6, 0, 0, 144, 0.02, 21)
+
+[node name="EW1_Tile23" parent="CrossStreet1" instance=ExtResource("6")]
+transform = Transform3D(0, 0, -6, 0, 1, 0, 6, 0, 0, 150, 0.02, 21)
+
+[node name="EW1_Tile24" parent="CrossStreet1" instance=ExtResource("6")]
+transform = Transform3D(0, 0, -6, 0, 1, 0, 6, 0, 0, 156, 0.02, 21)
+
+[node name="EW1_Tile25" parent="CrossStreet1" instance=ExtResource("6")]
+transform = Transform3D(0, 0, -6, 0, 1, 0, 6, 0, 0, 162, 0.02, 21)
+
+[node name="EW1_Tile26" parent="CrossStreet1" instance=ExtResource("6")]
+transform = Transform3D(0, 0, -6, 0, 1, 0, 6, 0, 0, 168, 0.02, 21)
+
+[node name="EW1_Tile27" parent="CrossStreet1" instance=ExtResource("6")]
+transform = Transform3D(0, 0, -6, 0, 1, 0, 6, 0, 0, 174, 0.02, 21)
