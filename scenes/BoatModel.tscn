@@ -1,0 +1,53 @@
+[gd_scene load_steps=9 format=3]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hull"]
+albedo_color = Color(0.92, 0.93, 0.9, 1)
+roughness = 0.35
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_hull"]
+material = SubResource("StandardMaterial3D_hull")
+radius = 1.0
+height = 5.6
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_stripe"]
+albedo_color = Color(0.75, 0.1, 0.12, 1)
+roughness = 0.5
+
+[sub_resource type="BoxMesh" id="BoxMesh_stripe"]
+material = SubResource("StandardMaterial3D_stripe")
+size = Vector3(2.05, 0.18, 4.6)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cabin"]
+albedo_color = Color(0.85, 0.86, 0.88, 1)
+roughness = 0.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_cabin"]
+material = SubResource("StandardMaterial3D_cabin")
+size = Vector3(1.3, 0.75, 1.7)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_glass"]
+albedo_color = Color(0.08, 0.12, 0.16, 1)
+roughness = 0.15
+metallic = 0.3
+
+[sub_resource type="BoxMesh" id="BoxMesh_windshield"]
+material = SubResource("StandardMaterial3D_glass")
+size = Vector3(1.15, 0.4, 0.08)
+
+[node name="Model" type="Node3D"]
+
+[node name="Hull" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.35, 0)
+mesh = SubResource("CapsuleMesh_hull")
+
+[node name="Stripe" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+mesh = SubResource("BoxMesh_stripe")
+
+[node name="Cabin" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.65, -0.8)
+mesh = SubResource("BoxMesh_cabin")
+
+[node name="Windshield" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.85, 0.09)
+mesh = SubResource("BoxMesh_windshield")

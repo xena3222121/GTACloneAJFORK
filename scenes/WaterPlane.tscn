@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Shader" path="res://shaders/water.gdshader" id="1"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_water"]
+shader = ExtResource("1")
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_water"]
+material = SubResource("ShaderMaterial_water")
+size = Vector2(1, 1)
+subdivide_width = 48
+subdivide_depth = 48
+
+[node name="WaterPlane" type="MeshInstance3D"]
+mesh = SubResource("PlaneMesh_water")
