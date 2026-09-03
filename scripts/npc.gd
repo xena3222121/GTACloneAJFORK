@@ -204,6 +204,11 @@ var anim_run := ""
 var anim_hit_react := ""
 var anim_land := ""
 var idle_variants: Array = []
+var idle_variety_timer := 0.0
+var idle_variant_active := false
+const IDLE_VARIETY_INTERVAL_MIN := 4.0
+const IDLE_VARIETY_INTERVAL_MAX := 9.0
+const IDLE_VARIANT_HOLD_TIME := 2.5
 
 func _find_anim(keyword: String) -> String:
 	if not anim:
@@ -396,6 +401,16 @@ func _ready() -> void:
 		_force_loop(anim_walk)
 		_load_extra_animations()
 	_play(anim_idle)
+	# A whole street of civilians all spawning on the same frame used to
+	# mean their idle breathing/swaying loops played in perfect lockstep -
+	# a dozen identical characters all inhaling and shifting weight at
+	# exactly the same instant reads as robotic, not alive. Seeking each
+	# one to a random point in its own idle clip breaks that up for free.
+	if anim and anim.has_animation(anim_idle):
+		var idle_clip: Animation = anim.get_animation(anim_idle)
+		if idle_clip.length > 0.0:
+			anim.seek(randf() * idle_clip.length, true)
+	idle_variety_timer = randf_range(IDLE_VARIETY_INTERVAL_MIN, IDLE_VARIETY_INTERVAL_MAX)
 	chatter_audio = AudioStreamPlayer3D.new()
 	chatter_audio.unit_size = 8.0
 	add_child(chatter_audio)
@@ -505,6 +520,7 @@ func _physics_process(delta: float) -> void:
 			velocity.x = 0.0
 			velocity.z = 0.0
 		_check_ambient_chatter(delta)
+		_check_idle_variety(delta)
 		if is_bar_patron:
 			_check_patron_aggro(delta)
 
@@ -755,6 +771,31 @@ func _check_ambient_chatter(delta: float) -> void:
 			return
 		chatter_audio.stream = load(clips[randi() % clips.size()])
 		chatter_audio.play()
+
+# _process_wander's own idle-arrival branch already picks a variant every
+# time a wandering civilian settles between legs, but a fixed-position NPC
+# (wanders=false - dealers behind a counter, club patrons, etc.) never
+# passes through there at all, so it was stuck on its single base idle pose
+# forever with zero variety no matter how long the player stood and watched.
+# This is the same idle_variants pool, just checked here on a standalone
+# timer so it reaches those NPCs too, gated on actually being in the base
+# idle pose right now so it never interrupts a walk cycle mid-stride.
+func _check_idle_variety(delta: float) -> void:
+	if idle_variants.is_empty() or not anim:
+		return
+	idle_variety_timer -= delta
+	if idle_variety_timer > 0.0:
+		return
+	if idle_variant_active:
+		idle_variant_active = false
+		_play(anim_idle)
+		idle_variety_timer = randf_range(IDLE_VARIETY_INTERVAL_MIN, IDLE_VARIETY_INTERVAL_MAX)
+	elif anim.current_animation == anim_idle:
+		idle_variant_active = true
+		_play_once(idle_variants[randi() % idle_variants.size()])
+		idle_variety_timer = IDLE_VARIANT_HOLD_TIME
+	else:
+		idle_variety_timer = randf_range(IDLE_VARIETY_INTERVAL_MIN, IDLE_VARIETY_INTERVAL_MAX)
 
 # Runs flat-out away from wherever the scare came from for PANIC_DURATION,
 # no pathing or obstacle-avoidance (same simple direct-velocity approach as

@@ -303,6 +303,12 @@ func _ready() -> void:
 		_force_loop(anim_walk)
 		_load_extra_animations()
 	_play(anim_idle)
+	# See npc.gd's identical fix - multiple cops all spawning on the same
+	# frame used to play their idle sway in perfect lockstep.
+	if anim and anim.has_animation(anim_idle):
+		var idle_clip: Animation = anim.get_animation(anim_idle)
+		if idle_clip.length > 0.0:
+			anim.seek(randf() * idle_clip.length, true)
 	_tint_uniform()
 
 # No dedicated police model exists, so the generic civilian character is

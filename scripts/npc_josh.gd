@@ -8,6 +8,12 @@ extends "res://scripts/npc.gd"
 # picks them up with no changes to the shared script.
 const JOSH_WALK_SOURCE := "res://assets/characters-josh/Josh_Walk.fbx"
 const SOURCE_ANIM_NAME := "mixamo_com"
+# No second real dance clip exists anywhere in this project (Josh_Dance.fbx
+# is the only "dance"-anything file there is) - a genuinely new move needs a
+# new Mixamo download, not something reachable from in here. This is the
+# closest achievable stand-in: a retargeted jump read as a hop/beat-drop
+# move, cycling in via the same idle-variety system every other NPC uses.
+const JUMP_SOURCE := "res://assets/characters-pete/Pete_Jump.fbx"
 
 func _ready() -> void:
 	var m: Node = find_child("Model", false, false)
@@ -32,3 +38,15 @@ func _ready() -> void:
 			source.free()
 
 	super._ready()
+
+	# His own Dance loop is already far more dynamic than the generic idle-
+	# variety pool every other NPC gets (Pete's casual "check phone"/stretch
+	# poses) - splicing those in would look like he randomly stopped
+	# dancing to check a text. Swap that pool out for a retargeted jump
+	# instead, so what cycles in actually reads as another dance beat.
+	idle_variants.clear()
+	if anim:
+		var lib: AnimationLibrary = anim.get_animation_library("")
+		_merge_external_clip(lib, "DanceHop", JUMP_SOURCE)
+		if anim.has_animation("DanceHop"):
+			idle_variants.append("DanceHop")
