@@ -707,6 +707,7 @@ environment = SubResource("Environment_1")
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1158530432]
 transform = Transform3D(0.8, -0.35, 0.48, 0, 0.8, 0.6, -0.6, -0.48, 0.64, 0, 20, 0)
 shadow_enabled = true
+shadow_blur = 2.2
 
 [node name="Ground" type="StaticBody3D" parent="." unique_id=592071500]
 

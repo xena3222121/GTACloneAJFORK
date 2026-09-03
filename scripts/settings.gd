@@ -9,6 +9,16 @@ const SETTINGS_PATH := "user://settings.json"
 
 var master_volume: float = 1.0 # 0..1 linear, applied to the Master bus
 var fullscreen: bool = false
+# FSR upscaling (Godot's built-in equivalent to DLSS/FSR-on-console - AJ
+# asked about "DLSS type shit" specifically; true DLSS needs Nvidia's
+# proprietary SDK compiled into the engine itself, not something reachable
+# from project/script code, so this is the actual available version of that
+# idea). Renders the 3D scene at a lower internal resolution and
+# reconstructs it back up to full size - a real performance/sharpness
+# tradeoff, which is why it's an opt-in setting rather than just switched on
+# silently like the SSAO/SSR/glow upgrades in world_sky.gd.
+var performance_mode: bool = false
+const FSR_SCALE := 0.77 # roughly FSR's own "Quality" preset ratio
 
 func _ready() -> void:
 	_setup_controller_ui_input()
@@ -37,6 +47,13 @@ func _apply() -> void:
 	DisplayServer.window_set_mode(
 		DisplayServer.WINDOW_MODE_FULLSCREEN if fullscreen else DisplayServer.WINDOW_MODE_WINDOWED
 	)
+	var vp := get_viewport()
+	if vp:
+		if performance_mode:
+			vp.scaling_3d_mode = Viewport.SCALING_3D_MODE_FSR
+			vp.scaling_3d_scale = FSR_SCALE
+		else:
+			vp.scaling_3d_scale = 1.0
 
 func set_master_volume(v: float) -> void:
 	master_volume = clampf(v, 0.0, 1.0)
@@ -48,12 +65,18 @@ func set_fullscreen(enabled: bool) -> void:
 	_apply()
 	_save()
 
+func set_performance_mode(enabled: bool) -> void:
+	performance_mode = enabled
+	_apply()
+	_save()
+
 func _save() -> void:
 	var file := FileAccess.open(SETTINGS_PATH, FileAccess.WRITE)
 	if file:
 		file.store_string(JSON.stringify({
 			"master_volume": master_volume,
 			"fullscreen": fullscreen,
+			"performance_mode": performance_mode,
 		}))
 		file.close()
 
@@ -69,4 +92,5 @@ func _load() -> void:
 	if typeof(parsed) != TYPE_DICTIONARY:
 		return
 	master_volume = parsed.get("master_volume", master_volume)
+	performance_mode = parsed.get("performance_mode", performance_mode)
 	fullscreen = parsed.get("fullscreen", fullscreen)

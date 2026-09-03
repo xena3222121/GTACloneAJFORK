@@ -74,6 +74,24 @@ func _setup_urban_grade() -> void:
 	env.ssr_enabled = true
 	env.ssr_max_steps = 32
 
+	# Screen-space indirect lighting - bounces light/color off nearby
+	# surfaces (a red car casting a faint red tint onto the pavement next to
+	# it) instead of every unlit face just falling back to flat ambient.
+	# Cheap relative to SSAO/SSR (shares most of the same depth/normal data
+	# already being computed for those), reads as a genuinely richer/more
+	# "next-gen" look for very little added cost - exactly the kind of
+	# thing DLSS's freed-up frame budget is normally spent on, done here
+	# without needing DLSS or the performance headroom it buys.
+	env.ssil_enabled = true
+	env.ssil_radius = 3.0
+	env.ssil_intensity = 1.4
+
+	# ACES is a proper filmic tonemap curve (rolls off highlights instead of
+	# hard-clipping them white) - matters now specifically because glow/SSR
+	# push more into the bright range than the flat default Linear curve was
+	# ever tuned against.
+	env.tonemap_mode = Environment.TONE_MAPPER_ACES
+
 func _spawn_in_house(player: Node) -> void:
 	var house_entrance := get_node_or_null("HouseEntrance")
 	if house_entrance and house_entrance.has_method("get_interior_spawn") and player.has_method("enter_building"):
