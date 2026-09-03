@@ -24,12 +24,25 @@ const NIGHT_SUN_ENERGY := 0.05
 @onready var sun: DirectionalLight3D = $DirectionalLight3D
 @onready var world_env: WorldEnvironment = $WorldEnvironment
 
+# Every streetlight/highway light/porch light in the city was always lit at
+# full brightness even at high noon - visibly-on light fixtures under a
+# bright sun read as a mistake, not atmosphere. Collected once at startup
+# (a one-time recursive walk, not per-frame) and faded with the same day/
+# night brightness _process() already computes, so they switch on as dusk
+# actually sets in instead of running 24/7. Shop/bar/club INTERIOR lights
+# are deliberately excluded (see _is_interior) - those should stay lit
+# during the day the way a real storefront does, not go dark at noon.
+var street_lights: Array[OmniLight3D] = []
+var street_light_base_energy: Array[float] = []
+const STREETLIGHT_ON_THRESHOLD := 0.4 # brightness below which lights start fading in
+
 # MainMenu.tscn's "Continue" button sets SaveSystem.load_on_next_ready
 # before changing to this scene, since it can't load a save into a Player
 # that doesn't exist yet - by the time THIS node's _ready() runs, every
 # descendant (Player included) has already had its own _ready() called.
 func _ready() -> void:
 	_setup_urban_grade()
+	_collect_street_lights()
 	var player := get_tree().get_first_node_in_group("player")
 	if SaveSystem.load_on_next_ready:
 		SaveSystem.load_on_next_ready = false
@@ -97,6 +110,24 @@ func _spawn_in_house(player: Node) -> void:
 	if house_entrance and house_entrance.has_method("get_interior_spawn") and player.has_method("enter_building"):
 		player.enter_building(house_entrance, house_entrance.global_position)
 
+func _collect_street_lights() -> void:
+	_gather_lights(self)
+
+func _gather_lights(node: Node) -> void:
+	for child in node.get_children():
+		if child is OmniLight3D and not _is_interior(child):
+			street_lights.append(child)
+			street_light_base_energy.append(child.light_energy)
+		_gather_lights(child)
+
+func _is_interior(node: Node) -> bool:
+	var n: Node = node
+	while n:
+		if String(n.name).contains("Interior"):
+			return true
+		n = n.get_parent()
+	return false
+
 func _process(_delta: float) -> void:
 	var t: float = DayNightCycle.time_of_day
 	var angle: float = (t / 24.0 - 0.25) * TAU
@@ -119,6 +150,14 @@ func _process(_delta: float) -> void:
 	var fog_density: float = _fog_density()
 	env.fog_enabled = fog_density > 0.0
 	env.fog_density = fog_density
+
+	# Streetlights fade in once it's actually gotten dusky (not the instant
+	# the sun dips a hair below "full day") rather than linearly tracking
+	# brightness the whole day - reads like a real dusk sensor kicking in,
+	# not a light that's very dimly "on" all afternoon.
+	var night_factor: float = clamp((STREETLIGHT_ON_THRESHOLD - brightness) / STREETLIGHT_ON_THRESHOLD, 0.0, 1.0)
+	for i in range(street_lights.size()):
+		street_lights[i].light_energy = street_light_base_energy[i] * night_factor
 
 func _weather_dim() -> float:
 	match Weather.state:
