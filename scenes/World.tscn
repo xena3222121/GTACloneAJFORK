@@ -65,6 +65,7 @@
 [ext_resource type="PackedScene" path="res://scenes/BeachChair.tscn" id="108"]
 [ext_resource type="PackedScene" path="res://scenes/LifeguardTower.tscn" id="109"]
 [ext_resource type="Script" path="res://scripts/wave_ambience.gd" id="110"]
+[ext_resource type="PackedScene" path="res://scenes/RiverRocks.tscn" id="113"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wetsand"]
 albedo_color = Color(0.58, 0.5, 0.36, 1)
@@ -5794,6 +5795,48 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -84, 0.1, 30)
 
 [node name="RiverTree4" parent="Waterfront" instance=ExtResource("21")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -46, 0.1, 90)
+
+[node name="RiverTree5" parent="Waterfront" instance=ExtResource("17")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -84, 0.1, -75)
+
+[node name="RiverTree6" parent="Waterfront" instance=ExtResource("20")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -46, 0.1, -35)
+
+[node name="RiverTree7" parent="Waterfront" instance=ExtResource("21")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -84, 0.1, -5)
+
+[node name="RiverTree8" parent="Waterfront" instance=ExtResource("17")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -84, 0.1, 55)
+
+[node name="RiverTree9" parent="Waterfront" instance=ExtResource("20")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -46, 0.1, 45)
+
+[node name="RiverTree10" parent="Waterfront" instance=ExtResource("21")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -84, 0.1, 105)
+
+[node name="RiverTree11" parent="Waterfront" instance=ExtResource("17")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -46, 0.1, 130)
+
+[node name="RiverTree12" parent="Waterfront" instance=ExtResource("20")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -84, 0.1, 145)
+
+[node name="RiverRocks1" parent="Waterfront" instance=ExtResource("113")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50.5, 0.05, -60)
+
+[node name="RiverRocks2" parent="Waterfront" instance=ExtResource("113")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -79.5, 0.05, 15)
+
+[node name="RiverRocks3" parent="Waterfront" instance=ExtResource("113")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50.5, 0.05, 100)
+
+[node name="RiverRocks4" parent="Waterfront" instance=ExtResource("113")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -79.5, 0.05, -30)
+
+[node name="RiverDock" parent="Waterfront" instance=ExtResource("103")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -46, 0.1, 60)
+
+[node name="RiverBoat" parent="Waterfront" instance=ExtResource("104")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -63, 0.1, 63)
 
 [node name="CrossStreet1" type="Node3D" parent="."]
 
