@@ -352,6 +352,72 @@ material = SubResource("StandardMaterial3D_room_wall")
 [sub_resource type="BoxShape3D" id="BoxShape3D_room_wall_ew"]
 size = Vector3(0.3, 3.5, 24)
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dealer_floor"]
+albedo_color = Color(0.1, 0.09, 0.07, 1)
+roughness = 0.95
+
+[sub_resource type="BoxMesh" id="BoxMesh_dealer_floor"]
+size = Vector3(10, 0.2, 10)
+material = SubResource("StandardMaterial3D_dealer_floor")
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_dealer_floor"]
+size = Vector3(10, 0.2, 10)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dealer_wall"]
+albedo_color = Color(0.28, 0.25, 0.18, 1)
+roughness = 0.95
+
+[sub_resource type="BoxMesh" id="BoxMesh_dealer_wall_ns"]
+size = Vector3(10, 3.0, 0.3)
+material = SubResource("StandardMaterial3D_dealer_wall")
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_dealer_wall_ns"]
+size = Vector3(10, 3.0, 0.3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_dealer_wall_ew"]
+size = Vector3(0.3, 3.0, 10)
+material = SubResource("StandardMaterial3D_dealer_wall")
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_dealer_wall_ew"]
+size = Vector3(0.3, 3.0, 10)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mattress"]
+albedo_color = Color(0.35, 0.32, 0.28, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_mattress"]
+size = Vector3(2.0, 0.25, 3.4)
+material = SubResource("StandardMaterial3D_mattress")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_trash"]
+albedo_color = Color(0.22, 0.24, 0.18, 1)
+roughness = 1.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_trash1"]
+size = Vector3(0.5, 0.3, 0.4)
+material = SubResource("StandardMaterial3D_trash")
+
+[sub_resource type="BoxMesh" id="BoxMesh_trash2"]
+size = Vector3(0.35, 0.5, 0.35)
+material = SubResource("StandardMaterial3D_trash")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_boarded"]
+albedo_color = Color(0.2, 0.15, 0.1, 1)
+roughness = 1.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_boarded_window"]
+size = Vector3(1.6, 1.3, 0.12)
+material = SubResource("StandardMaterial3D_boarded")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_stain"]
+albedo_color = Color(0.16, 0.14, 0.1, 0.6)
+transparency = 1
+roughness = 1.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_wall_stain"]
+size = Vector3(1.8, 2.0, 0.08)
+material = SubResource("StandardMaterial3D_stain")
+
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_counter"]
 albedo_color = Color(0.32, 0.22, 0.14, 1)
 
@@ -3855,11 +3921,6 @@ script = ExtResource("51")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HouseInterior/PillCookStation"]
 shape = SubResource("SphereShape3D_interact")
 
-[node name="Dealer" parent="HouseInterior" instance=ExtResource("57")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 2)
-is_dealer = true
-wanders = false
-
 [node name="BedFrame" type="MeshInstance3D" parent="HouseInterior"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0.2, 9)
 mesh = SubResource("BoxMesh_bed_frame")
@@ -5816,3 +5877,128 @@ transform = Transform3D(0, 0, -6, 0, 1, 0, 6, 0, 0, 168, 0.02, 21)
 
 [node name="EW1_Tile27" parent="CrossStreet1" instance=ExtResource("6")]
 transform = Transform3D(0, 0, -6, 0, 1, 0, 6, 0, 0, 174, 0.02, 21)
+
+[node name="DealerHouseEntrance" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 1, 14)
+script = ExtResource("29")
+interior_spawn_path = NodePath("%DealerHouseSpawn")
+prompt_text = "Press E to enter the dealer's house"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DealerHouseEntrance"]
+shape = SubResource("SphereShape3D_interact")
+
+[node name="MapLabel" type="Label3D" parent="DealerHouseEntrance"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 21, 0)
+layers = 524288
+billboard = 1
+no_depth_test = true
+font_size = 64
+outline_size = 12
+pixel_size = 0.08
+modulate = Color(0.65, 0.55, 0.25, 1)
+text = "???"
+
+[node name="PorchLight" type="OmniLight3D" parent="DealerHouseEntrance"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4, 0.3, 0)
+light_color = Color(0.85, 0.55, 0.25, 1)
+light_energy = 0.5
+omni_range = 4.0
+
+[node name="TrashPile1" type="MeshInstance3D" parent="DealerHouseEntrance"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4, -0.85, 1.2)
+mesh = SubResource("BoxMesh_trash1")
+
+[node name="TrashPile2" type="MeshInstance3D" parent="DealerHouseEntrance"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.1, -0.75, 1.7)
+mesh = SubResource("BoxMesh_trash2")
+
+[node name="DealerHouseInterior" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1100, 0, 0)
+
+[node name="Floor" type="StaticBody3D" parent="DealerHouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DealerHouseInterior/Floor"]
+shape = SubResource("BoxShape3D_dealer_floor")
+
+[node name="Mesh" type="MeshInstance3D" parent="DealerHouseInterior/Floor"]
+mesh = SubResource("BoxMesh_dealer_floor")
+
+[node name="WallN" type="StaticBody3D" parent="DealerHouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -5)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DealerHouseInterior/WallN"]
+shape = SubResource("BoxShape3D_dealer_wall_ns")
+
+[node name="Mesh" type="MeshInstance3D" parent="DealerHouseInterior/WallN"]
+mesh = SubResource("BoxMesh_dealer_wall_ns")
+
+[node name="WallS" type="StaticBody3D" parent="DealerHouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 5)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DealerHouseInterior/WallS"]
+shape = SubResource("BoxShape3D_dealer_wall_ns")
+
+[node name="Mesh" type="MeshInstance3D" parent="DealerHouseInterior/WallS"]
+mesh = SubResource("BoxMesh_dealer_wall_ns")
+
+[node name="WallE" type="StaticBody3D" parent="DealerHouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 1.5, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DealerHouseInterior/WallE"]
+shape = SubResource("BoxShape3D_dealer_wall_ew")
+
+[node name="Mesh" type="MeshInstance3D" parent="DealerHouseInterior/WallE"]
+mesh = SubResource("BoxMesh_dealer_wall_ew")
+
+[node name="WallW" type="StaticBody3D" parent="DealerHouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 1.5, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DealerHouseInterior/WallW"]
+shape = SubResource("BoxShape3D_dealer_wall_ew")
+
+[node name="Mesh" type="MeshInstance3D" parent="DealerHouseInterior/WallW"]
+mesh = SubResource("BoxMesh_dealer_wall_ew")
+
+[node name="DealerHouseSpawn" type="Marker3D" parent="DealerHouseInterior"]
+unique_name_in_owner = true
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.1, 4)
+
+[node name="WallStain1" type="MeshInstance3D" parent="DealerHouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.85, 1.3, -1.5)
+mesh = SubResource("BoxMesh_wall_stain")
+
+[node name="WallStain2" type="MeshInstance3D" parent="DealerHouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1.3, -4.85)
+mesh = SubResource("BoxMesh_wall_stain")
+
+[node name="BoardedWindow" type="MeshInstance3D" parent="DealerHouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.85, 1.8, 2)
+mesh = SubResource("BoxMesh_boarded_window")
+
+[node name="Mattress" type="MeshInstance3D" parent="DealerHouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.15, -3)
+mesh = SubResource("BoxMesh_mattress")
+
+[node name="BareBulb" type="OmniLight3D" parent="DealerHouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.9, 0)
+light_color = Color(0.9, 0.75, 0.4, 1)
+light_energy = 0.85
+omni_range = 7.0
+
+[node name="TrashPile3" type="MeshInstance3D" parent="DealerHouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.5, -0.85, -3.5)
+mesh = SubResource("BoxMesh_trash1")
+
+[node name="TrashPile4" type="MeshInstance3D" parent="DealerHouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.9, -0.75, -3.1)
+mesh = SubResource("BoxMesh_trash2")
+
+[node name="TrashPile5" type="MeshInstance3D" parent="DealerHouseInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, -0.85, 3.6)
+mesh = SubResource("BoxMesh_trash1")
+
+[node name="Dealer" parent="DealerHouseInterior" instance=ExtResource("57")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 0.1, 1)
+is_dealer = true
+wanders = false
