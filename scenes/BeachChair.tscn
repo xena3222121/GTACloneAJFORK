@@ -1,0 +1,35 @@
+[gd_scene load_steps=5 format=3]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_frame"]
+albedo_color = Color(0.75, 0.7, 0.45, 1)
+roughness = 0.7
+
+[sub_resource type="BoxMesh" id="BoxMesh_seat"]
+material = SubResource("StandardMaterial3D_frame")
+size = Vector3(0.55, 0.06, 1.3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_back"]
+material = SubResource("StandardMaterial3D_frame")
+size = Vector3(0.55, 0.75, 0.06)
+
+[sub_resource type="BoxMesh" id="BoxMesh_leg"]
+material = SubResource("StandardMaterial3D_frame")
+size = Vector3(0.06, 0.22, 0.06)
+
+[node name="BeachChair" type="Node3D"]
+
+[node name="Seat" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0.2)
+mesh = SubResource("BoxMesh_seat")
+
+[node name="Back" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.0, 0.0, 0.0, 0.0, 0.81915205717087, -0.5735764503479, 0.0, 0.5735764503479, 0.81915205717087, 0.0, 0.57438933849335, -0.64051657915115)
+mesh = SubResource("BoxMesh_back")
+
+[node name="LegFront" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.11, 0.8)
+mesh = SubResource("BoxMesh_leg")
+
+[node name="LegBack" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.11, -0.35)
+mesh = SubResource("BoxMesh_leg")

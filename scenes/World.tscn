@@ -57,6 +57,20 @@
 [ext_resource type="PackedScene" path="res://scenes/WaterPlane.tscn" id="102"]
 [ext_resource type="PackedScene" path="res://scenes/Dock.tscn" id="103"]
 [ext_resource type="PackedScene" path="res://scenes/ParkedBoat.tscn" id="104"]
+[ext_resource type="Shader" path="res://shaders/water.gdshader" id="105"]
+[ext_resource type="PackedScene" path="res://scenes/PalmTree.tscn" id="106"]
+[ext_resource type="PackedScene" path="res://scenes/BeachUmbrella.tscn" id="107"]
+[ext_resource type="PackedScene" path="res://scenes/BeachChair.tscn" id="108"]
+[ext_resource type="PackedScene" path="res://scenes/LifeguardTower.tscn" id="109"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wetsand"]
+albedo_color = Color(0.58, 0.5, 0.36, 1)
+roughness = 0.6
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_river"]
+shader = ExtResource("105")
+shader_parameter/depth_mode = 1
+shader_parameter/depth_falloff = 0.35
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
 sky_top_color = Color(0.3, 0.5, 0.85, 1)
@@ -5591,11 +5605,16 @@ text = "Beach"
 [node name="Beach" parent="Waterfront" instance=ExtResource("101")]
 transform = Transform3D(310, 0, 0, 0, 1, 0, 0, 0, 24, 65, 0.03, 160)
 
+[node name="WetSand" parent="Waterfront" instance=ExtResource("101")]
+transform = Transform3D(310, 0, 0, 0, 1, 0, 0, 0, 6, 65, 0.035, 169)
+surface_material_override/0 = SubResource("StandardMaterial3D_wetsand")
+
 [node name="Ocean" parent="Waterfront" instance=ExtResource("102")]
 transform = Transform3D(310, 0, 0, 0, 1, 0, 0, 0, 78, 65, 0.15, 211)
 
 [node name="River" parent="Waterfront" instance=ExtResource("102")]
 transform = Transform3D(30, 0, 0, 0, 1, 0, 0, 0, 262, -65, 0.15, 41)
+surface_material_override/0 = SubResource("ShaderMaterial_river")
 
 [node name="Dock" parent="Waterfront" instance=ExtResource("103")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0.1, 172)
@@ -5606,20 +5625,50 @@ transform = Transform3D(0.966, 0, -0.259, 0, 1, 0, 0.259, 0, 0.966, 54, 0.1, 184
 [node name="Boat2" parent="Waterfront" instance=ExtResource("104")]
 transform = Transform3D(0.906, 0, 0.423, 0, 1, 0, -0.423, 0, 0.906, 67, 0.1, 187)
 
-[node name="BeachTree1" parent="Waterfront" instance=ExtResource("17")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 0.1, 148)
+[node name="BeachPalm1" parent="Waterfront" instance=ExtResource("106")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 0.1, 152)
 
-[node name="BeachTree2" parent="Waterfront" instance=ExtResource("20")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0.1, 146)
+[node name="BeachPalm2" parent="Waterfront" instance=ExtResource("106")]
+transform = Transform3D(0.94, 0, 0.342, 0, 1, 0, -0.342, 0, 0.94, -4, 0.1, 156)
 
-[node name="BeachTree3" parent="Waterfront" instance=ExtResource("21")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 95, 0.1, 147)
+[node name="BeachPalm3" parent="Waterfront" instance=ExtResource("106")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0.1, 150)
 
-[node name="BeachTree4" parent="Waterfront" instance=ExtResource("17")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 140, 0.1, 149)
+[node name="BeachPalm4" parent="Waterfront" instance=ExtResource("106")]
+transform = Transform3D(0.985, 0, -0.174, 0, 1, 0, 0.174, 0, 0.985, 95, 0.1, 153)
 
-[node name="BeachTree5" parent="Waterfront" instance=ExtResource("20")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 175, 0.1, 146)
+[node name="BeachPalm5" parent="Waterfront" instance=ExtResource("106")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 140, 0.1, 151)
+
+[node name="BeachPalm6" parent="Waterfront" instance=ExtResource("106")]
+transform = Transform3D(0.906, 0, 0.423, 0, 1, 0, -0.423, 0, 0.906, 146, 0.1, 155)
+
+[node name="BeachPalm7" parent="Waterfront" instance=ExtResource("106")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 175, 0.1, 150)
+
+[node name="BeachPalm8" parent="Waterfront" instance=ExtResource("106")]
+transform = Transform3D(0.966, 0, -0.259, 0, 1, 0, 0.259, 0, 0.966, 195, 0.1, 153)
+
+[node name="BeachUmbrella1" parent="Waterfront" instance=ExtResource("107")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0.1, 160)
+
+[node name="BeachChair1A" parent="Waterfront" instance=ExtResource("108")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.5, 0.1, 162.8)
+
+[node name="BeachChair1B" parent="Waterfront" instance=ExtResource("108")]
+transform = Transform3D(0.985, 0, 0.174, 0, 1, 0, -0.174, 0, 0.985, 21.5, 0.1, 163)
+
+[node name="BeachUmbrella2" parent="Waterfront" instance=ExtResource("107")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 0.1, 158)
+
+[node name="BeachChair2A" parent="Waterfront" instance=ExtResource("108")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 110.5, 0.1, 160.8)
+
+[node name="BeachChair2B" parent="Waterfront" instance=ExtResource("108")]
+transform = Transform3D(0.985, 0, 0.174, 0, 1, 0, -0.174, 0, 0.985, 113.5, 0.1, 161)
+
+[node name="LifeguardTower1" parent="Waterfront" instance=ExtResource("109")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.1, 166)
 
 [node name="RiverTree1" parent="Waterfront" instance=ExtResource("21")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -84, 0.1, -50)

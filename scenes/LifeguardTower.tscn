@@ -1,0 +1,70 @@
+[gd_scene load_steps=7 format=3]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wood"]
+albedo_color = Color(0.7, 0.55, 0.35, 1)
+roughness = 0.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_stilt"]
+material = SubResource("StandardMaterial3D_wood")
+size = Vector3(0.16, 2.2, 0.16)
+
+[sub_resource type="BoxMesh" id="BoxMesh_platform"]
+material = SubResource("StandardMaterial3D_wood")
+size = Vector3(2.0, 0.14, 2.0)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_roof"]
+albedo_color = Color(0.85, 0.2, 0.18, 1)
+roughness = 0.6
+
+[sub_resource type="BoxMesh" id="BoxMesh_roof"]
+material = SubResource("StandardMaterial3D_roof")
+size = Vector3(2.3, 0.1, 2.3)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_platform"]
+size = Vector3(2.0, 0.14, 2.0)
+
+[node name="LifeguardTower" type="StaticBody3D"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.15, 0)
+shape = SubResource("BoxShape3D_platform")
+
+[node name="StiltFL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.85, 1.1, 0.85)
+mesh = SubResource("BoxMesh_stilt")
+
+[node name="StiltFR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.85, 1.1, 0.85)
+mesh = SubResource("BoxMesh_stilt")
+
+[node name="StiltBL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.85, 1.1, -0.85)
+mesh = SubResource("BoxMesh_stilt")
+
+[node name="StiltBR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.85, 1.1, -0.85)
+mesh = SubResource("BoxMesh_stilt")
+
+[node name="Platform" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.27, 0)
+mesh = SubResource("BoxMesh_platform")
+
+[node name="RoofPostFL" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.35, 0, 0, 0, 1, 0, 0, 0, 0.35, -0.8, 2.9, 0.8)
+mesh = SubResource("BoxMesh_stilt")
+
+[node name="RoofPostFR" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.35, 0, 0, 0, 1, 0, 0, 0, 0.35, 0.8, 2.9, 0.8)
+mesh = SubResource("BoxMesh_stilt")
+
+[node name="RoofPostBL" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.35, 0, 0, 0, 1, 0, 0, 0, 0.35, -0.8, 2.9, -0.8)
+mesh = SubResource("BoxMesh_stilt")
+
+[node name="RoofPostBR" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.35, 0, 0, 0, 1, 0, 0, 0, 0.35, 0.8, 2.9, -0.8)
+mesh = SubResource("BoxMesh_stilt")
+
+[node name="Roof" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.98, 0)
+mesh = SubResource("BoxMesh_roof")
