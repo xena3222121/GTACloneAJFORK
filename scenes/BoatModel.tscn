@@ -1,13 +1,28 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=11 format=3]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hull"]
 albedo_color = Color(0.92, 0.93, 0.9, 1)
 roughness = 0.35
 
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_hull"]
+[sub_resource type="BoxMesh" id="BoxMesh_hull_main"]
 material = SubResource("StandardMaterial3D_hull")
-radius = 1.0
-height = 5.6
+size = Vector3(1.9, 0.5, 3.0)
+
+[sub_resource type="BoxMesh" id="BoxMesh_hull_bow"]
+material = SubResource("StandardMaterial3D_hull")
+size = Vector3(1.3, 0.5, 1.0)
+
+[sub_resource type="BoxMesh" id="BoxMesh_hull_tip"]
+material = SubResource("StandardMaterial3D_hull")
+size = Vector3(0.7, 0.45, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_deck"]
+albedo_color = Color(0.68, 0.55, 0.4, 1)
+roughness = 0.7
+
+[sub_resource type="BoxMesh" id="BoxMesh_deck"]
+material = SubResource("StandardMaterial3D_deck")
+size = Vector3(1.6, 0.08, 2.9)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_stripe"]
 albedo_color = Color(0.75, 0.1, 0.12, 1)
@@ -15,7 +30,7 @@ roughness = 0.5
 
 [sub_resource type="BoxMesh" id="BoxMesh_stripe"]
 material = SubResource("StandardMaterial3D_stripe")
-size = Vector3(2.05, 0.18, 4.6)
+size = Vector3(0.06, 0.16, 3.2)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cabin"]
 albedo_color = Color(0.85, 0.86, 0.88, 1)
@@ -23,7 +38,7 @@ roughness = 0.4
 
 [sub_resource type="BoxMesh" id="BoxMesh_cabin"]
 material = SubResource("StandardMaterial3D_cabin")
-size = Vector3(1.3, 0.75, 1.7)
+size = Vector3(1.3, 0.75, 1.4)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_glass"]
 albedo_color = Color(0.08, 0.12, 0.16, 1)
@@ -36,18 +51,34 @@ size = Vector3(1.15, 0.4, 0.08)
 
 [node name="Model" type="Node3D"]
 
-[node name="Hull" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.35, 0)
-mesh = SubResource("CapsuleMesh_hull")
+[node name="HullMain" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, -0.5)
+mesh = SubResource("BoxMesh_hull_main")
 
-[node name="Stripe" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+[node name="HullBow" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 1.5)
+mesh = SubResource("BoxMesh_hull_bow")
+
+[node name="HullTip" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.225, 2.35)
+mesh = SubResource("BoxMesh_hull_tip")
+
+[node name="Deck" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.54, -0.55)
+mesh = SubResource("BoxMesh_deck")
+
+[node name="StripeLeft" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.96, 0.25, -0.3)
+mesh = SubResource("BoxMesh_stripe")
+
+[node name="StripeRight" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.96, 0.25, -0.3)
 mesh = SubResource("BoxMesh_stripe")
 
 [node name="Cabin" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.65, -0.8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.955, -0.9)
 mesh = SubResource("BoxMesh_cabin")
 
 [node name="Windshield" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.85, 0.09)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.15, -0.19)
 mesh = SubResource("BoxMesh_windshield")

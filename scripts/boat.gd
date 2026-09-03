@@ -21,8 +21,8 @@ const BOB_SPEED := 1.4
 const ROLL_AMOUNT := 0.025
 
 @onready var model: Node3D = $Model
-@onready var driver_seat: Marker3D = _get_or_create_marker("DriverSeat", Vector3(0, 0.9, -0.6))
-@onready var exit_point: Marker3D = _get_or_create_marker("ExitPoint", Vector3(1.8, 0.1, 0))
+@onready var driver_seat: Marker3D = _get_or_create_marker("DriverSeat", Vector3(0, 0.9, -0.9))
+@onready var exit_point: Marker3D = _get_or_create_marker("ExitPoint", Vector3(1.6, 0.3, 0))
 
 var driver: Node3D = null
 var drive_speed := 0.0
