@@ -26,6 +26,15 @@ const VEHICLE_HIT_DAMAGE_PER_SPEED := 4.0
 const VEHICLE_HIT_MAX_DAMAGE := 80.0
 const VEHICLE_HIT_KNOCKBACK := 6.0
 const VEHICLE_HIT_COOLDOWN := 0.6
+# The knockback impulse below used to get wiped out almost immediately - WASD
+# input unconditionally overwrote velocity.x/z from scratch every physics
+# frame regardless of what register_vehicle_hit() had just added, so a hit
+# barely registered as a shove at all unless you happened to be standing
+# completely still. This briefly locks out normal movement input (same
+# pattern as npc.gd/police.gd's own eject_stun_timer) so the shove actually
+# carries through and is visible, instead of being overwritten one frame
+# later. Short on purpose - this is a flinch, not a loss-of-control stun.
+const VEHICLE_HIT_STUN_TIME := 0.3
 
 const SELL_RANGE := 3.0
 const SELL_PRICE_MIN := 15
@@ -269,6 +278,7 @@ var camera_pitch := 0.0
 var driving: Node3D = null
 var fire_cooldown := 0.0
 var vehicle_hit_cooldown := 0.0
+var vehicle_knockback_timer := 0.0
 var joy_fire_prev := false
 var joy_reload_prev := false
 var joy_interact_prev := false
@@ -667,6 +677,7 @@ func _physics_process(delta: float) -> void:
 
 	fire_cooldown = max(0.0, fire_cooldown - delta)
 	vehicle_hit_cooldown = max(0.0, vehicle_hit_cooldown - delta)
+	vehicle_knockback_timer = max(0.0, vehicle_knockback_timer - delta)
 	drunk_timer = max(0.0, drunk_timer - delta)
 
 	# Passive regen only tops back up to a baseline (not full) a few seconds
@@ -777,10 +788,11 @@ func _physics_process(delta: float) -> void:
 	move_dir.y = 0
 	move_dir = move_dir.normalized() if move_dir.length() > 0.01 else Vector3.ZERO
 
-	var target_horizontal_velocity := Vector3(move_dir.x * speed, 0, move_dir.z * speed)
-	var horizontal_velocity := Vector3(velocity.x, 0, velocity.z).move_toward(target_horizontal_velocity, MOVE_ACCEL * delta)
-	velocity.x = horizontal_velocity.x
-	velocity.z = horizontal_velocity.z
+	if vehicle_knockback_timer <= 0.0:
+		var target_horizontal_velocity := Vector3(move_dir.x * speed, 0, move_dir.z * speed)
+		var horizontal_velocity := Vector3(velocity.x, 0, velocity.z).move_toward(target_horizontal_velocity, MOVE_ACCEL * delta)
+		velocity.x = horizontal_velocity.x
+		velocity.z = horizontal_velocity.z
 
 	var moving := move_dir.length() > 0.01
 	if aiming:
@@ -874,6 +886,7 @@ func register_vehicle_hit(car: Object, car_speed: float) -> void:
 	var away: Vector3 = global_position - car.global_position
 	away.y = 0.0
 	velocity += (away.normalized() if away.length() > 0.01 else Vector3.FORWARD) * VEHICLE_HIT_KNOCKBACK
+	vehicle_knockback_timer = VEHICLE_HIT_STUN_TIME
 
 func _mag_size() -> int:
 	match current_weapon:

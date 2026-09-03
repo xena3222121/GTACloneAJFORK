@@ -66,6 +66,7 @@ const MONEY_PICKUP := preload("res://scenes/MoneyPickup.tscn")
 # files; every other character gets the same clips retargeted onto their rig.
 const EXTRA_ANIM_SOURCE_NAME := "mixamo_com"
 const HIT_REACT_SOURCE := "res://assets/characters-pete/Pete_FallingIdle.fbx"
+const LAND_SOURCE := "res://assets/characters-pete/Pete_HardLanding.fbx"
 const RUN_SOURCE := "res://assets/characters-pete/Pete_Run.fbx"
 const IDLE_VARIANT_SOURCES := [
 	"res://assets/characters-pete/Pete_Idle2.fbx",
@@ -73,6 +74,16 @@ const IDLE_VARIANT_SOURCES := [
 	"res://assets/characters-pete/Pete_Idle4.fbx",
 	"res://assets/characters-pete/Pete_Idle5.fbx",
 ]
+const TURN_LEFT_SOURCE := "res://assets/characters-pete/Pete_LeftTurn.fbx"
+const TURN_RIGHT_SOURCE := "res://assets/characters-pete/Pete_RightTurn.fbx"
+# A wander leg that reverses direction used to just start walking immediately
+# while lerp_angle slowly caught the model's facing up over the next several
+# frames - for a big heading change that reads as sliding/moonwalking into
+# the turn instead of actually pivoting. Past this angle (radians - roughly
+# 80 degrees), play an in-place turn clip and hold movement for TURN_ANIM_TIME
+# before setting off walking, instead of relying on the lerp alone.
+const TURN_ANIM_THRESHOLD := 1.4
+const TURN_ANIM_TIME := 0.45
 
 const HIT_AUDIO_CLIPS := [
 	"res://Audio/Arnold/NPC Getting attacked/ahhhhhhhh.wav",
@@ -201,6 +212,11 @@ var anim_walk := ""
 var anim_die := ""
 var anim_run := ""
 var anim_hit_react := ""
+var anim_land := ""
+var anim_turn_left := ""
+var anim_turn_right := ""
+var turn_timer := 0.0
+var turn_target_yaw := 0.0
 var idle_variants: Array = []
 
 func _find_anim(keyword: String) -> String:
@@ -235,6 +251,88 @@ func _play_once(anim_name: String) -> void:
 		anim.stop()
 		anim.play(anim_name)
 
+# Not every Mixamo download in this project's characters uses identical bone
+# names, even though they're all the same underlying rig - confirmed by
+# testing (a before/after bone-pose comparison, not just checking for import
+# warnings, which turned out not to reliably fire either way): Pete's "Action
+# Adventure Pack" clips carry bone names like "mixamorig1_Hips", James's Shoot
+# clip carries "mixamorig9_Hips", while the plain civilian rig and the cop/
+# Josh rig both use plain "mixamorig_Hips" with no digit. That numeric infix
+# is Mixamo/the FBX importer's own collision-disambiguation suffix (picked up
+# per-download, apparently), not a real skeleton difference - stripping it
+# and matching on the normalized name, then rewriting each track to the
+# target's own actual bone name, retargets correctly across characters
+# instead of either silently no-op'ing (the original bug) or refusing to
+# merge anything not from the exact same download (an earlier, overly
+# conservative version of this fix - it rejected Police/Josh's own genuinely
+# working merges because the model's ACTUAL character-a/b/c/d rig is a
+# separate, real skeleton with no equivalent bone names at all, unlike this
+# case, which is a fixable naming quirk).
+func _normalize_bone_name(bone_name: String) -> String:
+	if not bone_name.begins_with("mixamorig"):
+		return bone_name
+	var rest := bone_name.substr(9) # len("mixamorig")
+	var i := 0
+	while i < rest.length() and rest[i].is_valid_int():
+		i += 1
+	if i < rest.length() and rest[i] == "_":
+		return "mixamorig_" + rest.substr(i + 1)
+	return bone_name
+
+# See _normalize_bone_name above - not just "the first Skeleton3D found
+# anywhere under this model" (some characters have more than one, e.g.
+# accessory bone attachments, and grabbing the wrong one gave false
+# negatives during testing). This is whatever AnimationMixer itself would
+# resolve the track's path against - root_node (its own parent by default),
+# then walked by the path's node names - mirroring that resolution exactly.
+func _resolve_track_target(track_path: NodePath) -> Skeleton3D:
+	if not anim.has_node(anim.root_node):
+		return null
+	var node: Node = anim.get_node(anim.root_node)
+	for i in range(track_path.get_name_count()):
+		if not node:
+			return null
+		node = node.get_node_or_null(String(track_path.get_name(i)))
+	return node as Skeleton3D
+
+# Renames each bone track in a duplicate of the source clip to the target
+# skeleton's own actual bone name (matched via the normalized name above),
+# so Skeleton3D's own exact-match track resolution finds it at playback
+# time. Duplicated rather than edited in place - the source Animation
+# resource can be shared/cached across every character that loads the same
+# .fbx path, so mutating it directly would corrupt playback for any other
+# (possibly genuinely same-rig) user of that same resource. Returns null if
+# too few tracks actually matched to be worth using (a real skeleton
+# mismatch, not just a naming quirk) rather than merging a mostly-empty clip.
+const RETARGET_MIN_MATCH_RATIO := 0.8
+
+func _retarget_clip(clip: Animation, target_skeleton: Skeleton3D) -> Animation:
+	var bone_map := {}
+	for i in range(target_skeleton.get_bone_count()):
+		var bone_name := target_skeleton.get_bone_name(i)
+		bone_map[_normalize_bone_name(bone_name)] = bone_name
+
+	var retargeted: Animation = clip.duplicate()
+	var matched := 0
+	var total := 0
+	for i in range(retargeted.get_track_count()):
+		var path: NodePath = retargeted.track_get_path(i)
+		if path.get_subname_count() == 0:
+			continue
+		total += 1
+		var normalized := _normalize_bone_name(String(path.get_subname(0)))
+		if not bone_map.has(normalized):
+			continue
+		matched += 1
+		var node_names: PackedStringArray = []
+		for n in range(path.get_name_count()):
+			node_names.append(String(path.get_name(n)))
+		retargeted.track_set_path(i, NodePath("/".join(node_names) + ":" + bone_map[normalized]))
+
+	if total == 0 or float(matched) / float(total) < RETARGET_MIN_MATCH_RATIO:
+		return null
+	return retargeted
+
 func _merge_external_clip(lib: AnimationLibrary, target_name: String, source_path: String) -> void:
 	if lib.has_animation(target_name):
 		return
@@ -244,7 +342,13 @@ func _merge_external_clip(lib: AnimationLibrary, target_name: String, source_pat
 	var source := packed.instantiate()
 	var source_ap: AnimationPlayer = source.find_child("AnimationPlayer", true, false)
 	if source_ap and source_ap.has_animation(EXTRA_ANIM_SOURCE_NAME):
-		lib.add_animation(target_name, source_ap.get_animation(EXTRA_ANIM_SOURCE_NAME))
+		var clip: Animation = source_ap.get_animation(EXTRA_ANIM_SOURCE_NAME)
+		if clip.get_track_count() > 0:
+			var target_skeleton := _resolve_track_target(clip.track_get_path(0))
+			if target_skeleton:
+				var retargeted := _retarget_clip(clip, target_skeleton)
+				if retargeted:
+					lib.add_animation(target_name, retargeted)
 	source.free()
 
 func _load_extra_animations() -> void:
@@ -259,9 +363,29 @@ func _load_extra_animations() -> void:
 	anim_hit_react = "HitReact" if anim.has_animation("HitReact") else anim_idle
 	_force_loop(anim_hit_react)
 
+	# Not force-looped, matching the rest of this codebase's convention for
+	# one-shot reaction clips (see the die animation) - it plays through once
+	# and freezes on the sprawled end pose for whatever's left of the stun
+	# window, rather than looping a hard-landing impact over and over.
+	_merge_external_clip(lib, "Land", LAND_SOURCE)
+	anim_land = "Land" if anim.has_animation("Land") else anim_hit_react
+
 	_merge_external_clip(lib, "Run", RUN_SOURCE)
 	anim_run = "Run" if anim.has_animation("Run") else anim_walk
 	_force_loop(anim_run)
+
+	_merge_external_clip(lib, "TurnLeft", TURN_LEFT_SOURCE)
+	_merge_external_clip(lib, "TurnRight", TURN_RIGHT_SOURCE)
+	anim_turn_left = "TurnLeft" if anim.has_animation("TurnLeft") else ""
+	anim_turn_right = "TurnRight" if anim.has_animation("TurnRight") else ""
+	# If only one direction's clip actually merged (shouldn't normally happen -
+	# both come from the same source pack - but keeps this from being an all-
+	# or-nothing feature if it ever does), mirror it for the missing side
+	# rather than losing the whole in-place-turn behavior over one direction.
+	if anim_turn_left == "" and anim_turn_right != "":
+		anim_turn_left = anim_turn_right
+	elif anim_turn_right == "" and anim_turn_left != "":
+		anim_turn_right = anim_turn_left
 
 	for i in range(IDLE_VARIANT_SOURCES.size()):
 		var target_name := "Idle%d" % (i + 2)
@@ -327,6 +451,28 @@ func _pick_new_target() -> void:
 	var dist := randf() * WANDER_RADIUS
 	target_position = home_position + Vector3(cos(angle) * dist, 0, sin(angle) * dist)
 
+# Called right after picking a new wander target - if the new leg is a sharp
+# enough heading change from however the NPC is currently facing, pivot in
+# place with a real turn clip first instead of setting off walking while
+# lerp_angle plays catch-up over the next several strides.
+func _maybe_start_turn() -> void:
+	if anim_turn_left == "" and anim_turn_right == "":
+		return
+	var to_target := target_position - global_position
+	to_target.y = 0
+	if to_target.length() < 0.01:
+		return
+	var target_yaw := atan2(to_target.x, to_target.z)
+	var diff := wrapf(target_yaw - model.rotation.y, -PI, PI)
+	if absf(diff) < TURN_ANIM_THRESHOLD:
+		return
+	turn_timer = TURN_ANIM_TIME
+	turn_target_yaw = target_yaw
+	# Sign convention here (diff > 0 => right) is a best guess, not verified
+	# against actual left/right foot-crossing in the source clips - if it
+	# reads as backwards in-game, swap which clip each branch plays.
+	_play_once(anim_turn_right if diff > 0.0 else anim_turn_left)
+
 # Called from wherever violence happens (player.gd's shoot(), car.gd/
 # parked_car.gd's explode()) rather than civilians polling for danger every
 # frame - a one-shot broadcast to whoever's in earshot is cheaper and reacts
@@ -384,13 +530,16 @@ func _physics_process(delta: float) -> void:
 	# instead of being overwritten by wander logic on the very next frame.
 	if eject_stun_timer > 0.0:
 		eject_stun_timer -= delta
-		# Getting launched by a car used to just freeze whatever anim was
-		# already playing (idle/walk) while the body sailed through the air -
-		# looked like a glitch, not a hit. This sells the airborne
-		# tumble/bounce for the whole stun window instead.
-		_play(anim_hit_react)
 		move_and_slide()
 		_check_vehicle_collisions()
+		# Getting launched by a car used to just freeze whatever anim was
+		# already playing (idle/walk) while the body sailed through the air -
+		# looked like a glitch, not a hit. This sells the airborne tumble for
+		# as long as the body's actually in the air, then switches to a hard
+		# landing pose for the rest of the stun once it hits the ground -
+		# checked after move_and_slide (not before) so is_on_floor() reflects
+		# this frame's actual result, not last frame's stale value.
+		_play(anim_land if is_on_floor() else anim_hit_react)
 		return
 
 	if hostile and player and is_instance_valid(player):
@@ -465,6 +614,13 @@ func register_vehicle_hit(car: Object, car_speed: float) -> void:
 	launch(horizontal_dir * knockback_speed + Vector3(0, VEHICLE_HIT_LAUNCH_UP, 0), VEHICLE_HIT_STUN_TIME)
 
 func _process_wander(delta: float) -> void:
+	if turn_timer > 0.0:
+		turn_timer -= delta
+		velocity.x = 0.0
+		velocity.z = 0.0
+		model.rotation.y = lerp_angle(model.rotation.y, turn_target_yaw, 10.0 * delta)
+		return
+
 	var to_target := target_position - global_position
 	to_target.y = 0
 
@@ -476,6 +632,7 @@ func _process_wander(delta: float) -> void:
 		idle_timer = randf_range(IDLE_TIME_MIN, IDLE_TIME_MAX)
 		_play(_pick_idle_anim())
 		_pick_new_target()
+		_maybe_start_turn()
 	else:
 		var dir := to_target.normalized()
 		velocity.x = dir.x * WALK_SPEED
