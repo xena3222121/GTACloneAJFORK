@@ -48,4 +48,15 @@ func _physics_process(_delta: float) -> void:
 				continue
 			var t: float = clamp(inverse_lerp(z_low, z_high, pos.z), 0.0, 1.0)
 			v.global_position.y = lerp(0.0, RISE, t) + 0.35
+			# The real VehicleBody3D (RigidBody3D) keeps integrating its own
+			# physics velocity even while this teleports its position every
+			# frame - confirmed via an automated drive-up-the-ramp test: the
+			# instant a car crossed into a ramp's footprint, speed rocketed
+			# from ~1 m/s to 46+ m/s and kept climbing, uncapped. Zeroing the
+			# vertical velocity right after the teleport stops its suspension
+			# from "reacting" to a jump that was never real falling/launching.
+			# traffic_cars/parked_vehicles are kinematic (no RigidBody3D
+			# velocity to fight), so they're untouched by this.
+			if v is RigidBody3D:
+				v.linear_velocity.y = 0.0
 			break
