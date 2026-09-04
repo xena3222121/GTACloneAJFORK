@@ -566,6 +566,7 @@ func _ready() -> void:
 	MissionSystem.mission_completed.connect(_on_mission_completed)
 	MissionSystem.mission_aborted.connect(_on_mission_aborted)
 	MissionSystem.objective_changed.connect(_on_objective_changed)
+	MissionSystem.story_completed.connect(_on_story_completed)
 	buy_ammo_button.pressed.connect(_buy_ammo)
 	buy_shotgun_button.pressed.connect(_buy_shotgun)
 	buy_mac10_button.pressed.connect(_buy_mac10)
@@ -596,6 +597,13 @@ func _on_mission_completed(mission: Dictionary) -> void:
 
 func _on_mission_aborted() -> void:
 	pass # objective_changed already clears the HUD line; nothing to announce, no reward
+
+# The Fixer's last story job just paid out - _on_mission_completed() above
+# already showed the routine "+$reward" banner a moment ago; this is a
+# separate, bigger one layered on top of that so the story actually ends
+# with something instead of just quietly rolling into endless Fixer work.
+func _on_story_completed() -> void:
+	_show_mission_banner("THE CITY IS YOURS\nStory complete - the Fixer's still got endless work if you want it.", 6.0)
 
 # Same fade-in/hold/fade-out shape for both the briefing and the completion
 # banner - only the text and hold time differ.

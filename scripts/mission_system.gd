@@ -12,6 +12,11 @@ signal mission_started(mission: Dictionary)
 signal mission_completed(mission: Dictionary)
 signal mission_aborted()
 signal objective_changed(text: String)
+# Fired once, the moment the story chain's last mission (Endgame) pays out -
+# separate from mission_completed so the HUD can give that specific moment a
+# bigger, longer banner than the routine "+$reward" one every job gets,
+# instead of the story just quietly rolling into endless Fixer work unmarked.
+signal story_completed()
 
 const TARGET_COLOR := Color(0.15, 0.75, 1.0) # cyan, distinct from job_board's orange
 
@@ -55,6 +60,15 @@ const MISSIONS := [
 		"kill_count": 3,
 	},
 	{
+		"id": "chop_shop",
+		"title": "Chop Shop",
+		"briefing": "Two of theirs need to disappear before the insurance check clears. Both of them, torched.",
+		"type": "wreck",
+		"objective": "Destroy the marked cars",
+		"reward": 1150,
+		"kill_count": 2,
+	},
+	{
 		"id": "double_or_nothing",
 		"title": "Double or Nothing",
 		"briefing": "Somebody owes somebody money and it isn't getting paid back. Handle it.",
@@ -71,6 +85,15 @@ const MISSIONS := [
 		"reward": 1500,
 		"drop_position": Vector3(10, 0, 115),
 		"drop_radius": 8.0,
+	},
+	{
+		"id": "the_setup",
+		"title": "The Setup",
+		"briefing": "Two of their guys are about to flip on everybody. Get to them before they get to a cop.",
+		"type": "kill",
+		"objective": "Find and kill the marked targets",
+		"reward": 1700,
+		"kill_count": 2,
 	},
 	{
 		"id": "endgame",
@@ -215,7 +238,19 @@ func _process(_delta: float) -> void:
 				_emit_objective()
 		"wreck":
 			if active_target.destroyed:
-				_complete_mission()
+				kills_done += 1
+				if kills_done >= kill_count:
+					_complete_mission()
+					return
+				_clear_target()
+				var next_wreck_target := _pick_target_for_type("wreck")
+				if not next_wreck_target:
+					# Same reasoning as the "kill" branch above - ran out of cars
+					# to mark before hitting kill_count, pay out for what's done.
+					_complete_mission()
+					return
+				_set_target(next_wreck_target)
+				_emit_objective()
 		"steal_deliver":
 			if active_target.destroyed:
 				_abort_mission()
@@ -258,3 +293,5 @@ func _complete_mission() -> void:
 	mission_index += 1
 	objective_changed.emit("")
 	mission_completed.emit(mission)
+	if mission_index == MISSIONS.size():
+		story_completed.emit()
