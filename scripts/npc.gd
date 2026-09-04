@@ -36,7 +36,7 @@ const PANIC_DURATION := 3.5
 # How far a newly-panicking civilian's own scream spooks whoever's standing
 # right next to them - smaller than PANIC_RADIUS so it doesn't just
 # rebroadcast the original blast/gunshot radius from every panicking body,
-# but enough for panic to ripple further through a clustered crowd (Prism's
+# but enough for panic to ripple further through a clustered crowd (Danglers's
 # patrons, the Downtown plaza) than the original source alone could reach.
 const RIPPLE_RADIUS := 6.0
 const PANIC_AUDIO_CLIPS := [
@@ -99,7 +99,7 @@ const CHATTER_AUDIO_CLIPS := [
 ]
 const CHATTER_CHECK_INTERVAL := 6.0
 const CHATTER_RANGE := 5.0
-# Overrides CHATTER_AUDIO_CLIPS with a folder scan instead - e.g. Prism's
+# Overrides CHATTER_AUDIO_CLIPS with a folder scan instead - e.g. Danglers's
 # patrons (World.tscn) get "NPC Random In Gay Club" set here so they bark
 # club-appropriate lines instead of generic street chatter. Scanned at
 # call time (not cached) so dropping more .wav files in later just works.
@@ -156,7 +156,7 @@ var dead := false
 # (see World.tscn's BarInterior) - a regular street civilian never fights
 # back, this is purely opt-in per-instance.
 @export var is_bar_patron := false
-# Only set true on Prism's 6 patrons (World.tscn's NightClubInterior) -
+# Only set true on Danglers's 6 patrons (World.tscn's NightClubInterior) -
 # read by player.gd's _sell_drugs_to() so pill sales to an actual club
 # patron never risk a snitch, per AJ (nobody in the club is undercover).
 @export var is_club_patron := false
