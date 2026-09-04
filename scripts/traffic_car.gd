@@ -51,6 +51,14 @@ const PATROL_STUCK_REVERSE_TIME := 1.5
 const FOLLOW_LOOKAHEAD := 7.0
 const FOLLOW_MIN_GAP := 2.5
 const FOLLOW_LANE_TOLERANCE := 2.0
+# Other traffic cars always sit at the same fixed lane offset as this one
+# when actually in its lane, so 2.0 cleanly separates "same lane" from
+# "different lane." The player's car has no such fixed offset - it can be
+# anywhere across the street's width - so it needs a much more generous
+# tolerance. Confirmed via an automated test: the exact collision that
+# launched the player's car 170 m/s into the air happened with their lane
+# centers only 2.3 units apart, just outside the original 2.0 tolerance.
+const FOLLOW_LANE_TOLERANCE_VEHICLES := 4.5
 
 @onready var model: Node3D = $Model
 @onready var driver_seat: Marker3D = _get_or_create_marker("DriverSeat", Vector3(0, 0.9, 0))
@@ -240,12 +248,24 @@ func _process_driving(delta: float) -> void:
 		if hit and hit.has_method("register_vehicle_hit"):
 			hit.register_vehicle_hit(self, impact_speed)
 
-# Scans other traffic cars in the same lane ahead of this one and returns a
-# 0..1 speed multiplier - 1.0 when the road ahead is clear, tapering to 0.0
-# as the gap closes toward FOLLOW_MIN_GAP. move_and_collide below still
-# handles the hard-contact case (a car that's already stopped dead, or
-# anything that isn't a traffic car), this only smooths the common case of
-# closing in on a car that's simply moving slower.
+# Scans other traffic cars AND the real player-driven car (see "vehicles"
+# below) in the same lane ahead of this one and returns a 0..1 speed
+# multiplier - 1.0 when the road ahead is clear, tapering to 0.0 as the gap
+# closes toward FOLLOW_MIN_GAP. move_and_collide below still handles the
+# hard-contact case as a fallback, this is what should normally prevent
+# ever reaching that case at all.
+#
+# The "vehicles" half of this was added after an automated test found the
+# player's car getting launched into the air at ~170 m/s while parked on
+# the highway deck - traced to an ambient traffic car repeatedly ramming
+# and interpenetrating it (confirmed via a body_entered hook: 11+ contacts
+# in a row right before the launch). The player's RigidBody3D actually
+# gets pushed by real physics contact (unlike a CharacterBody3D, which
+# needed the register_vehicle_hit() workaround instead) - the problem was
+# never that contact did nothing, it's that repeated deep interpenetration
+# from a traffic car it never bothered to avoid built up into a violent
+# resolution once physics caught up. Braking to a stop before ever making
+# contact avoids the interpenetration in the first place.
 func _following_speed_scale() -> float:
 	var pos: float = position.z if axis == 0 else position.x
 	var perp: float = position.x if axis == 0 else position.z
@@ -259,6 +279,16 @@ func _following_speed_scale() -> float:
 		if absf(other_perp - perp) > FOLLOW_LANE_TOLERANCE:
 			continue
 		var other_pos: float = other.position.z if axis == 0 else other.position.x
+		var gap: float = (other_pos - pos) * direction
+		if gap > 0.0 and gap < best_gap:
+			best_gap = gap
+	for other in get_tree().get_nodes_in_group("vehicles"):
+		if not is_instance_valid(other) or other.get("destroyed") == true:
+			continue
+		var other_perp: float = other.global_position.x if axis == 0 else other.global_position.z
+		if absf(other_perp - perp) > FOLLOW_LANE_TOLERANCE_VEHICLES:
+			continue
+		var other_pos: float = other.global_position.z if axis == 0 else other.global_position.x
 		var gap: float = (other_pos - pos) * direction
 		if gap > 0.0 and gap < best_gap:
 			best_gap = gap
