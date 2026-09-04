@@ -8,6 +8,12 @@
 [ext_resource type="PackedScene" path="res://scenes/NPC_Josh.tscn" id="58"]
 [ext_resource type="PackedScene" path="res://scenes/NPC_Pete.tscn" id="59"]
 [ext_resource type="PackedScene" path="res://scenes/NPC_Flair.tscn" id="60"]
+[ext_resource type="PackedScene" path="res://assets/foliage-pack/Scenes/tree_juniper_regular.tscn" id="114"]
+[ext_resource type="PackedScene" path="res://assets/foliage-pack/Scenes/tree_juniper.tscn" id="115"]
+[ext_resource type="PackedScene" path="res://assets/foliage-pack/Scenes/plant_simple_brush.tscn" id="116"]
+[ext_resource type="PackedScene" path="res://assets/foliage-pack/Scenes/plant_jello_bush_slim.tscn" id="117"]
+[ext_resource type="PackedScene" path="res://assets/foliage-pack/Scenes/ug_simple_clovers.tscn" id="118"]
+[ext_resource type="PackedScene" path="res://assets/foliage-pack/Scenes/ug_grass_regular_.tscn" id="119"]
 [ext_resource type="PackedScene" path="res://scenes/NPC_Sophie.tscn" id="111"]
 [ext_resource type="PackedScene" path="res://scenes/NPC_Derek.tscn" id="112"]
 [ext_resource type="PackedScene" path="res://scenes/ParkedCar_Hatchback.tscn" id="11"]
@@ -737,6 +743,28 @@ emission_energy_multiplier = 1.3
 
 [sub_resource type="BoxMesh" id="BoxMesh_rainbow_stripe"]
 size = Vector3(0.12, 0.3, 4.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cherry"]
+shading_mode = 0
+albedo_color = Color(0.85, 0.05, 0.1, 1)
+emission_enabled = true
+emission = Color(0.85, 0.05, 0.1, 1)
+emission_energy_multiplier = 1.1
+
+[sub_resource type="SphereMesh" id="SphereMesh_cherry"]
+material = SubResource("StandardMaterial3D_cherry")
+radius = 0.2
+height = 0.4
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cherry_stem"]
+albedo_color = Color(0.25, 0.35, 0.12, 1)
+roughness = 0.7
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_cherry_stem"]
+material = SubResource("StandardMaterial3D_cherry_stem")
+top_radius = 0.03
+bottom_radius = 0.03
+height = 0.55
 
 [sub_resource type="BoxMesh" id="BoxMesh_rainbow_tile"]
 size = Vector3(10, 0.04, 1.4)
@@ -3619,6 +3647,27 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 0, 3)
 [node name="Tree5" parent="Park" instance=ExtResource("20")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23, 0, 8)
 
+[node name="JuniperRegular1" parent="Park" instance=ExtResource("114")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0, -3)
+
+[node name="Juniper1" parent="Park" instance=ExtResource("115")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, 6)
+
+[node name="Bush1" parent="Park" instance=ExtResource("116")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 0, -2)
+
+[node name="Bush2" parent="Park" instance=ExtResource("116")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 0, 2)
+
+[node name="JelloBush1" parent="Park" instance=ExtResource("117")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29, 0, 6)
+
+[node name="Clovers1" parent="Park" instance=ExtResource("118")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 0, 3)
+
+[node name="Grass1" parent="Park" instance=ExtResource("119")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 0, -3)
+
 [node name="Bench1" type="StaticBody3D" parent="Park"]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 22, 0.3, 1)
 
@@ -3902,7 +3951,7 @@ font_size = 64
 outline_size = 12
 pixel_size = 0.08
 modulate = Color(1, 0.4, 0.85, 1)
-text = "Prism"
+text = "Danglers"
 
 [node name="AwningStripeRed" type="MeshInstance3D" parent="Shops/NightClub"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 5.35, 0)
@@ -3946,7 +3995,26 @@ font_size = 56
 outline_size = 12
 pixel_size = 0.012
 modulate = Color(1, 0.4, 0.85, 1)
-text = "PRISM"
+text = "DANGLERS"
+
+[node name="CherryLogo" type="Node3D" parent="Shops/NightClub"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 5.7, 0.55)
+
+[node name="StemLeft" type="MeshInstance3D" parent="Shops/NightClub/CherryLogo"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.16, -0.275, 0)
+mesh = SubResource("CylinderMesh_cherry_stem")
+
+[node name="CherryLeft" type="MeshInstance3D" parent="Shops/NightClub/CherryLogo"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.16, -0.55, 0)
+mesh = SubResource("SphereMesh_cherry")
+
+[node name="StemRight" type="MeshInstance3D" parent="Shops/NightClub/CherryLogo"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.16, -0.275, 0)
+mesh = SubResource("CylinderMesh_cherry_stem")
+
+[node name="CherryRight" type="MeshInstance3D" parent="Shops/NightClub/CherryLogo"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.16, -0.55, 0)
+mesh = SubResource("SphereMesh_cherry")
 
 [node name="MarqueeGlow" type="OmniLight3D" parent="Shops/NightClub"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.2, 6.0, 0)
@@ -5833,7 +5901,7 @@ billboard = 1
 font_size = 30
 outline_size = 5
 modulate = Color(1, 0.4, 0.85, 1)
-text = "PRISM"
+text = "DANGLERS"
 
 [node name="DanceFloorRed" type="MeshInstance3D" parent="NightClubInterior"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, -5.5)
