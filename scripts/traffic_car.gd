@@ -41,6 +41,17 @@ const PANIC_BRAKE_SPEED_MULTIPLIER := 0.15
 # before giving up and reversing as an escape valve for a genuine dead end.
 const PATROL_STUCK_REVERSE_TIME := 1.5
 
+# Ambient patrol cars used to only react to what's directly in front of them
+# via move_and_collide - fine for a single car, but two cars in the same lane
+# just drove nose-to-tail until they literally touched, then hard-stopped
+# every frame. This softens the approach into a real slow-down/queue, like a
+# driver actually seeing brake lights ahead instead of only reacting on
+# impact. Same-lane means same axis and close in the perpendicular
+# coordinate - a car on a parallel street shouldn't affect this one.
+const FOLLOW_LOOKAHEAD := 7.0
+const FOLLOW_MIN_GAP := 2.5
+const FOLLOW_LANE_TOLERANCE := 2.0
+
 @onready var model: Node3D = $Model
 @onready var driver_seat: Marker3D = _get_or_create_marker("DriverSeat", Vector3(0, 0.9, 0))
 @onready var exit_point: Marker3D = _get_or_create_marker("ExitPoint", Vector3(1.8, 0.1, 0))
@@ -229,6 +240,32 @@ func _process_driving(delta: float) -> void:
 		if hit and hit.has_method("register_vehicle_hit"):
 			hit.register_vehicle_hit(self, impact_speed)
 
+# Scans other traffic cars in the same lane ahead of this one and returns a
+# 0..1 speed multiplier - 1.0 when the road ahead is clear, tapering to 0.0
+# as the gap closes toward FOLLOW_MIN_GAP. move_and_collide below still
+# handles the hard-contact case (a car that's already stopped dead, or
+# anything that isn't a traffic car), this only smooths the common case of
+# closing in on a car that's simply moving slower.
+func _following_speed_scale() -> float:
+	var pos: float = position.z if axis == 0 else position.x
+	var perp: float = position.x if axis == 0 else position.z
+	var best_gap := INF
+	for other in get_tree().get_nodes_in_group("traffic_cars"):
+		if other == self or not is_instance_valid(other):
+			continue
+		if other.get("destroyed") == true or other.get("axis") != axis:
+			continue
+		var other_perp: float = other.position.x if axis == 0 else other.position.z
+		if absf(other_perp - perp) > FOLLOW_LANE_TOLERANCE:
+			continue
+		var other_pos: float = other.position.z if axis == 0 else other.position.x
+		var gap: float = (other_pos - pos) * direction
+		if gap > 0.0 and gap < best_gap:
+			best_gap = gap
+	if best_gap >= FOLLOW_LOOKAHEAD:
+		return 1.0
+	return clamp((best_gap - FOLLOW_MIN_GAP) / (FOLLOW_LOOKAHEAD - FOLLOW_MIN_GAP), 0.0, 1.0)
+
 func _update_facing() -> void:
 	if axis == 0:
 		rotation.y = 0.0 if direction > 0.0 else PI
@@ -245,6 +282,7 @@ func _physics_process(delta: float) -> void:
 		return
 	panic_brake_timer = max(0.0, panic_brake_timer - delta)
 	var effective_speed: float = speed * (PANIC_BRAKE_SPEED_MULTIPLIER if panic_brake_timer > 0.0 else 1.0)
+	effective_speed *= _following_speed_scale()
 	var pos: float = position.z if axis == 0 else position.x
 	var target_pos: float = pos + direction * effective_speed * delta
 	var reached_bound := false
