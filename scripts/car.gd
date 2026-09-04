@@ -8,7 +8,7 @@ extends VehicleBody3D
 # parked_car.gd's driving consts were: this VehicleBody3D is currently
 # only used for the one hero car near the safehouse, but future car.gd
 # instances can now be tuned individually instead of being stuck identical.
-@export var max_engine_force: float = 150.0
+@export var max_engine_force: float = 400.0
 @export var max_brake_force: float = 4.0
 @export var max_steer: float = 0.6
 @export var steer_speed: float = 3.0
