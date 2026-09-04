@@ -97,14 +97,14 @@ const HIT_AUDIO_CLIPS := [
 const CHATTER_AUDIO_CLIPS := [
 	"res://Audio/Arnold/Random Lines/I havent felt this sad and pathetic since band camp.wav",
 ]
-const CHATTER_CHECK_INTERVAL := 6.0
-const CHATTER_RANGE := 5.0
+const CHATTER_CHECK_INTERVAL := 3.5
+const CHATTER_RANGE := 8.0
 # Overrides CHATTER_AUDIO_CLIPS with a folder scan instead - e.g. Danglers's
 # patrons (World.tscn) get "NPC Random In Gay Club" set here so they bark
 # club-appropriate lines instead of generic street chatter. Scanned at
 # call time (not cached) so dropping more .wav files in later just works.
 @export var chatter_clips_dir: String = ""
-const CHATTER_CHANCE := 0.12
+const CHATTER_CHANCE := 0.3
 
 # Swaps hit/panic AND chatter audio together to an alternate voice pack -
 # e.g. "res://Audio/Female" for the female NPC variants, which mirrors
