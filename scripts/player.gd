@@ -12,6 +12,16 @@ const JUMP_VELOCITY := 5.5
 # a curb or a stair step but well under knee height, so it can't be used to
 # skip real obstacles like a fence or a car.
 const STEP_HEIGHT := 0.35
+# The step-up above snaps the body's actual position instantly (it has to -
+# move_and_slide needs a real, immediate collision-correct height) but doing
+# the same to the camera read as the view popping/skipping every single
+# curb, driveway lip, and sidewalk edge in a city full of them. This is the
+# camera-side fix: camera_pivot's local Y gets pushed down by exactly
+# STEP_HEIGHT the instant a step happens, then eased back up to its resting
+# height over STEP_VISUAL_RECOVER_TIME - the body is already at its correct
+# new height for physics purposes throughout, only the view eases into it.
+const STEP_VISUAL_RECOVER_TIME := 0.12
+const CAMERA_PIVOT_REST_Y := 1.65
 const MOUSE_SENSITIVITY := 0.003
 const JOY_LOOK_SENSITIVITY := 3.0
 const JOY_DEADZONE := 0.2
@@ -286,6 +296,7 @@ var driving: Node3D = null
 var fire_cooldown := 0.0
 var vehicle_hit_cooldown := 0.0
 var vehicle_knockback_timer := 0.0
+var step_visual_offset := 0.0
 var joy_fire_prev := false
 var joy_reload_prev := false
 var joy_interact_prev := false
@@ -454,6 +465,17 @@ func _setup_animation_tree() -> void:
 	bt.add_node("Aim", n_aim)
 
 	var loco := AnimationNodeBlend2.new()
+	# sync defaults to false, which means Walk's internal playback position
+	# only advances while its blend weight is actually above 0 - the instant
+	# you stop moving it freezes, and anywhere the game briefly reads
+	# "not moving" (a lost frame of input, bumping into something, any tap
+	# of a movement key rather than a held one) it snaps back to frame 0
+	# next time you move. With continuous walking that reads as the whole
+	# cycle randomly restarting mid-stride instead of just continuing.
+	# sync=true keeps Walk's clock always running in the background
+	# regardless of blend weight, so resuming movement picks up the stride
+	# where it left off.
+	loco.sync = true
 	bt.add_node("Locomotion", loco)
 	bt.connect_node("Locomotion", 0, "Idle")
 	bt.connect_node("Locomotion", 1, "WalkSpeed")
@@ -699,6 +721,8 @@ func _physics_process(delta: float) -> void:
 	# after the last hit - still lets a bad firefight actually hurt you
 	# long-term, just stops a single graze from being a permanent scar.
 	time_since_hurt += delta
+	step_visual_offset = move_toward(step_visual_offset, 0.0, STEP_HEIGHT / STEP_VISUAL_RECOVER_TIME * delta)
+	camera_pivot.position.y = CAMERA_PIVOT_REST_Y - step_visual_offset
 	var regen_target: float = MAX_HEALTH * HEALTH_REGEN_TARGET_FRACTION
 	if health > 0.0 and health < regen_target and time_since_hurt >= HEALTH_REGEN_DELAY:
 		health = min(regen_target, health + HEALTH_REGEN_RATE * delta)
@@ -891,6 +915,7 @@ func _try_step_up(motion: Vector3) -> void:
 	if PhysicsServer3D.body_test_motion(get_rid(), params, result):
 		return
 	global_position.y += STEP_HEIGHT
+	step_visual_offset += STEP_HEIGHT
 
 # Cars never used to check for the player at all (no contact_monitor, no
 # body_entered signal on any of car.gd/traffic_car.gd/parked_car.gd), so
@@ -1459,7 +1484,7 @@ func _sell_drugs_to(npc: Node3D) -> void:
 		pills -= 1
 		_update_pills_label()
 		add_money(randi_range(PILL_SELL_PRICE_MIN, PILL_SELL_PRICE_MAX))
-		# AJ's call: nobody in Prism is an undercover - pills are always
+		# AJ's call: nobody in Danglers is an undercover - pills are always
 		# safe to sell to an actual club patron. Selling pills to anyone
 		# else still carries the normal risk.
 		var is_club_patron: bool = npc.get("is_club_patron") == true
