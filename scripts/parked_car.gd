@@ -55,7 +55,32 @@ var engine_audio: AudioStreamPlayer3D
 # engine audio this session.
 const ENGINE_LOOP_PATH := "res://Audio/Ambience/car_engine_loop.wav"
 
+# Same ramp x-centers/half-width as ramp_assist.gd's RAMPS, duplicated
+# rather than shared, matching this codebase's own pattern of small
+# duplicated blocks. Highway ramps were added onto streets that already had
+# driveways and their parked cars along them - confirmed via an automated
+# drive test that a car climbing the west ramp hit the exact same parked
+# car (ParkedE3, sitting in its driveway at x=7.05, inside the ramp's own
+# lane) at the same spot regardless of engine power, since a StaticBody3D
+# parked car never moves out of the way like a wandering NPC eventually
+# does. Unlike npc.gd's version, this only needs to run once at spawn -
+# a parked car has no wander target to keep re-clamping.
+const RAMP_XS := [4.0, 56.0, 124.0, 176.0]
+const RAMP_HALF_WIDTH := 3.5
+const RAMP_CLEARANCE := 4.5
+
+func _keep_off_ramp_lanes(pos: Vector3) -> Vector3:
+	for ramp_x in RAMP_XS:
+		var dx: float = pos.x - ramp_x
+		if absf(dx) > RAMP_HALF_WIDTH:
+			continue
+		if absf(pos.z) < 8.0 or absf(pos.z) > 48.0:
+			continue
+		pos.x = ramp_x + (RAMP_CLEARANCE if dx >= 0.0 else -RAMP_CLEARANCE)
+	return pos
+
 func _ready() -> void:
+	global_position = _keep_off_ramp_lanes(global_position)
 	health = max_health
 	add_to_group("parked_vehicles")
 	_setup_engine_audio()
