@@ -1637,121 +1637,121 @@ mesh = SubResource("BoxMesh_ramp")
 [node name="RampPylonWN4a" type="StaticBody3D" parent="HighwayRamps"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRamps/RampPylonWN4a"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0.75, 18)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.75, 18)
 shape = SubResource("BoxShape3D_ramp_pylon_s")
 
 [node name="Mesh" type="MeshInstance3D" parent="HighwayRamps/RampPylonWN4a"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0.75, 18)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.75, 18)
 mesh = SubResource("BoxMesh_ramp_pylon_s")
 
 [node name="RampPylonWN4b" type="StaticBody3D" parent="HighwayRamps"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRamps/RampPylonWN4b"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1.5, 28)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 1.5, 28)
 shape = SubResource("BoxShape3D_ramp_pylon_m")
 
 [node name="Mesh" type="MeshInstance3D" parent="HighwayRamps/RampPylonWN4b"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1.5, 28)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 1.5, 28)
 mesh = SubResource("BoxMesh_ramp_pylon_m")
 
 [node name="RampPylonWN4c" type="StaticBody3D" parent="HighwayRamps"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRamps/RampPylonWN4c"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 2.25, 38)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 2.25, 38)
 shape = SubResource("BoxShape3D_ramp_pylon_l")
 
 [node name="Mesh" type="MeshInstance3D" parent="HighwayRamps/RampPylonWN4c"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 2.25, 38)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 2.25, 38)
 mesh = SubResource("BoxMesh_ramp_pylon_l")
 
 [node name="RampPylonWN56a" type="StaticBody3D" parent="HighwayRamps"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRamps/RampPylonWN56a"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56, 0.75, 18)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60.5, 0.75, 18)
 shape = SubResource("BoxShape3D_ramp_pylon_s")
 
 [node name="Mesh" type="MeshInstance3D" parent="HighwayRamps/RampPylonWN56a"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56, 0.75, 18)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60.5, 0.75, 18)
 mesh = SubResource("BoxMesh_ramp_pylon_s")
 
 [node name="RampPylonWN56b" type="StaticBody3D" parent="HighwayRamps"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRamps/RampPylonWN56b"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56, 1.5, 28)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60.5, 1.5, 28)
 shape = SubResource("BoxShape3D_ramp_pylon_m")
 
 [node name="Mesh" type="MeshInstance3D" parent="HighwayRamps/RampPylonWN56b"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56, 1.5, 28)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60.5, 1.5, 28)
 mesh = SubResource("BoxMesh_ramp_pylon_m")
 
 [node name="RampPylonWN56c" type="StaticBody3D" parent="HighwayRamps"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRamps/RampPylonWN56c"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56, 2.25, 38)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60.5, 2.25, 38)
 shape = SubResource("BoxShape3D_ramp_pylon_l")
 
 [node name="Mesh" type="MeshInstance3D" parent="HighwayRamps/RampPylonWN56c"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56, 2.25, 38)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60.5, 2.25, 38)
 mesh = SubResource("BoxMesh_ramp_pylon_l")
 
 [node name="RampPylonWS4a" type="StaticBody3D" parent="HighwayRamps"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRamps/RampPylonWS4a"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0.75, -18)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.75, -18)
 shape = SubResource("BoxShape3D_ramp_pylon_s")
 
 [node name="Mesh" type="MeshInstance3D" parent="HighwayRamps/RampPylonWS4a"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0.75, -18)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.75, -18)
 mesh = SubResource("BoxMesh_ramp_pylon_s")
 
 [node name="RampPylonWS4b" type="StaticBody3D" parent="HighwayRamps"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRamps/RampPylonWS4b"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1.5, -28)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 1.5, -28)
 shape = SubResource("BoxShape3D_ramp_pylon_m")
 
 [node name="Mesh" type="MeshInstance3D" parent="HighwayRamps/RampPylonWS4b"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1.5, -28)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 1.5, -28)
 mesh = SubResource("BoxMesh_ramp_pylon_m")
 
 [node name="RampPylonWS4c" type="StaticBody3D" parent="HighwayRamps"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRamps/RampPylonWS4c"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 2.25, -38)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 2.25, -38)
 shape = SubResource("BoxShape3D_ramp_pylon_l")
 
 [node name="Mesh" type="MeshInstance3D" parent="HighwayRamps/RampPylonWS4c"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 2.25, -38)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 2.25, -38)
 mesh = SubResource("BoxMesh_ramp_pylon_l")
 
 [node name="RampPylonWS56a" type="StaticBody3D" parent="HighwayRamps"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRamps/RampPylonWS56a"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56, 0.75, -18)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60.5, 0.75, -18)
 shape = SubResource("BoxShape3D_ramp_pylon_s")
 
 [node name="Mesh" type="MeshInstance3D" parent="HighwayRamps/RampPylonWS56a"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56, 0.75, -18)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60.5, 0.75, -18)
 mesh = SubResource("BoxMesh_ramp_pylon_s")
 
 [node name="RampPylonWS56b" type="StaticBody3D" parent="HighwayRamps"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRamps/RampPylonWS56b"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56, 1.5, -28)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60.5, 1.5, -28)
 shape = SubResource("BoxShape3D_ramp_pylon_m")
 
 [node name="Mesh" type="MeshInstance3D" parent="HighwayRamps/RampPylonWS56b"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56, 1.5, -28)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60.5, 1.5, -28)
 mesh = SubResource("BoxMesh_ramp_pylon_m")
 
 [node name="RampPylonWS56c" type="StaticBody3D" parent="HighwayRamps"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRamps/RampPylonWS56c"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56, 2.25, -38)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60.5, 2.25, -38)
 shape = SubResource("BoxShape3D_ramp_pylon_l")
 
 [node name="Mesh" type="MeshInstance3D" parent="HighwayRamps/RampPylonWS56c"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56, 2.25, -38)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60.5, 2.25, -38)
 mesh = SubResource("BoxMesh_ramp_pylon_l")
 
 [node name="HighwayPylons" type="Node3D" parent="."]
@@ -5283,121 +5283,121 @@ mesh = SubResource("BoxMesh_ramp")
 [node name="RampPylonEN124a" type="StaticBody3D" parent="HighwayRampsEast"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRampsEast/RampPylonEN124a"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 124, 0.75, 18)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128.5, 0.75, 18)
 shape = SubResource("BoxShape3D_ramp_pylon_s")
 
 [node name="Mesh" type="MeshInstance3D" parent="HighwayRampsEast/RampPylonEN124a"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 124, 0.75, 18)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128.5, 0.75, 18)
 mesh = SubResource("BoxMesh_ramp_pylon_s")
 
 [node name="RampPylonEN124b" type="StaticBody3D" parent="HighwayRampsEast"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRampsEast/RampPylonEN124b"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 124, 1.5, 28)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128.5, 1.5, 28)
 shape = SubResource("BoxShape3D_ramp_pylon_m")
 
 [node name="Mesh" type="MeshInstance3D" parent="HighwayRampsEast/RampPylonEN124b"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 124, 1.5, 28)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128.5, 1.5, 28)
 mesh = SubResource("BoxMesh_ramp_pylon_m")
 
 [node name="RampPylonEN124c" type="StaticBody3D" parent="HighwayRampsEast"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRampsEast/RampPylonEN124c"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 124, 2.25, 38)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128.5, 2.25, 38)
 shape = SubResource("BoxShape3D_ramp_pylon_l")
 
 [node name="Mesh" type="MeshInstance3D" parent="HighwayRampsEast/RampPylonEN124c"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 124, 2.25, 38)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128.5, 2.25, 38)
 mesh = SubResource("BoxMesh_ramp_pylon_l")
 
 [node name="RampPylonEN176a" type="StaticBody3D" parent="HighwayRampsEast"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRampsEast/RampPylonEN176a"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 176, 0.75, 18)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 180.5, 0.75, 18)
 shape = SubResource("BoxShape3D_ramp_pylon_s")
 
 [node name="Mesh" type="MeshInstance3D" parent="HighwayRampsEast/RampPylonEN176a"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 176, 0.75, 18)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 180.5, 0.75, 18)
 mesh = SubResource("BoxMesh_ramp_pylon_s")
 
 [node name="RampPylonEN176b" type="StaticBody3D" parent="HighwayRampsEast"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRampsEast/RampPylonEN176b"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 176, 1.5, 28)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 180.5, 1.5, 28)
 shape = SubResource("BoxShape3D_ramp_pylon_m")
 
 [node name="Mesh" type="MeshInstance3D" parent="HighwayRampsEast/RampPylonEN176b"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 176, 1.5, 28)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 180.5, 1.5, 28)
 mesh = SubResource("BoxMesh_ramp_pylon_m")
 
 [node name="RampPylonEN176c" type="StaticBody3D" parent="HighwayRampsEast"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRampsEast/RampPylonEN176c"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 176, 2.25, 38)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 180.5, 2.25, 38)
 shape = SubResource("BoxShape3D_ramp_pylon_l")
 
 [node name="Mesh" type="MeshInstance3D" parent="HighwayRampsEast/RampPylonEN176c"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 176, 2.25, 38)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 180.5, 2.25, 38)
 mesh = SubResource("BoxMesh_ramp_pylon_l")
 
 [node name="RampPylonES124a" type="StaticBody3D" parent="HighwayRampsEast"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRampsEast/RampPylonES124a"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 124, 0.75, -18)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128.5, 0.75, -18)
 shape = SubResource("BoxShape3D_ramp_pylon_s")
 
 [node name="Mesh" type="MeshInstance3D" parent="HighwayRampsEast/RampPylonES124a"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 124, 0.75, -18)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128.5, 0.75, -18)
 mesh = SubResource("BoxMesh_ramp_pylon_s")
 
 [node name="RampPylonES124b" type="StaticBody3D" parent="HighwayRampsEast"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRampsEast/RampPylonES124b"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 124, 1.5, -28)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128.5, 1.5, -28)
 shape = SubResource("BoxShape3D_ramp_pylon_m")
 
 [node name="Mesh" type="MeshInstance3D" parent="HighwayRampsEast/RampPylonES124b"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 124, 1.5, -28)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128.5, 1.5, -28)
 mesh = SubResource("BoxMesh_ramp_pylon_m")
 
 [node name="RampPylonES124c" type="StaticBody3D" parent="HighwayRampsEast"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRampsEast/RampPylonES124c"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 124, 2.25, -38)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128.5, 2.25, -38)
 shape = SubResource("BoxShape3D_ramp_pylon_l")
 
 [node name="Mesh" type="MeshInstance3D" parent="HighwayRampsEast/RampPylonES124c"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 124, 2.25, -38)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128.5, 2.25, -38)
 mesh = SubResource("BoxMesh_ramp_pylon_l")
 
 [node name="RampPylonES176a" type="StaticBody3D" parent="HighwayRampsEast"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRampsEast/RampPylonES176a"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 176, 0.75, -18)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 180.5, 0.75, -18)
 shape = SubResource("BoxShape3D_ramp_pylon_s")
 
 [node name="Mesh" type="MeshInstance3D" parent="HighwayRampsEast/RampPylonES176a"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 176, 0.75, -18)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 180.5, 0.75, -18)
 mesh = SubResource("BoxMesh_ramp_pylon_s")
 
 [node name="RampPylonES176b" type="StaticBody3D" parent="HighwayRampsEast"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRampsEast/RampPylonES176b"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 176, 1.5, -28)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 180.5, 1.5, -28)
 shape = SubResource("BoxShape3D_ramp_pylon_m")
 
 [node name="Mesh" type="MeshInstance3D" parent="HighwayRampsEast/RampPylonES176b"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 176, 1.5, -28)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 180.5, 1.5, -28)
 mesh = SubResource("BoxMesh_ramp_pylon_m")
 
 [node name="RampPylonES176c" type="StaticBody3D" parent="HighwayRampsEast"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HighwayRampsEast/RampPylonES176c"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 176, 2.25, -38)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 180.5, 2.25, -38)
 shape = SubResource("BoxShape3D_ramp_pylon_l")
 
 [node name="Mesh" type="MeshInstance3D" parent="HighwayRampsEast/RampPylonES176c"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 176, 2.25, -38)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 180.5, 2.25, -38)
 mesh = SubResource("BoxMesh_ramp_pylon_l")
 
 [node name="HighwayPylonsEast" type="Node3D" parent="."]
