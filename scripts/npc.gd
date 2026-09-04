@@ -3,6 +3,13 @@ extends CharacterBody3D
 
 const WALK_SPEED := 1.8
 const WANDER_RADIUS := 3.0
+
+# See _keep_off_ramp_lanes below - same ramp x-centers/half-width as
+# ramp_assist.gd's RAMPS, duplicated rather than shared, matching this
+# codebase's own pattern of small duplicated blocks.
+const RAMP_XS := [4.0, 56.0, 124.0, 176.0]
+const RAMP_HALF_WIDTH := 3.5
+const RAMP_CLEARANCE := 4.5
 const ARRIVE_DIST := 0.6
 const IDLE_TIME_MIN := 1.5
 const IDLE_TIME_MAX := 4.0
@@ -390,6 +397,7 @@ func _force_loop(anim_name: String) -> void:
 
 func _ready() -> void:
 	add_to_group("civilians")
+	global_position = _keep_off_ramp_lanes(global_position)
 	home_position = global_position
 	_pick_new_target()
 	if anim:
@@ -437,7 +445,29 @@ func _ready() -> void:
 func _pick_new_target() -> void:
 	var angle := randf() * TAU
 	var dist := randf() * WANDER_RADIUS
-	target_position = home_position + Vector3(cos(angle) * dist, 0, sin(angle) * dist)
+	target_position = _keep_off_ramp_lanes(home_position + Vector3(cos(angle) * dist, 0, sin(angle) * dist))
+
+# Highway ramps were added onto streets that already had civilians scattered
+# along them (World.tscn), leaving a good number spawning dead-center in a
+# ramp's own 7-unit driving lane - confirmed via an automated drive test:
+# the hero car would hit one climbing the ramp and spin out violently, which
+# first looked like a physics bug in ramp_assist.gd before tracing it back to
+# an ordinary collision with a pedestrian standing in the road. WANDER_RADIUS
+# is smaller than half a lane width, so an NPC that spawns centered in one
+# would wander in place there forever rather than ever stepping clear of it -
+# this has to be fixed at spawn (see _ready), not just in future wander
+# targets. Same ramp x-centers/half-width as ramp_assist.gd's RAMPS,
+# duplicated rather than shared, matching this codebase's own pattern of
+# small duplicated blocks.
+func _keep_off_ramp_lanes(pos: Vector3) -> Vector3:
+	for ramp_x in RAMP_XS:
+		var dx: float = pos.x - ramp_x
+		if absf(dx) > RAMP_HALF_WIDTH:
+			continue
+		if absf(pos.z) < 8.0 or absf(pos.z) > 48.0:
+			continue
+		pos.x = ramp_x + (RAMP_CLEARANCE if dx >= 0.0 else -RAMP_CLEARANCE)
+	return pos
 
 
 # Called from wherever violence happens (player.gd's shoot(), car.gd/
