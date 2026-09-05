@@ -104,6 +104,8 @@ const SEES_PLAYER_AUDIO_CLIPS := [
 @onready var siren_audio: AudioStreamPlayer3D = $SirenAudio
 @onready var voice_audio: AudioStreamPlayer3D = $VoiceAudio
 
+const SIREN_VOLUME_DB := -8.0
+
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var home_position: Vector3
 var target_position: Vector3
@@ -404,9 +406,14 @@ func _physics_process(delta: float) -> void:
 
 	if hostile and not siren_audio.playing:
 		siren_audio.stream = _make_siren_sound()
+		siren_audio.volume_db = -40.0
 		siren_audio.play()
+		var fade_in := create_tween()
+		fade_in.tween_property(siren_audio, "volume_db", SIREN_VOLUME_DB, 0.2)
 	elif not hostile and siren_audio.playing:
-		siren_audio.stop()
+		var fade_out := create_tween()
+		fade_out.tween_property(siren_audio, "volume_db", -40.0, 0.2)
+		fade_out.tween_callback(siren_audio.stop)
 
 	if not is_on_floor():
 		velocity.y -= gravity * delta
@@ -740,7 +747,11 @@ func _make_gunshot_sound() -> AudioStreamWAV:
 # Same procedural-synthesis approach as the gunshot above rather than a
 # real audio asset. A phase accumulator (not naive sin(freq*t) with a
 # changing freq, which clicks/pops) gives a continuous "wee-oo" wail that
-# loops seamlessly while hostile.
+# loops seamlessly while hostile. Narrower sweep and lower ceiling than the
+# original (was 650-1000Hz at 0.35 amplitude) so it reads as a wail instead
+# of a shrill alarm, and the sweep is phased off the engine clock rather
+# than each cop's own play-start time, so several cops going hostile at
+# once wail in unison instead of clashing at random offsets.
 func _make_siren_sound() -> AudioStreamWAV:
 	var mix_rate := 22050
 	var duration := 2.4
@@ -748,12 +759,13 @@ func _make_siren_sound() -> AudioStreamWAV:
 	var data := PackedByteArray()
 	data.resize(sample_count * 2)
 	var phase := 0.0
+	var start_time := fmod(Time.get_ticks_msec() / 1000.0, duration)
 	for i in range(sample_count):
-		var t := float(i) / mix_rate
+		var t := fmod(start_time + float(i) / mix_rate, duration)
 		var lfo: float = (sin(t / duration * TAU) + 1.0) / 2.0
-		var freq: float = lerp(650.0, 1000.0, lfo)
+		var freq: float = lerp(600.0, 880.0, lfo)
 		phase += freq / mix_rate * TAU
-		var sample: float = sin(phase) * 0.35
+		var sample: float = sin(phase) * 0.28
 		data.encode_s16(i * 2, int(sample * 32767.0))
 	var stream := AudioStreamWAV.new()
 	stream.format = AudioStreamWAV.FORMAT_16_BITS

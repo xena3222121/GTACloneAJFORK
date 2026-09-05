@@ -8,6 +8,12 @@
 [ext_resource type="PackedScene" path="res://scenes/NPC_Josh.tscn" id="58"]
 [ext_resource type="PackedScene" path="res://scenes/NPC_Pete.tscn" id="59"]
 [ext_resource type="PackedScene" path="res://scenes/NPC_Flair.tscn" id="60"]
+[ext_resource type="PackedScene" path="res://scenes/NPC_Remy.tscn" id="114"]
+[ext_resource type="PackedScene" path="res://scenes/NPC_Boss.tscn" id="115"]
+[ext_resource type="PackedScene" path="res://scenes/NPC_A.tscn" id="116"]
+[ext_resource type="PackedScene" path="res://scenes/NPC_B.tscn" id="117"]
+[ext_resource type="PackedScene" path="res://scenes/NPC_C.tscn" id="118"]
+[ext_resource type="PackedScene" path="res://scenes/NPC_D.tscn" id="119"]
 [ext_resource type="PackedScene" path="res://scenes/NPC_Sophie.tscn" id="111"]
 [ext_resource type="PackedScene" path="res://scenes/NPC_Derek.tscn" id="112"]
 [ext_resource type="PackedScene" path="res://scenes/ParkedCar_Hatchback.tscn" id="11"]
@@ -1244,6 +1250,15 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.1, -2)
 
 [node name="Derek1" parent="NPCs" instance=ExtResource("112")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.1, -4)
+
+[node name="NPC_B1" parent="NPCs" instance=ExtResource("117")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.9, 0.1, -30)
+
+[node name="NPC_C1" parent="NPCs" instance=ExtResource("118")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.9, 0.1, 44)
+
+[node name="NPC_D1" parent="NPCs" instance=ExtResource("119")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.9, 0.1, -18)
 
 [node name="NPC3" parent="NPCs" instance=ExtResource("57")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.9, 0.1, 18)
@@ -5651,6 +5666,24 @@ omni_range = 5.5
 
 [node name="Josh" parent="NightClubInterior" instance=ExtResource("58")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.1, 2)
+is_bar_patron = true
+chatter_clips_dir = "res://Audio/Arnold/NPC Random In Gay Club/"
+is_club_patron = true
+
+[node name="Remy" parent="NightClubInterior" instance=ExtResource("114")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.1, -2)
+is_bar_patron = true
+chatter_clips_dir = "res://Audio/Arnold/NPC Random In Gay Club/"
+is_club_patron = true
+
+[node name="Boss" parent="NightClubInterior" instance=ExtResource("115")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0.1, 3)
+is_bar_patron = true
+chatter_clips_dir = "res://Audio/Arnold/NPC Random In Gay Club/"
+is_club_patron = true
+
+[node name="ClubPatronA" parent="NightClubInterior" instance=ExtResource("116")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.1, -3)
 is_bar_patron = true
 chatter_clips_dir = "res://Audio/Arnold/NPC Random In Gay Club/"
 is_club_patron = true

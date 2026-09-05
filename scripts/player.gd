@@ -116,6 +116,35 @@ const JAMES_ANIM_SOURCES := {
 	"Jump": "res://assets/characters-james/James_Jump.fbx",
 }
 
+# James has no run/jog clip of his own - sprinting used to just play the Walk
+# cycle sped up via WalkSpeed's time-scale, which covers ground fast but never
+# changes James's actual gait, so he visibly speed-walks instead of running.
+# Same cross-file Mixamo retarget trick as npc.gd/police.gd borrows Pete's run
+# clip (see _merge_external_clip/_retarget_clip below) onto James's skeleton.
+const EXTRA_ANIM_SOURCE_NAME := "mixamo_com"
+const RUN_SOURCE := "res://assets/characters-pete/Pete_Run.fbx"
+# James previously had exactly one walk cycle (forward) - fine as long as the
+# model always rotates to face move_dir, but that's only true while NOT
+# aiming (see the aim_yaw branch in _physics_process, which locks facing to
+# the camera regardless of movement direction on purpose). Aim + strafe/
+# backpedal used to still play this one forward cycle while the body faced
+# somewhere else entirely - the classic moonwalk artifact, not a mistuned
+# constant. These 4 clips (stock Mixamo character, not James's own upload -
+# fine since the retarget below only needs the shared "mixamorig" skeleton,
+# not James's specific mesh) give the directional blend space in
+# _setup_animation_tree real legs to draw from for every direction.
+const WALK_BACKWARD_SOURCE := "res://assets/characters-james/James_WalkBackward.fbx"
+const STRAFE_LEFT_SOURCE := "res://assets/characters-james/James_StrafeLeft.fbx"
+const STRAFE_RIGHT_SOURCE := "res://assets/characters-james/James_StrafeRight.fbx"
+const RUN_STRAFE_LEFT_SOURCE := "res://assets/characters-james/James_RunStrafeLeft.fbx"
+const RUN_STRAFE_RIGHT_SOURCE := "res://assets/characters-james/James_RunStrafeRight.fbx"
+# James's Shoot clip used to double as the continuous "holding aim, not
+# firing" pose (see the old anim_aim fallback below) - it reads like he's
+# mid-shot the entire time right-click is held. This is a real "aiming idle"
+# pose instead, with Shoot now only played as the one-shot fire flash on top
+# of it (see ShootShot in _setup_animation_tree).
+const AIM_IDLE_SOURCE := "res://assets/characters-james/James_AimIdle.fbx"
+
 const PISTOL_MAG_SIZE := 12
 const STARTING_RESERVE_AMMO := 36
 const PISTOL_RELOAD_TIME := 1.6
@@ -264,21 +293,45 @@ const UPPER_BODY_BONES := [
 # orientations using the same aim_blend the animation tree already tracks.
 # The old Male_Suit rig's whole Model node was scaled to 0.372 (a DAZ/Character
 # Creator export at a different unit scale than the rest of the project), so
-# every gun-viewmodel constant below was empirically tuned WITHIN that already
-# 0.372-shrunk local space. James's Mixamo rig needs no such correction on the
-# body itself (already human-scale), so Model carries no scale anymore - which
-# means these same constants, unscaled, blow the gun up to roughly 1/0.372
-# (~2.7x) too big and too far from the hand. Reapplying that same factor here,
-# scoped to just the gun attachment rather than the whole body, keeps the
-# numbers below unchanged from their original tuning.
+# the knife (a plain procedural BoxMesh, not an imported model) was tuned
+# WITHIN that already 0.372-shrunk local space. James's Mixamo rig needs no
+# such correction on the body itself (already human-scale), so Model carries
+# no scale anymore - reapplying that same factor here, scoped to just the
+# knife attachment, keeps its numbers unchanged from their original tuning.
 const JAMES_VIEWMODEL_SCALE_CORRECTION := 0.372
-const GUN_SCALE := 0.84 * JAMES_VIEWMODEL_SCALE_CORRECTION
-const GUNS_PACK_VIEWMODEL_SCALE := 3.0 * JAMES_VIEWMODEL_SCALE_CORRECTION
+const KNIFE_SCALE := 0.84 * JAMES_VIEWMODEL_SCALE_CORRECTION
+# The guns, unlike the knife, are imported meshes whose own raw size varies
+# per source file - a single shared "guns-pack" multiplier (the old
+# GUNS_PACK_VIEWMODEL_SCALE) assumed shotgun.glb and mac10.glb were exported
+# at the same internal scale, but measuring their actual mesh AABBs (a
+# scratch SceneTree script instantiating each and walking MeshInstance3D
+# bounds) showed otherwise: Pistol_2.glb's longest axis is 1.82 units,
+# shotgun.glb's is 0.63, mac10.glb's is 0.23 - nowhere near proportional to
+# each other or to real gun sizes. Pistol_2 in particular was still reading
+# as a real-world-scale prop (a ~1.8m "pistol") even after the James
+# correction above, which is what made it look comically oversized while the
+# mac10, built from the same shared multiplier, undershot in the other
+# direction. Below, each gun gets its own scale computed straight from that
+# measured raw size against a target real-world length (pistol ~0.20m,
+# mac10 ~0.28m, shotgun ~1.0m) instead of reusing one shared constant.
+const PISTOL_SCALE := 0.11
+const MAC10_SCALE := 1.19
+const SHOTGUN_SCALE := 1.58
 const GUN_ORIGIN := Vector3(0, 0.22, 0.05) * JAMES_VIEWMODEL_SCALE_CORRECTION
 # Basis.slerp() requires pure (unscaled) rotation matrices, so scale is kept
 # separate here and reapplied after blending rather than baked into these.
+# gun_rot_aim used to be a copy-paste of gun_rot_idle (dead code - the
+# aim_blend slerp between them was a no-op, so the gun never visibly
+# reoriented when aiming). Per the comment above, raising the arm to aim
+# keeps the same barrel axis (local Y here) but needs the opposite roll
+# around it, or the grip ends up upside-down - so this is idle's basis
+# rolled 180deg about its own local Y (barrel) axis: local X and Z flip
+# sign, Y (the barrel mapping) stays put. FIRST-PASS VALUE - derived from
+# the geometry described above, not visually confirmed (no way to render
+# the 3D pose from here) - open the game and check which way aiming looks
+# wrong, then adjust.
 var gun_rot_idle := Basis(Vector3(0, 1, 0), Vector3(1, 0, 0), Vector3(0, 0, -1))
-var gun_rot_aim := Basis(Vector3(0, 1, 0), Vector3(1, 0, 0), Vector3(0, 0, -1))
+var gun_rot_aim := Basis(Vector3(0, -1, 0), Vector3(1, 0, 0), Vector3(0, 0, 1))
 
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var camera_pitch := 0.0
@@ -294,6 +347,12 @@ var joy_dpad_right_prev := false
 
 var anim_idle := ""
 var anim_walk := ""
+var anim_run := ""
+var anim_walk_backward := ""
+var anim_strafe_left := ""
+var anim_strafe_right := ""
+var anim_run_strafe_left := ""
+var anim_run_strafe_right := ""
 var anim_aim := ""
 var anim_die := ""
 var aiming := false
@@ -337,6 +396,7 @@ var exterior_return_position := Vector3.ZERO
 var reload_timer := 0.0
 var loco_blend := 0.0
 var aim_blend := 0.0
+var run_blend := 0.0
 var has_shoot_anim := false
 var has_reload_anim := false
 var has_punch_anim := false
@@ -422,7 +482,166 @@ func _load_character_animations() -> void:
 		var source_anim: AnimationPlayer = source.find_child("AnimationPlayer", true, false)
 		if source_anim and source_anim.has_animation(JAMES_SOURCE_ANIM_NAME):
 			lib.add_animation(anim_name, source_anim.get_animation(JAMES_SOURCE_ANIM_NAME))
+			# Same baked-in Mixamo root motion as the borrowed Run clip (see
+			# _strip_hip_root_motion below) - James's own Walk.fbx drifts the
+			# Hips bone forward ~1 unit over its 1.4s cycle on top of whatever
+			# CharacterBody3D's velocity is already doing, which is what read
+			# as a "goofy"/gliding walk rather than a clean cycle in place.
+			if anim_name == "Walk":
+				_strip_hip_root_motion(lib.get_animation(anim_name))
 		source.free()
+
+# See npc.gd's identical functions/comments - not every Mixamo download in
+# this project's characters uses identical bone names even though they're all
+# the same underlying rig. That numeric infix ("mixamorig1_Hips" vs plain
+# "mixamorig_Hips") is a per-download disambiguation artifact, not a real
+# skeleton difference - stripping it, matching on the normalized name, and
+# rewriting each track to the target's own actual bone name retargets
+# correctly.
+func _normalize_bone_name(bone_name: String) -> String:
+	if not bone_name.begins_with("mixamorig"):
+		return bone_name
+	var rest := bone_name.substr(9) # len("mixamorig")
+	var i := 0
+	while i < rest.length() and rest[i].is_valid_int():
+		i += 1
+	if i < rest.length() and rest[i] == "_":
+		return "mixamorig_" + rest.substr(i + 1)
+	return bone_name
+
+func _resolve_track_target(track_path: NodePath) -> Skeleton3D:
+	if not anim.has_node(anim.root_node):
+		return null
+	var node: Node = anim.get_node(anim.root_node)
+	for i in range(track_path.get_name_count()):
+		if not node:
+			return null
+		node = node.get_node_or_null(String(track_path.get_name(i)))
+	return node as Skeleton3D
+
+const RETARGET_MIN_MATCH_RATIO := 0.8
+
+func _retarget_clip(clip: Animation, target_skeleton: Skeleton3D) -> Animation:
+	var bone_map := {}
+	for i in range(target_skeleton.get_bone_count()):
+		var bone_name := target_skeleton.get_bone_name(i)
+		bone_map[_normalize_bone_name(bone_name)] = bone_name
+
+	var retargeted: Animation = clip.duplicate()
+	var matched := 0
+	var total := 0
+	for i in range(retargeted.get_track_count()):
+		var path: NodePath = retargeted.track_get_path(i)
+		if path.get_subname_count() == 0:
+			continue
+		total += 1
+		var normalized := _normalize_bone_name(String(path.get_subname(0)))
+		if not bone_map.has(normalized):
+			continue
+		matched += 1
+		var node_names: PackedStringArray = []
+		for n in range(path.get_name_count()):
+			node_names.append(String(path.get_name(n)))
+		retargeted.track_set_path(i, NodePath("/".join(node_names) + ":" + bone_map[normalized]))
+
+	if total == 0 or float(matched) / float(total) < RETARGET_MIN_MATCH_RATIO:
+		return null
+	return retargeted
+
+func _merge_external_clip(lib: AnimationLibrary, target_name: String, source_path: String) -> void:
+	if lib.has_animation(target_name):
+		return
+	var packed: PackedScene = load(source_path)
+	if not packed:
+		return
+	var source := packed.instantiate()
+	var source_ap: AnimationPlayer = source.find_child("AnimationPlayer", true, false)
+	if source_ap and source_ap.has_animation(EXTRA_ANIM_SOURCE_NAME):
+		var clip: Animation = source_ap.get_animation(EXTRA_ANIM_SOURCE_NAME)
+		if clip.get_track_count() > 0:
+			var target_skeleton := _resolve_track_target(clip.track_get_path(0))
+			if target_skeleton:
+				var retargeted := _retarget_clip(clip, target_skeleton)
+				if retargeted:
+					lib.add_animation(target_name, retargeted)
+	source.free()
+
+# Mixamo's Walk and Run clips both bake real forward translation into the
+# Hips bone (confirmed empirically: James's Walk drifts ~1 unit of Z over its
+# 1.4s loop, the borrowed Run clip ~3 units over its 0.7s loop - neither is
+# an in-place cycle). This project has no root-motion extraction system -
+# CharacterBody3D's own velocity already moves the player every physics tick
+# - so playing that baked translation back on top of it doubles the motion:
+# the mesh visibly creeps/runs ahead of the physics body each loop, then
+# snaps back to the hip's start position when the clip restarts, reading as
+# a stutter/reset (or a "goofy" gliding walk) every cycle instead of a clean
+# one. Zeroing the Hips track's horizontal (X/Z) position to its first key
+# removes that double-motion without touching whatever vertical bounce the
+# clip has.
+func _strip_hip_root_motion(clip: Animation) -> void:
+	for i in range(clip.get_track_count()):
+		if clip.track_get_type(i) != Animation.TYPE_POSITION_3D:
+			continue
+		var path := String(clip.track_get_path(i))
+		if not path.to_lower().contains("hips"):
+			continue
+		var base: Vector3 = clip.track_get_key_value(i, 0)
+		for k in range(clip.track_get_key_count(i)):
+			var v: Vector3 = clip.track_get_key_value(i, k)
+			clip.track_set_key_value(i, k, Vector3(base.x, v.y, base.z))
+
+func _load_extra_animations() -> void:
+	var lib: AnimationLibrary
+	if anim.has_animation_library(""):
+		lib = anim.get_animation_library("")
+	else:
+		lib = AnimationLibrary.new()
+		anim.add_animation_library("", lib)
+
+	_merge_external_clip(lib, "Run", RUN_SOURCE)
+	if lib.has_animation("Run"):
+		_strip_hip_root_motion(lib.get_animation("Run"))
+	anim_run = "Run" if anim.has_animation("Run") else anim_walk
+	_force_loop(anim_run)
+
+	# Each downloaded "In Place" from Mixamo, so root motion should already be
+	# near-zero - stripped anyway (cheap, idempotent) rather than trusting
+	# that export option held exactly.
+	_merge_external_clip(lib, "WalkBackward", WALK_BACKWARD_SOURCE)
+	if lib.has_animation("WalkBackward"):
+		_strip_hip_root_motion(lib.get_animation("WalkBackward"))
+	anim_walk_backward = "WalkBackward" if anim.has_animation("WalkBackward") else anim_walk
+	_force_loop(anim_walk_backward)
+
+	_merge_external_clip(lib, "StrafeLeft", STRAFE_LEFT_SOURCE)
+	if lib.has_animation("StrafeLeft"):
+		_strip_hip_root_motion(lib.get_animation("StrafeLeft"))
+	anim_strafe_left = "StrafeLeft" if anim.has_animation("StrafeLeft") else anim_walk
+	_force_loop(anim_strafe_left)
+
+	_merge_external_clip(lib, "StrafeRight", STRAFE_RIGHT_SOURCE)
+	if lib.has_animation("StrafeRight"):
+		_strip_hip_root_motion(lib.get_animation("StrafeRight"))
+	anim_strafe_right = "StrafeRight" if anim.has_animation("StrafeRight") else anim_walk
+	_force_loop(anim_strafe_right)
+
+	_merge_external_clip(lib, "RunStrafeLeft", RUN_STRAFE_LEFT_SOURCE)
+	if lib.has_animation("RunStrafeLeft"):
+		_strip_hip_root_motion(lib.get_animation("RunStrafeLeft"))
+	anim_run_strafe_left = "RunStrafeLeft" if anim.has_animation("RunStrafeLeft") else anim_run
+	_force_loop(anim_run_strafe_left)
+
+	_merge_external_clip(lib, "RunStrafeRight", RUN_STRAFE_RIGHT_SOURCE)
+	if lib.has_animation("RunStrafeRight"):
+		_strip_hip_root_motion(lib.get_animation("RunStrafeRight"))
+	anim_run_strafe_right = "RunStrafeRight" if anim.has_animation("RunStrafeRight") else anim_run
+	_force_loop(anim_run_strafe_right)
+
+	# Held pose, not a travel cycle, but still looped for as long as aim_blend
+	# keeps it on screen (same as the old Shoot-as-idle-pose behavior it
+	# replaces below).
+	_merge_external_clip(lib, "AimIdle", AIM_IDLE_SOURCE)
+	_force_loop("AimIdle" if anim.has_animation("AimIdle") else anim_idle)
 
 # Builds a blend tree where the upper body (arms/torso, via UPPER_BODY_BONES)
 # can independently follow the aim pose / shoot / reload animations while the
@@ -438,16 +657,60 @@ func _setup_animation_tree() -> void:
 	n_idle.animation = anim_idle
 	bt.add_node("Idle", n_idle)
 
+	# Direction is expressed in the MODEL's own local space (right, forward),
+	# not world space - see _physics_process, which feeds this from move_dir
+	# projected onto the model's current facing. While not aiming the model
+	# always turns to face move_dir, so this stays pinned to (0,1) (forward)
+	# same as the old single-clip behavior; while aiming, facing is locked to
+	# the camera instead, so this is what actually lets a backpedal or strafe
+	# pick the matching clip instead of sliding through the forward one.
 	var n_walk := AnimationNodeAnimation.new()
 	n_walk.animation = anim_walk
-	bt.add_node("Walk", n_walk)
+	var n_walk_backward := AnimationNodeAnimation.new()
+	n_walk_backward.animation = anim_walk_backward
+	var n_strafe_left := AnimationNodeAnimation.new()
+	n_strafe_left.animation = anim_strafe_left
+	var n_strafe_right := AnimationNodeAnimation.new()
+	n_strafe_right.animation = anim_strafe_right
 
-	# The walk cycle is authored for one specific travel speed (WALK_SPEED);
+	var walk_space := AnimationNodeBlendSpace2D.new()
+	walk_space.add_blend_point(n_walk, Vector2(0, 1))
+	walk_space.add_blend_point(n_walk_backward, Vector2(0, -1))
+	walk_space.add_blend_point(n_strafe_left, Vector2(-1, 0))
+	walk_space.add_blend_point(n_strafe_right, Vector2(1, 0))
+	bt.add_node("WalkSpace", walk_space)
+
+	# The walk cycles are authored for one specific travel speed (WALK_SPEED);
 	# without this, sprinting covers ground faster than the animation's foot
 	# plants account for, so the feet visibly slide/glide across the ground.
+	# (Only applies while actually walking now - sprinting switches to its own
+	# Run blend space below instead of just speeding up the walk cycle, which
+	# used to read as a fast speed-walk rather than an actual run.)
 	var walk_speed_scale := AnimationNodeTimeScale.new()
 	bt.add_node("WalkSpeed", walk_speed_scale)
-	bt.connect_node("WalkSpeed", 0, "Walk")
+	bt.connect_node("WalkSpeed", 0, "WalkSpace")
+
+	var n_run := AnimationNodeAnimation.new()
+	n_run.animation = anim_run
+	var n_run_strafe_left := AnimationNodeAnimation.new()
+	n_run_strafe_left.animation = anim_run_strafe_left
+	var n_run_strafe_right := AnimationNodeAnimation.new()
+	n_run_strafe_right.animation = anim_run_strafe_right
+
+	# No run-backward clip (sprinting straight backward while aiming is a rare
+	# enough combo that it's not worth a 5th source clip yet) - a backward
+	# blend position just clamps to the nearest edge of this triangle instead
+	# of crashing, which in practice lands close to one of the strafes.
+	var run_space := AnimationNodeBlendSpace2D.new()
+	run_space.add_blend_point(n_run, Vector2(0, 1))
+	run_space.add_blend_point(n_run_strafe_left, Vector2(-1, 0))
+	run_space.add_blend_point(n_run_strafe_right, Vector2(1, 0))
+	bt.add_node("RunSpace", run_space)
+
+	var walk_or_run := AnimationNodeBlend2.new()
+	bt.add_node("WalkOrRun", walk_or_run)
+	bt.connect_node("WalkOrRun", 0, "WalkSpeed")
+	bt.connect_node("WalkOrRun", 1, "RunSpace")
 
 	var n_aim := AnimationNodeAnimation.new()
 	n_aim.animation = anim_aim
@@ -456,7 +719,7 @@ func _setup_animation_tree() -> void:
 	var loco := AnimationNodeBlend2.new()
 	bt.add_node("Locomotion", loco)
 	bt.connect_node("Locomotion", 0, "Idle")
-	bt.connect_node("Locomotion", 1, "WalkSpeed")
+	bt.connect_node("Locomotion", 1, "WalkOrRun")
 
 	# The whole arm (shoulder through fingers) must come from a single
 	# coherent clip: bone rotations are relative to their parent, so a hand
@@ -532,17 +795,18 @@ func _ready() -> void:
 	if anim:
 		_strip_armature_root_tracks()
 		_load_character_animations()
-		# James has no dedicated held-aim pose or reload clip - Shoot doubles
-		# as the continuous aim pose (see _setup_animation_tree) as well as
-		# the fire one-shot, so aiming without firing just holds James's
-		# shooting stance instead of a relaxed aim-ready pose.
 		anim_idle = "james/Idle" if anim.has_animation("james/Idle") else _find_anim("idle")
 		anim_walk = "james/Walk" if anim.has_animation("james/Walk") else _find_anim("walk")
-		anim_aim = "james/Shoot" if anim.has_animation("james/Shoot") else anim_idle
 		anim_die = "james/Death" if anim.has_animation("james/Death") else _find_anim("death")
 		_force_loop(anim_walk)
-		_force_loop(anim_aim)
 		_force_loop(anim_idle)
+		_load_extra_animations()
+		# AimIdle (merged above) is a real relaxed-but-ready pose instead of
+		# just holding james/Shoot the whole time right-click is down - Shoot
+		# itself is still layered on top as the one-shot fire flash (see
+		# ShootShot below), it just no longer doubles as the held pose too.
+		anim_aim = "AimIdle" if anim.has_animation("AimIdle") else ("james/Shoot" if anim.has_animation("james/Shoot") else anim_idle)
+		_force_loop(anim_aim)
 		_setup_animation_tree()
 	gunshot_player.stream = _make_gunshot_sound()
 	if SaveSystem.has_save():
@@ -818,34 +1082,49 @@ func _physics_process(delta: float) -> void:
 	# The lower body always follows Idle/Walk based on actual movement, and the
 	# upper body independently blends toward the aim pose — so the legs keep
 	# walking under an aiming (or shooting/reloading) upper body.
+	var sprinting := speed > WALK_SPEED
 	loco_blend = move_toward(loco_blend, 1.0 if moving else 0.0, LOCO_BLEND_SPEED * delta)
 	aim_blend = move_toward(aim_blend, 1.0 if aiming else 0.0, AIM_BLEND_SPEED * delta)
+	run_blend = move_toward(run_blend, 1.0 if sprinting else 0.0, LOCO_BLEND_SPEED * delta)
 	anim_tree["parameters/Locomotion/blend_amount"] = loco_blend
 	anim_tree["parameters/UpperAim/blend_amount"] = aim_blend
-	anim_tree["parameters/WalkSpeed/scale"] = speed / WALK_SPEED
+	anim_tree["parameters/WalkOrRun/blend_amount"] = run_blend
+	anim_tree["parameters/WalkSpeed/scale"] = 1.0 if sprinting else speed / WALK_SPEED
+
+	# WalkSpace/RunSpace pick their clip from move_dir expressed in the
+	# MODEL's own local space, not world space - while not aiming the model
+	# always turns to face move_dir (see above), so this stays pinned to
+	# (0,1)/forward, same as when there was only one walk clip. While aiming,
+	# facing is locked to the camera instead of move_dir, so this is what
+	# actually resolves to StrafeLeft/StrafeRight/WalkBackward instead of
+	# sliding through the forward clip no matter which way you're moving.
+	# FIRST-PASS: which physical side model_right points to (screen-left vs
+	# screen-right) isn't visually confirmed from here - if strafing looks
+	# mirrored in-editor, swap the StrafeLeft/StrafeRight blend points in
+	# _setup_animation_tree rather than re-deriving this.
+	var facing_yaw := model.rotation.y - MODEL_FORWARD_OFFSET
+	var model_forward := Vector3(sin(facing_yaw), 0, cos(facing_yaw))
+	var model_right := Vector3(model_forward.z, 0, -model_forward.x)
+	var local_move := Vector2(move_dir.dot(model_right), move_dir.dot(model_forward))
+	anim_tree["parameters/WalkSpace/blend_position"] = local_move
+	anim_tree["parameters/RunSpace/blend_position"] = local_move
 
 	# All 3 gun models share one idle/aim sway ROTATION - only one is ever
 	# visible at a time, but updating all 3 (plus the knife) unconditionally
 	# is simpler than tracking which one and means no re-sync is needed the
-	# moment you switch weapons. Scale is per-weapon though: Pistol_2.glb
-	# (assets/weapons/) has a 100x correction baked into its own mesh
-	# transform from whatever DCC tool exported it, so GUN_SCALE=0.84 nets
-	# out to a normal-looking pistol; the guns-pack models (mac10/shotgun,
-	# added this session) have no such correction and are already authored
-	# at real-world meter scale, so they need a much bigger multiplier here
-	# to read as anything but a tiny sliver in the character's hand -
-	# confirmed empirically via screenshot, not calculated, since the two
-	# packs' internal scale conventions don't match.
+	# moment you switch weapons. Scale is per-weapon (see PISTOL_SCALE/
+	# MAC10_SCALE/SHOTGUN_SCALE above) since each source model's own raw
+	# size turned out not to match the others.
 	var gun_rot: Basis = gun_rot_idle.slerp(gun_rot_aim, aim_blend)
-	pistol_viewmodel.transform.basis = gun_rot.scaled(Vector3.ONE * GUN_SCALE)
+	pistol_viewmodel.transform.basis = gun_rot.scaled(Vector3.ONE * PISTOL_SCALE)
 	pistol_viewmodel.transform.origin = GUN_ORIGIN
-	shotgun_viewmodel.transform.basis = gun_rot.scaled(Vector3.ONE * GUNS_PACK_VIEWMODEL_SCALE)
+	shotgun_viewmodel.transform.basis = gun_rot.scaled(Vector3.ONE * SHOTGUN_SCALE)
 	shotgun_viewmodel.transform.origin = GUN_ORIGIN
-	mac10_viewmodel.transform.basis = gun_rot.scaled(Vector3.ONE * GUNS_PACK_VIEWMODEL_SCALE)
+	mac10_viewmodel.transform.basis = gun_rot.scaled(Vector3.ONE * MAC10_SCALE)
 	mac10_viewmodel.transform.origin = GUN_ORIGIN
 	# Knife has no separate idle/aim pose of its own - it just rides along in
 	# the same hand position/orientation the gun would otherwise be in.
-	knife_viewmodel.transform.basis = gun_rot.scaled(Vector3.ONE * GUN_SCALE)
+	knife_viewmodel.transform.basis = gun_rot.scaled(Vector3.ONE * KNIFE_SCALE)
 	knife_viewmodel.transform.origin = GUN_ORIGIN
 
 	if is_on_floor():
@@ -862,6 +1141,16 @@ func _physics_process(delta: float) -> void:
 # jump arc can't get snapped upward by this.
 func _try_step_up(motion: Vector3) -> void:
 	if motion.length() < 0.001:
+		return
+	# On a sloped surface (a highway ramp, say) a purely horizontal test below
+	# reports "blocked" every frame just because the rising ramp itself is in
+	# the way, not because of a real curb/stair - move_and_slide already
+	# climbs a walkable slope on its own, so this used to snap the body
+	# upward by the full STEP_HEIGHT on top of that every single frame, then
+	# let gravity settle it back down, reading as a hard bounce in sync with
+	# every footstep the whole way up. Skip the assist entirely once the
+	# floor is already tilted rather than flat.
+	if is_on_floor() and get_floor_normal().angle_to(Vector3.UP) > deg_to_rad(5.0):
 		return
 	var params := PhysicsTestMotionParameters3D.new()
 	params.from = global_transform
