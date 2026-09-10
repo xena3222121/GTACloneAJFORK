@@ -51,6 +51,7 @@ func _ready() -> void:
 	_setup_urban_grade()
 	Settings.graphics_quality_changed.connect(_on_graphics_quality_changed)
 	Settings.apply_environment_quality(world_env.environment)
+	_fix_road_materials()
 	_collect_street_lights()
 	var player := get_tree().get_first_node_in_group("player")
 	if SaveSystem.load_on_next_ready:
@@ -133,6 +134,39 @@ func _setup_urban_grade() -> void:
 	# push more into the bright range than the flat default Linear curve was
 	# ever tuned against.
 	env.tonemap_mode = Environment.TONE_MAPPER_ACES
+
+# The road-straight/road-crossroad asset pack's two meshes both reference a
+# source texture ("Textures/colormap.png") that was never actually included
+# alongside the .glb files - every one of the 100+ road tiles built from
+# them (every surface street and every intersection city-wide) imports as a
+# flat, untextured white surface as a result, with only the hand-placed
+# lane-dash/sidewalk meshes on top giving any sense of a road being there.
+# Godot never errors on this (it silently falls back to an unlit-white
+# default material), so it never showed up as a build failure - only as
+# every street looking blown-out and undefined.
+#
+# Fixed once here at runtime, applied to every affected mesh by matching
+# its source path rather than hand-editing 100+ instanced nodes in
+# World.tscn: same dark asphalt tone/roughness as the hand-built highway
+# deck (see StandardMaterial3D_highway below) so surface streets and the
+# highway read as the same material city-wide, not two different roads.
+const ROAD_MESH_PATH_PREFIX := "res://assets/roads/"
+var _road_asphalt_material: StandardMaterial3D
+
+func _fix_road_materials() -> void:
+	_road_asphalt_material = StandardMaterial3D.new()
+	_road_asphalt_material.albedo_color = Color(0.13, 0.14, 0.17, 1)
+	_road_asphalt_material.roughness = 0.95
+	_apply_road_material(self)
+
+func _apply_road_material(node: Node) -> void:
+	if node is MeshInstance3D:
+		var mesh_instance := node as MeshInstance3D
+		var mesh: Mesh = mesh_instance.mesh
+		if mesh and String(mesh.resource_path).begins_with(ROAD_MESH_PATH_PREFIX):
+			mesh_instance.material_override = _road_asphalt_material
+	for child in node.get_children():
+		_apply_road_material(child)
 
 func _on_graphics_quality_changed(_quality: int) -> void:
 	Settings.apply_environment_quality(world_env.environment)
