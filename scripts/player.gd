@@ -329,6 +329,7 @@ var shotgun_reserve_ammo := 0
 var mac10_ammo_in_mag := 0
 var mac10_reserve_ammo := 0
 var money := 0
+var owned_vehicle_types: Array[String] = []
 var drugs := 0
 # Boner pills - a second sellable good alongside weed, cooked at the
 # safehouse (pill_cook_station.gd) from 2 ingredients bought at the
@@ -351,6 +352,8 @@ var aim_blend := 0.0
 var has_shoot_anim := false
 var has_reload_anim := false
 var has_punch_anim := false
+var tutorial_step := 0
+var tutorial_active := false
 
 # James's Mixamo export left some materials (body/skin) with an alpha < 1
 # and TRANSPARENCY_ALPHA_DEPTH_PRE_PASS baked in (confirmed by inspecting
@@ -583,6 +586,9 @@ func _ready() -> void:
 	restart_button.pressed.connect(_on_restart_pressed)
 	quit_button.pressed.connect(_on_quit_pressed)
 	WantedSystem.tier_changed.connect(_on_wanted_tier_changed)
+	WantedSystem.escape_started.connect(_on_escape_started)
+	WantedSystem.escape_progress.connect(_on_escape_progress)
+	WantedSystem.escaped.connect(_on_escaped)
 	_on_wanted_tier_changed(0)
 	MissionSystem.mission_started.connect(_on_mission_started)
 	MissionSystem.mission_completed.connect(_on_mission_completed)
@@ -604,9 +610,53 @@ func _ready() -> void:
 	rob_button.pressed.connect(_on_npc_rob_pressed)
 	hire_button.pressed.connect(_on_npc_hire_pressed)
 	close_npc_button.pressed.connect(close_npc_menu)
+	if not SaveSystem.has_save():
+		tutorial_active = true
+		call_deferred("_show_tutorial_step")
 
 func _on_wanted_tier_changed(tier: int) -> void:
 	wanted_label.text = "★".repeat(tier)
+
+func _on_escape_started(_duration: float) -> void:
+	_show_mission_banner("LOSE THE COPS\nBreak line of sight, then stay hidden.", 3.0)
+
+func _on_escape_progress(seconds_left: float) -> void:
+	wanted_label.text = "%s  EVADE %02ds" % ["★".repeat(WantedSystem.get_tier()), ceili(seconds_left)]
+
+func _on_escaped() -> void:
+	wanted_label.text = ""
+	_show_mission_banner("ESCAPED\nThe heat is gone.", 2.5)
+
+func _show_tutorial_step() -> void:
+	match tutorial_step:
+		0: _show_mission_banner("WELCOME TO VALID CRASH OUT\nMove with WASD, look with the mouse, and press E to interact.", 6.0)
+		1: _show_mission_banner("GET AROUND\nWalk up to any parked car and press E to drive it.", 5.0)
+		2: _show_mission_banner("STAY READY\nUse 1–4 to switch weapons; right-click to aim and left-click to fire.", 5.0)
+		3: _show_mission_banner("MAKE YOUR NAME\nFind the Fixer and take a mission. Blue markers lead the way.", 5.0)
+		_: tutorial_active = false
+
+func _update_tutorial(delta: float) -> void:
+	if not tutorial_active:
+		return
+	# Each step is demonstrated through a real action, so the tutorial never
+	# asks the player to memorize a separate controls page.
+	match tutorial_step:
+		0:
+			if velocity.length() > 1.0:
+				tutorial_step = 1
+				_show_tutorial_step()
+		1:
+			if driving:
+				tutorial_step = 2
+				_show_tutorial_step()
+		2:
+			if current_weapon != Weapon.UNARMED:
+				tutorial_step = 3
+				_show_tutorial_step()
+		3:
+			if MissionSystem.active_mission:
+				tutorial_step = 4
+				_show_tutorial_step()
 
 func _on_objective_changed(text: String) -> void:
 	objective_label.text = text
@@ -763,6 +813,8 @@ func _physics_process(delta: float) -> void:
 		interact_prompt_label.visible = true
 	else:
 		interact_prompt_label.visible = false
+
+	_update_tutorial(delta)
 
 	if driving:
 		# Follow the car's driver seat while inside it; the car handles its own physics.
@@ -1413,24 +1465,26 @@ func _buy_black_outfit() -> void:
 		_update_money_label()
 
 func _buy_camaro() -> void:
-	_buy_car(CAMARO_PRICE, CAMARO_SCENE)
+	_buy_car(CAMARO_PRICE, CAMARO_SCENE, "camaro")
 
 func _buy_mazda() -> void:
-	_buy_car(MAZDA_PRICE, MAZDA_SCENE)
+	_buy_car(MAZDA_PRICE, MAZDA_SCENE, "mazda")
 
 func _buy_rangerover() -> void:
-	_buy_car(RANGEROVER_PRICE, RANGEROVER_SCENE)
+	_buy_car(RANGEROVER_PRICE, RANGEROVER_SCENE, "rangerover")
 
 # Spawns a real, drivable ParkedCar_* at the showroom's own SpawnPoint marker
 # (the display models out front are plain scenery with no script, so they
 # can't just be "unlocked" - buying hands you a separate car instead) rather
 # than teleporting one in on top of the player, which could clip a wall.
-func _buy_car(price: int, scene: PackedScene) -> void:
+func _buy_car(price: int, scene: PackedScene, vehicle_id: String) -> void:
 	if money < price:
 		return
 	if not current_dealer or not is_instance_valid(current_dealer):
 		return
 	add_money(-price)
+	if not owned_vehicle_types.has(vehicle_id):
+		owned_vehicle_types.append(vehicle_id)
 	var car: Node3D = scene.instantiate()
 	get_tree().current_scene.add_child(car)
 	var spawn: Marker3D = current_dealer.get_spawn_marker()

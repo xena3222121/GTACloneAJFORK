@@ -354,6 +354,17 @@ func _engage() -> void:
 	voice_audio.stream = load(SEES_PLAYER_AUDIO_CLIPS[randi() % SEES_PLAYER_AUDIO_CLIPS.size()])
 	voice_audio.play()
 
+func stand_down() -> void:
+	# Called only when the WantedSystem confirms the player actually escaped.
+	# Resetting every engagement flag here avoids the old "meter is empty but
+	# the same cop keeps shooting" contradiction.
+	hostile = false
+	alerted = false
+	lost_sight_timer = 0.0
+	_pick_new_target()
+	if siren_audio.playing:
+		siren_audio.stop()
+
 func _resolve_player() -> void:
 	player = get_tree().get_first_node_in_group("player")
 

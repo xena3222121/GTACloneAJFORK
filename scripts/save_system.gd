@@ -37,6 +37,7 @@ func save_game(player: Node) -> void:
 	var dealer := _find_dealer(player)
 	var data := {
 		"money": player.money,
+		"owned_vehicle_types": player.owned_vehicle_types,
 		"drugs": player.drugs,
 		"health": player.health,
 		"current_weapon": player.current_weapon,
@@ -53,6 +54,7 @@ func save_game(player: Node) -> void:
 		"dealer_hired": dealer.hired if dealer else false,
 		"outfit_tint": player.outfit_tint.to_html(true),
 		"mission_index": MissionSystem.mission_index,
+		"completed_mission_ids": MissionSystem.completed_mission_ids,
 	}
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file:
@@ -78,6 +80,7 @@ func load_game(player: Node) -> bool:
 	var data: Dictionary = parsed
 
 	player.money = data.get("money", player.money)
+	player.owned_vehicle_types = Array(data.get("owned_vehicle_types", player.owned_vehicle_types), TYPE_STRING, "", null)
 	player.drugs = data.get("drugs", player.drugs)
 	player.health = data.get("health", player.health)
 	player.has_shotgun = data.get("has_shotgun", player.has_shotgun)
@@ -89,7 +92,13 @@ func load_game(player: Node) -> bool:
 	player.mac10_ammo_in_mag = data.get("mac10_ammo_in_mag", player.mac10_ammo_in_mag)
 	player.mac10_reserve_ammo = data.get("mac10_reserve_ammo", player.mac10_reserve_ammo)
 	player.current_weapon = data.get("current_weapon", player.current_weapon)
-	MissionSystem.mission_index = data.get("mission_index", MissionSystem.mission_index)
+	if data.has("completed_mission_ids"):
+		MissionSystem.restore_completed_missions(data["completed_mission_ids"])
+	else:
+		# Existing saves predate stable mission IDs. Convert their old numeric
+		# progress through the original mission order once, then future saves
+		# become resilient to added/reordered missions.
+		MissionSystem.migrate_legacy_progress(int(data.get("mission_index", 0)))
 
 	var weed := _find_weed_plot(player)
 	if weed:

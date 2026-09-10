@@ -43,6 +43,40 @@ const MISSIONS := [
 		"drop_radius": 8.0,
 	},
 	{
+		"id": "shake_the_heat",
+		"title": "Shake the Heat",
+		"briefing": "The cops are watching the block. Make some noise, lose their line of sight, and get clear.",
+		"type": "evade",
+		"objective": "Lose the police and stay hidden",
+		"reward": 900,
+	},
+	{
+		"id": "high_speed_hit",
+		"title": "High Speed Hit",
+		"briefing": "A marked runner is moving through the city. Take their car out before they disappear.",
+		"type": "chase",
+		"objective": "Stop the marked runner",
+		"reward": 1200,
+		"duration": 55.0,
+	},
+	{
+		"id": "dead_drop",
+		"title": "Dead Drop",
+		"briefing": "Pick up the package, then get it across town before anyone else gets there.",
+		"type": "pickup_delivery",
+		"objective": "Collect the package",
+		"reward": 1000,
+	},
+	{
+		"id": "hold_the_block",
+		"title": "Hold the Block",
+		"briefing": "Show the neighborhood this corner is ours. Hold the marked block until the timer clears.",
+		"type": "holdout",
+		"objective": "Hold the marked block",
+		"reward": 1350,
+		"duration": 25.0,
+	},
+	{
 		"id": "insurance_job",
 		"title": "Insurance Job",
 		"briefing": "Owner needs his own car gone, no questions asked. Wreck it.",
@@ -108,6 +142,15 @@ const MISSIONS := [
 # How many missions have been completed - also the index of the next one.
 # Persisted by save_system.gd like every other player stat.
 var mission_index := 0
+var completed_mission_ids: Array[String] = []
+
+# Saves written before stable IDs only knew a numeric position. Keep this
+# historical order for one-time migration so an update can insert missions
+# without silently moving an existing player to the wrong story beat.
+const LEGACY_MISSION_ORDER := [
+	"first_blood", "grand_theft_auto", "insurance_job", "clean_sweep",
+	"chop_shop", "double_or_nothing", "one_more_job", "the_setup", "endgame",
+]
 
 var active_mission: Dictionary = {}
 var active_target: Node3D = null
@@ -119,6 +162,18 @@ var target_marker: Label3D = null
 # doesn't have to re-read it every frame.
 var kills_done := 0
 var kill_count := 1
+var mission_timer := 0.0
+var pickup_collected := false
+var location_radius := 7.0
+var last_progress_second := -1
+
+# Clear, open existing map locations for delivery and territory objectives.
+const DISTRICT_POINTS := [
+	{"name": "Downtown", "position": Vector3(10, 0, 115)},
+	{"name": "Beachfront", "position": Vector3(65, 0, 160)},
+	{"name": "Westside", "position": Vector3(-55, 0, 20)},
+	{"name": "Eastside", "position": Vector3(125, 0, 20)},
+]
 
 # Once the story chain (MISSIONS) runs out, the Fixer doesn't just go quiet -
 # same pattern job_board.gd already established (a repeatable random job),
@@ -135,10 +190,47 @@ const ENDLESS_BRIEFINGS := [
 func has_next_mission() -> bool:
 	return not active_mission
 
+func start_district_event(player: Node3D, district: Dictionary) -> bool:
+	if active_mission:
+		return false
+	active_mission = {
+		"id": "district_event",
+		"title": "%s Is Under Pressure" % district["name"],
+		"briefing": "A crew is testing the neighborhood. Hold the marked block and make it clear who runs it.",
+		"type": "holdout",
+		"objective": "Hold the marked block",
+		"reward": 650,
+		"district_name": district["name"],
+	}
+	contracted_player = player
+	kills_done = 0
+	kill_count = 1
+	mission_timer = 18.0
+	pickup_collected = false
+	last_progress_second = -1
+	_spawn_location_target(district["position"], "DISTRICT EVENT")
+	mission_started.emit(active_mission)
+	_emit_objective()
+	return true
+
 func get_next_mission() -> Dictionary:
 	if mission_index < MISSIONS.size():
 		return MISSIONS[mission_index]
 	return {}
+
+func restore_completed_missions(ids: Array) -> void:
+	completed_mission_ids.clear()
+	for id in ids:
+		if typeof(id) == TYPE_STRING and not completed_mission_ids.has(id):
+			completed_mission_ids.append(id)
+	mission_index = 0
+	# Story order remains authoritative: this preserves a coherent chain even
+	# if content is inserted in a later update.
+	while mission_index < MISSIONS.size() and completed_mission_ids.has(MISSIONS[mission_index]["id"]):
+		mission_index += 1
+
+func migrate_legacy_progress(old_index: int) -> void:
+	restore_completed_missions(LEGACY_MISSION_ORDER.slice(0, clampi(old_index, 0, LEGACY_MISSION_ORDER.size())))
 
 # Shared by start_mission() and the mid-mission re-pick Clean Sweep-style
 # multi-kill missions need after each kill - null if nothing valid is left
@@ -149,6 +241,10 @@ func _pick_target_for_type(mission_type: String) -> Node3D:
 		for npc in get_tree().get_nodes_in_group("civilians"):
 			if is_instance_valid(npc) and not npc.dead and npc.get("is_dealer") != true:
 				candidates.append(npc)
+	elif mission_type == "chase":
+		for car in get_tree().get_nodes_in_group("traffic_cars"):
+			if is_instance_valid(car) and not car.destroyed and car.driver == null:
+				candidates.append(car)
 	else:
 		for car in get_tree().get_nodes_in_group("parked_vehicles"):
 			if is_instance_valid(car) and not car.destroyed:
@@ -185,30 +281,66 @@ func _emit_objective() -> void:
 		text += " (%d/%d)" % [kills_done, kill_count]
 	objective_changed.emit(text)
 
+func _spawn_location_target(position: Vector3, label_text: String) -> void:
+	var marker := Node3D.new()
+	marker.name = "MissionZoneMarker"
+	marker.set_meta("mission_marker", true)
+	get_tree().current_scene.add_child(marker)
+	marker.global_position = position
+	_set_target(marker)
+	target_marker.text = label_text
+
+func _random_district(except_index: int = -1) -> Dictionary:
+	var choices: Array = []
+	for i in range(DISTRICT_POINTS.size()):
+		if i != except_index:
+			choices.append(DISTRICT_POINTS[i])
+	return choices[randi() % choices.size()]
+
 func _make_endless_mission() -> Dictionary:
-	var mtype := "kill" if randf() < 0.5 else "wreck"
+	var roll := randf()
+	var mtype := "kill" if roll < 0.4 else ("wreck" if roll < 0.75 else "holdout")
 	return {
 		"id": "fixer_job",
 		"title": "Fixer Job",
 		"briefing": ENDLESS_BRIEFINGS[randi() % ENDLESS_BRIEFINGS.size()],
 		"type": mtype,
-		"objective": "Find and kill the marked target" if mtype == "kill" else "Destroy the marked car",
+		"objective": "Find and kill the marked target" if mtype == "kill" else ("Destroy the marked car" if mtype == "wreck" else "Hold the marked block"),
 		"reward": randi_range(ENDLESS_REWARD_MIN, ENDLESS_REWARD_MAX),
+		"duration": 22.0,
 	}
 
 func start_mission(player: Node3D) -> bool:
 	if active_mission:
 		return false
 	var mission: Dictionary = MISSIONS[mission_index] if mission_index < MISSIONS.size() else _make_endless_mission()
-	var target := _pick_target_for_type(mission["type"])
-	if not target:
+	var target: Node3D = null
+	if mission["type"] not in ["evade", "pickup_delivery", "holdout"]:
+		target = _pick_target_for_type(mission["type"])
+	if mission["type"] not in ["evade", "pickup_delivery", "holdout"] and not target:
 		return false
 
 	active_mission = mission
 	contracted_player = player
 	kills_done = 0
 	kill_count = int(mission.get("kill_count", 1))
-	_set_target(target)
+	mission_timer = float(mission.get("duration", 0.0))
+	pickup_collected = false
+	last_progress_second = -1
+	if target:
+		_set_target(target)
+	elif mission["type"] == "evade":
+		# A mission-specific heat spike makes the escape feel like a job with
+		# stakes instead of a passive version of the normal wanted-meter decay.
+		WantedSystem.add_heat(60.0, player.global_position)
+		WantedSystem.request_escape_objective()
+	elif mission["type"] == "pickup_delivery":
+		var pickup := _random_district()
+		_spawn_location_target(pickup["position"], "PICKUP")
+	elif mission["type"] == "holdout":
+		var district := _random_district()
+		_spawn_location_target(district["position"], "HOLD THIS BLOCK")
+		active_mission["district_name"] = district["name"]
 
 	mission_started.emit(mission)
 	_emit_objective()
@@ -217,10 +349,42 @@ func start_mission(player: Node3D) -> bool:
 func _process(_delta: float) -> void:
 	if not active_mission:
 		return
-	if not is_instance_valid(active_target):
+	if active_mission["type"] != "evade" and not is_instance_valid(active_target):
 		_abort_mission()
 		return
 	match active_mission["type"]:
+		"evade":
+			if not WantedSystem.escape_objective_active and WantedSystem.heat <= 0.0:
+				_complete_mission()
+		"chase":
+			mission_timer -= _delta
+			if mission_timer <= 0.0:
+				_abort_mission()
+				return
+			if ceili(mission_timer) != last_progress_second:
+				last_progress_second = ceili(mission_timer)
+				objective_changed.emit("Stop the marked runner (%ds)" % last_progress_second)
+			if active_target.destroyed:
+				_complete_mission()
+		"pickup_delivery":
+			var player_position := contracted_player.global_position
+			if not pickup_collected and player_position.distance_to(active_target.global_position) <= location_radius:
+				pickup_collected = true
+				_clear_target()
+				var drop := _random_district()
+				_spawn_location_target(drop["position"], "DELIVER")
+				active_mission["objective"] = "Deliver the package to %s" % drop["name"]
+				_emit_objective()
+			elif pickup_collected and player_position.distance_to(active_target.global_position) <= location_radius:
+				_complete_mission()
+		"holdout":
+			if contracted_player.global_position.distance_to(active_target.global_position) <= location_radius:
+				mission_timer = max(0.0, mission_timer - _delta)
+				if ceili(mission_timer) != last_progress_second:
+					last_progress_second = ceili(mission_timer)
+					objective_changed.emit("Hold %s (%ds)" % [active_mission["district_name"], last_progress_second])
+				if mission_timer <= 0.0:
+					_complete_mission()
 		"kill":
 			if active_target.dead:
 				kills_done += 1
@@ -270,6 +434,8 @@ func _clear_target() -> void:
 	if target_marker and is_instance_valid(target_marker):
 		target_marker.queue_free()
 	target_marker = null
+	if active_target and active_target.get_meta("mission_marker", false):
+		active_target.queue_free()
 	active_target = null
 
 # Target died to something unrelated to the mission (cops, another NPC, a car
@@ -280,6 +446,8 @@ func _abort_mission() -> void:
 	_clear_target()
 	active_mission = {}
 	contracted_player = null
+	mission_timer = 0.0
+	pickup_collected = false
 	objective_changed.emit("")
 	mission_aborted.emit()
 
@@ -290,8 +458,14 @@ func _complete_mission() -> void:
 	_clear_target()
 	active_mission = {}
 	contracted_player = null
-	mission_index += 1
+	mission_timer = 0.0
+	pickup_collected = false
+	var is_story_mission: bool = mission_index < MISSIONS.size() and String(mission.get("id", "")) == String(MISSIONS[mission_index]["id"])
+	if is_story_mission:
+		if not completed_mission_ids.has(mission["id"]):
+			completed_mission_ids.append(mission["id"])
+		mission_index += 1
 	objective_changed.emit("")
 	mission_completed.emit(mission)
-	if mission_index == MISSIONS.size():
+	if is_story_mission and mission_index == MISSIONS.size():
 		story_completed.emit()

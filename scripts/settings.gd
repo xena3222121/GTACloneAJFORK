@@ -19,6 +19,11 @@ var fullscreen: bool = false
 # silently like the SSAO/SSR/glow upgrades in world_sky.gd.
 var performance_mode: bool = false
 const FSR_SCALE := 0.77 # roughly FSR's own "Quality" preset ratio
+# 0 = Low, 1 = Medium, 2 = High. Resolution scaling and effects quality are
+# deliberately separate: a player can use FSR for frame rate while still
+# choosing how much lighting/reflection detail they want.
+var graphics_quality := 2
+signal graphics_quality_changed(quality: int)
 
 func _ready() -> void:
 	_setup_controller_ui_input()
@@ -52,8 +57,30 @@ func _apply() -> void:
 		if performance_mode:
 			vp.scaling_3d_mode = Viewport.SCALING_3D_MODE_FSR
 			vp.scaling_3d_scale = FSR_SCALE
-		else:
+	else:
 			vp.scaling_3d_scale = 1.0
+	graphics_quality_changed.emit(graphics_quality)
+
+func apply_environment_quality(env: Environment) -> void:
+	var high := graphics_quality >= 2
+	var medium := graphics_quality >= 1
+	env.ssao_enabled = medium
+	env.ssr_enabled = high
+	env.ssil_enabled = high
+	env.volumetric_fog_enabled = high
+	if medium:
+		env.ssao_radius = 1.0
+		env.ssao_intensity = 1.2
+	if high:
+		env.ssr_max_steps = 32
+		env.ssil_radius = 3.0
+		env.ssil_intensity = 1.4
+		env.volumetric_fog_density = 0.012
+
+func set_graphics_quality(quality: int) -> void:
+	graphics_quality = clampi(quality, 0, 2)
+	_apply()
+	_save()
 
 func set_master_volume(v: float) -> void:
 	master_volume = clampf(v, 0.0, 1.0)
@@ -76,7 +103,8 @@ func _save() -> void:
 		file.store_string(JSON.stringify({
 			"master_volume": master_volume,
 			"fullscreen": fullscreen,
-			"performance_mode": performance_mode,
+		"performance_mode": performance_mode,
+		"graphics_quality": graphics_quality,
 		}))
 		file.close()
 
@@ -93,4 +121,5 @@ func _load() -> void:
 		return
 	master_volume = parsed.get("master_volume", master_volume)
 	performance_mode = parsed.get("performance_mode", performance_mode)
+	graphics_quality = parsed.get("graphics_quality", 0 if performance_mode else graphics_quality)
 	fullscreen = parsed.get("fullscreen", fullscreen)

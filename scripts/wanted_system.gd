@@ -10,6 +10,9 @@ extends Node
 # "escalate" as more crimes stack up before the grace period resets.
 
 signal tier_changed(tier: int)
+signal escape_progress(seconds_left: float)
+signal escape_started(duration: float)
+signal escaped()
 
 const MAX_HEAT := 100.0
 const DECAY_RATE := 9.0 # was 6 - heat (and with it, the reinforcement spawner below) used to linger too long after the player actually stopped causing trouble
@@ -34,6 +37,11 @@ const SPAWN_RADIUS_MAX := 26.0
 const MAX_SPAWNED_BY_TIER := [2, 2, 3, 5]
 const SPAWN_COOLDOWN_BY_TIER := [16.0, 16.0, 11.0, 7.0]
 
+# An escape is now an active player challenge: get out of sight, then keep
+# the police from reacquiring you until the timer expires.
+const ESCAPE_DURATION := 14.0
+const ESCAPE_SAFE_DELAY := 3.0
+
 # At max heat, reinforcements stop being regular beat cops and come in as
 # SWAT - tougher, faster, hits harder (see police.gd's exported max_health/
 # chase_speed/fire_rate/gun_damage). Only reinforcements get this; the 4
@@ -49,6 +57,9 @@ var _grace_timer := 0.0
 var _tier := 0
 var _spawn_timer := 0.0
 var _spawned: Array = []
+var escape_objective_active := false
+var _escape_timer := 0.0
+var _time_since_sighting := 0.0
 
 func get_tier() -> int:
 	return _tier
@@ -59,8 +70,17 @@ func add_heat(amount: float, source_position: Vector3) -> void:
 	_update_tier()
 	_alert_nearby_police(source_position)
 
+func request_escape_objective() -> void:
+	if heat <= 0.0:
+		return
+	escape_objective_active = true
+	_escape_timer = ESCAPE_DURATION
+	_time_since_sighting = 0.0
+	escape_started.emit(ESCAPE_DURATION)
+
 func report_sighting() -> void:
 	_grace_timer = DECAY_GRACE
+	_time_since_sighting = 0.0
 
 # Autoloads survive get_tree().reload_current_scene() (unlike everything on
 # Player, which reinstantiates from scratch) - without this, dying at a high
@@ -68,9 +88,13 @@ func report_sighting() -> void:
 func reset() -> void:
 	heat = 0.0
 	_grace_timer = 0.0
+	escape_objective_active = false
+	_escape_timer = 0.0
+	_time_since_sighting = 0.0
 	_update_tier()
 
 func _process(delta: float) -> void:
+	_time_since_sighting += delta
 	if _grace_timer > 0.0:
 		_grace_timer -= delta
 	elif heat > 0.0:
@@ -84,6 +108,19 @@ func _process(delta: float) -> void:
 			_maybe_spawn_reinforcement()
 	else:
 		_spawn_timer = 0.0
+
+	if escape_objective_active and _time_since_sighting >= ESCAPE_SAFE_DELAY:
+		_escape_timer = max(0.0, _escape_timer - delta)
+		escape_progress.emit(_escape_timer)
+		if _escape_timer <= 0.0:
+			heat = 0.0
+			_grace_timer = 0.0
+			escape_objective_active = false
+			for cop in get_tree().get_nodes_in_group("police"):
+				if cop.has_method("stand_down"):
+					cop.stand_down()
+			_update_tier()
+			escaped.emit()
 
 # The 4 hand-placed officers are sparse enough across a ~150-unit city that
 # most crimes happen nowhere near any of them - alert() alone (see

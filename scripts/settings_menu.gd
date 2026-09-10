@@ -8,6 +8,7 @@ signal closed
 
 @onready var volume_slider: HSlider = $Panel/VBox/VolumeSlider
 @onready var fullscreen_check: CheckButton = $Panel/VBox/FullscreenCheck
+@onready var graphics_quality: OptionButton = $Panel/VBox/GraphicsQuality
 @onready var performance_check: CheckButton = $Panel/VBox/PerformanceCheck
 @onready var back_button: Button = $Panel/VBox/BackButton
 
@@ -15,9 +16,15 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	volume_slider.value = Settings.master_volume
 	fullscreen_check.button_pressed = Settings.fullscreen
+	graphics_quality.clear()
+	graphics_quality.add_item("Low", 0)
+	graphics_quality.add_item("Medium", 1)
+	graphics_quality.add_item("High", 2)
+	graphics_quality.select(Settings.graphics_quality)
 	performance_check.button_pressed = Settings.performance_mode
 	volume_slider.value_changed.connect(_on_volume_changed)
 	fullscreen_check.toggled.connect(_on_fullscreen_toggled)
+	graphics_quality.item_selected.connect(_on_graphics_quality_selected)
 	performance_check.toggled.connect(_on_performance_toggled)
 	back_button.pressed.connect(_on_back_pressed)
 
@@ -26,6 +33,9 @@ func _on_volume_changed(value: float) -> void:
 
 func _on_fullscreen_toggled(enabled: bool) -> void:
 	Settings.set_fullscreen(enabled)
+
+func _on_graphics_quality_selected(index: int) -> void:
+	Settings.set_graphics_quality(index)
 
 func _on_performance_toggled(enabled: bool) -> void:
 	Settings.set_performance_mode(enabled)

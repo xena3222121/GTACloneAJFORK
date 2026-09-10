@@ -21,6 +21,13 @@ const NIGHT_AMBIENT_ENERGY := 0.12
 const DAY_SUN_ENERGY := 0.95
 const NIGHT_SUN_ENERGY := 0.05
 
+const OWNED_VEHICLE_SCENES := {
+	"camaro": preload("res://scenes/ParkedCar_Camaro.tscn"),
+	"mazda": preload("res://scenes/ParkedCar_MazdaRX7.tscn"),
+	"rangerover": preload("res://scenes/ParkedCar_RangeRover.tscn"),
+}
+const GARAGE_SLOTS := [Vector3(13, 0.1, -5), Vector3(18, 0.1, -5), Vector3(23, 0.1, -5)]
+
 @onready var sun: DirectionalLight3D = $DirectionalLight3D
 @onready var world_env: WorldEnvironment = $WorldEnvironment
 
@@ -42,6 +49,8 @@ const STREETLIGHT_ON_THRESHOLD := 0.4 # brightness below which lights start fadi
 # descendant (Player included) has already had its own _ready() called.
 func _ready() -> void:
 	_setup_urban_grade()
+	Settings.graphics_quality_changed.connect(_on_graphics_quality_changed)
+	Settings.apply_environment_quality(world_env.environment)
 	_collect_street_lights()
 	var player := get_tree().get_first_node_in_group("player")
 	if SaveSystem.load_on_next_ready:
@@ -55,6 +64,21 @@ func _ready() -> void:
 		# inside the safehouse instead is always clear and matches
 		# Continue's own "wake up at the safehouse" spawn.
 		_spawn_in_house(player)
+	if player:
+		_spawn_owned_vehicles(player)
+
+func _spawn_owned_vehicles(player: Node) -> void:
+	# Purchased cars return to the safehouse between sessions. This turns the
+	# dealership into ownership rather than a one-time spawn button and gives
+	# the player a small, readable garage as their collection grows.
+	for i in range(min(player.owned_vehicle_types.size(), GARAGE_SLOTS.size())):
+		var scene: PackedScene = OWNED_VEHICLE_SCENES.get(player.owned_vehicle_types[i])
+		if not scene:
+			continue
+		var vehicle: Node3D = scene.instantiate()
+		add_child(vehicle)
+		vehicle.global_position = GARAGE_SLOTS[i]
+		vehicle.rotation.y = PI
 
 # One-time setup for the parts of the GTA IV look that don't need to change
 # per-frame the way the day/night lerp below does: color grading (pulled-
@@ -81,10 +105,8 @@ func _setup_urban_grade() -> void:
 	# uniformly flat-lit, plus screen-space reflections so glossy car paint
 	# and wet rainy streets actually pick up a reflection instead of just
 	# being a flat specular highlight.
-	env.ssao_enabled = true
 	env.ssao_radius = 1.0
 	env.ssao_intensity = 1.2
-	env.ssr_enabled = true
 	env.ssr_max_steps = 32
 
 	# Screen-space indirect lighting - bounces light/color off nearby
@@ -95,15 +117,25 @@ func _setup_urban_grade() -> void:
 	# "next-gen" look for very little added cost - exactly the kind of
 	# thing DLSS's freed-up frame budget is normally spent on, done here
 	# without needing DLSS or the performance headroom it buys.
-	env.ssil_enabled = true
 	env.ssil_radius = 3.0
 	env.ssil_intensity = 1.4
+
+	# A light volumetric haze gives the long streets, waterfront, headlights,
+	# and neon real depth separation. It is intentionally subtle: the city
+	# should feel humid and cinematic, not like it is permanently inside a
+	# smoke grenade.
+	env.volumetric_fog_density = 0.012
+	env.volumetric_fog_albedo = Color(0.72, 0.68, 0.62)
+	env.volumetric_fog_detail_spread = 1.5
 
 	# ACES is a proper filmic tonemap curve (rolls off highlights instead of
 	# hard-clipping them white) - matters now specifically because glow/SSR
 	# push more into the bright range than the flat default Linear curve was
 	# ever tuned against.
 	env.tonemap_mode = Environment.TONE_MAPPER_ACES
+
+func _on_graphics_quality_changed(_quality: int) -> void:
+	Settings.apply_environment_quality(world_env.environment)
 
 func _spawn_in_house(player: Node) -> void:
 	var house_entrance := get_node_or_null("HouseEntrance")
