@@ -365,6 +365,17 @@ func stand_down() -> void:
 	if siren_audio.playing:
 		siren_audio.stop()
 
+# Both routed through a method rather than calling WantedSystem directly so
+# a subclass can mean something other than "the police." gang_enforcer.gd
+# reuses this whole AI but is not law enforcement - shooting it out with a
+# rival crew shouldn't summon a police manhunt, and a gangster staring at
+# the player shouldn't keep an unrelated wanted level from decaying.
+func _report_crime(amount: float) -> void:
+	WantedSystem.add_heat(amount, global_position)
+
+func _report_sighting() -> void:
+	WantedSystem.report_sighting()
+
 func _resolve_player() -> void:
 	player = get_tree().get_first_node_in_group("player")
 
@@ -603,7 +614,7 @@ func _process_hostile(delta: float) -> void:
 	# immediately; without the sight check it'd never give up at all.
 	if dist <= _effective_engage_range() and _has_line_of_sight(player.global_position):
 		lost_sight_timer = 0.0
-		WantedSystem.report_sighting()
+		_report_sighting()
 	# SWAT roam further from their spawn point and take longer to give up
 	# once they've lost sight - they were called in specifically for this
 	# chase, unlike a patrol cop who was just standing post nearby.
@@ -682,7 +693,7 @@ func take_damage(amount: float, _hit_point: Vector3 = Vector3.ZERO) -> void:
 		if not hostile and player and player.has_method("play_cops_incoming_line"):
 			player.play_cops_incoming_line()
 		_engage()
-		WantedSystem.add_heat(HIT_HEAT, global_position)
+		_report_crime(HIT_HEAT)
 		hit_stagger_timer = HIT_STAGGER_TIME
 	health -= amount
 	if health <= 0.0:
@@ -703,7 +714,7 @@ func die(by_player: bool = false) -> void:
 	_maybe_drop_loot()
 	NPC.scare_nearby(get_tree(), global_position)
 	if by_player:
-		WantedSystem.add_heat(KILLED_HEAT, global_position)
+		_report_crime(KILLED_HEAT)
 
 func _spawn_blood_pool() -> void:
 	var pool: Node3D = BLOOD_POOL.instantiate()

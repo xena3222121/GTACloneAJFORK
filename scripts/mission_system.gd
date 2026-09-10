@@ -213,6 +213,41 @@ func start_district_event(player: Node3D, district: Dictionary) -> bool:
 	_emit_objective()
 	return true
 
+# Generic entry point for jobs that come from somewhere other than the
+# Fixer (see faction_system.gd's turf wars): the caller supplies the mission
+# dict and where to put the marker, and the job then behaves like any other
+# one - same objective line, minimap marker, banner, payout and cleanup -
+# instead of every system growing its own parallel objective framework.
+func start_side_mission(player: Node3D, mission: Dictionary, marker_position: Vector3, marker_label: String) -> bool:
+	if active_mission:
+		return false
+	active_mission = mission.duplicate(true)
+	contracted_player = player
+	kills_done = int(mission.get("kills_done", 0))
+	kill_count = int(mission.get("kill_count", 1))
+	mission_timer = float(mission.get("duration", 0.0))
+	pickup_collected = false
+	last_progress_second = -1
+	_spawn_location_target(marker_position, marker_label)
+	mission_started.emit(active_mission)
+	_emit_objective()
+	return true
+
+# Called by faction_system.gd when the player puts down an enforcer during a
+# turf war. Kills are reported rather than polled because the enforcers are
+# individual nodes that free themselves - there is no single target node for
+# _process to watch the way a "kill" or "wreck" mission has.
+func report_turf_kill(district_name: String) -> void:
+	if not active_mission or String(active_mission.get("type", "")) != "turf_war":
+		return
+	if String(active_mission.get("district_name", "")) != district_name:
+		return
+	kills_done += 1
+	if kills_done >= kill_count:
+		_complete_mission()
+	else:
+		_emit_objective()
+
 func get_next_mission() -> Dictionary:
 	if mission_index < MISSIONS.size():
 		return MISSIONS[mission_index]
@@ -385,6 +420,17 @@ func _process(_delta: float) -> void:
 					objective_changed.emit("Hold %s (%ds)" % [active_mission["district_name"], last_progress_second])
 				if mission_timer <= 0.0:
 					_complete_mission()
+		"turf_war":
+			# Only a defense carries a duration (see faction_system.gd) - a
+			# takeover has no clock, so the war stays open until the crew is
+			# down or the player walks away from it.
+			if mission_timer > 0.0:
+				mission_timer = max(0.0, mission_timer - _delta)
+				if ceili(mission_timer) != last_progress_second:
+					last_progress_second = ceili(mission_timer)
+					objective_changed.emit("%s (%d/%d, %ds)" % [String(active_mission["objective"]), kills_done, kill_count, last_progress_second])
+				if mission_timer <= 0.0:
+					_abort_mission()
 		"kill":
 			if active_target.dead:
 				kills_done += 1

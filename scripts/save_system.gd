@@ -55,6 +55,7 @@ func save_game(player: Node) -> void:
 		"outfit_tint": player.outfit_tint.to_html(true),
 		"mission_index": MissionSystem.mission_index,
 		"completed_mission_ids": MissionSystem.completed_mission_ids,
+		"territory": FactionSystem.to_dict(),
 	}
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file:
@@ -92,6 +93,10 @@ func load_game(player: Node) -> bool:
 	player.mac10_ammo_in_mag = data.get("mac10_ammo_in_mag", player.mac10_ammo_in_mag)
 	player.mac10_reserve_ammo = data.get("mac10_reserve_ammo", player.mac10_reserve_ammo)
 	player.current_weapon = data.get("current_weapon", player.current_weapon)
+	# An older save predates the crews entirely - from_dict() falls back to
+	# the starting owners, so loading one just means nothing has been taken
+	# yet rather than a broken map.
+	FactionSystem.from_dict(data.get("territory", {}))
 	if data.has("completed_mission_ids"):
 		MissionSystem.restore_completed_missions(data["completed_mission_ids"])
 	else:

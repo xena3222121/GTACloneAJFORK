@@ -32,11 +32,14 @@ func _on_continue_pressed() -> void:
 	# save_system.gd) so resetting here doesn't lose anything Continue
 	# is supposed to restore.
 	WantedSystem.reset()
+	FactionSystem.reset()
 	SaveSystem.load_on_next_ready = true
 	get_tree().change_scene_to_file("res://scenes/World.tscn")
 
 func _on_new_game_pressed() -> void:
 	WantedSystem.reset()
+	# A new game starts with the crews holding their original blocks.
+	FactionSystem.reset_territory()
 	SaveSystem.load_on_next_ready = false
 	get_tree().change_scene_to_file("res://scenes/World.tscn")
 

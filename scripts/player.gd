@@ -595,6 +595,9 @@ func _ready() -> void:
 	MissionSystem.mission_aborted.connect(_on_mission_aborted)
 	MissionSystem.objective_changed.connect(_on_objective_changed)
 	MissionSystem.story_completed.connect(_on_story_completed)
+	# Territory news (a block taken, held or lost) reuses the mission
+	# banner instead of faction_system.gd knowing this HUD exists.
+	FactionSystem.banner_requested.connect(_show_mission_banner)
 	buy_ammo_button.pressed.connect(_buy_ammo)
 	buy_shotgun_button.pressed.connect(_buy_shotgun)
 	buy_mac10_button.pressed.connect(_buy_mac10)
@@ -689,6 +692,9 @@ func _show_mission_banner(text: String, hold_time: float) -> void:
 
 func _on_restart_pressed() -> void:
 	WantedSystem.reset()
+	# Enforcers spawned by the crews died with the old scene; who owns
+	# which district is progress and deliberately survives the restart.
+	FactionSystem.reset()
 	get_tree().reload_current_scene()
 
 func _on_quit_pressed() -> void:
