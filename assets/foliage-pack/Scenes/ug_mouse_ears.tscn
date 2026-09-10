@@ -1,6 +1,6 @@
 [gd_scene format=4 uid="uid://diixm0i6og4xv"]
 
-[ext_resource type="Material" uid="uid://cwg5wvfu0rj30" path="res://assets/foliage-pack/Materials/GrassyVegetation.tres" id="1_cc6un"]
+[ext_resource type="Material" uid="uid://bhk54wuwqckon" path="res://assets/foliage-pack/Materials/CloverMouseEars.tres" id="1_cc6un"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mp2e1"]
 resource_name = "plantitas1diff"
