@@ -1,6 +1,6 @@
 [gd_resource type="StandardMaterial3D" format=3 uid="uid://bifhqroikstwg"]
 
-[ext_resource type="Texture2D" uid="uid://c6le1rv2485bq" path="res://assets/foliage-pack/Textures/Plant JelloBush.png" id="1_iung3"]
+[ext_resource type="Texture2D" uid="uid://ct48v707pk57g" path="res://assets/foliage-pack/Textures/Plant JelloBush.png" id="1_iung3"]
 
 [resource]
 transparency = 4

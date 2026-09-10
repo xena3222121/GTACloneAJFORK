@@ -1,6 +1,6 @@
 [gd_resource type="StandardMaterial3D" format=3 uid="uid://dw8kni51br60f"]
 
-[ext_resource type="Texture2D" uid="uid://b8qxvb3q8bug3" path="res://assets/foliage-pack/Textures/Bark1.png" id="1_fx0gr"]
+[ext_resource type="Texture2D" uid="uid://qhxmvi4rx0ht" path="res://assets/foliage-pack/Textures/Bark1.png" id="1_fx0gr"]
 
 [resource]
 cull_mode = 2

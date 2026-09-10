@@ -1,6 +1,6 @@
 [gd_scene format=4 uid="uid://crjlsyndifu7d"]
 
-[ext_resource type="Texture2D" uid="uid://djxyy88vdendp" path="res://assets/foliage-pack/Textures/Clover Mouse Ears.png" id="1_jo6lf"]
+[ext_resource type="Texture2D" uid="uid://c1a4yao5p3jvh" path="res://assets/foliage-pack/Textures/Clover Mouse Ears.png" id="1_jo6lf"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4h11c"]
 transparency = 4
