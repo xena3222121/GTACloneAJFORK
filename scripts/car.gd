@@ -46,6 +46,10 @@ func _ready() -> void:
 	_setup_engine_audio()
 	_setup_headlights()
 	_setup_collision_detection()
+	# See car_paint.gd - gloss/metal uplift only (recolor=false), so the
+	# player's own starter car keeps its actual paint instead of getting
+	# randomized like ambient traffic/parked cars do.
+	CarPaint.apply(model, false)
 
 # Every other drivable car (parked_car.gd's StaticBody3D, traffic_car.gd's
 # AnimatableBody3D) registers a hit on whatever it rams via its own

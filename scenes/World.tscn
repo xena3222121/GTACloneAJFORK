@@ -43,6 +43,7 @@
 [ext_resource type="PackedScene" path="res://scenes/TrafficCar_D.tscn" id="35"]
 [ext_resource type="PackedScene" path="res://scenes/TrafficCar_E.tscn" id="36"]
 [ext_resource type="PackedScene" path="res://scenes/TrafficCar_F.tscn" id="42"]
+[ext_resource type="PackedScene" path="res://scenes/TrafficCar_G.tscn" id="120"]
 [ext_resource type="Script" path="res://scripts/save_point.gd" id="37"]
 [ext_resource type="Script" path="res://scripts/job_board.gd" id="38"]
 [ext_resource type="Script" path="res://scripts/weed_plot.gd" id="39"]
@@ -1250,6 +1251,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.3, 0.1, 24)
 speed = 6.0
 start_direction = -1.0
 
+[node name="TrafficCarG" parent="TrafficCars" instance=ExtResource("120")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.3, 0.1, 15)
+speed = 5.5
+
 [node name="Trees" type="Node3D" parent="." unique_id=671295314]
 
 [node name="TreeE1" parent="Trees" unique_id=1697225780 instance=ExtResource("17")]
@@ -1607,6 +1612,14 @@ min_pos = -10.0
 max_pos = 95.0
 speed = 8.0
 
+[node name="CarD" parent="TrafficCarsHighwayNorth" instance=ExtResource("120")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 0.1, 63)
+axis = 1
+min_pos = -10.0
+max_pos = 95.0
+speed = 6.5
+start_direction = -1.0
+
 [node name="TrafficCarsHighwaySouth" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6, 0)
 
@@ -1624,6 +1637,13 @@ axis = 1
 min_pos = -10.0
 max_pos = 95.0
 speed = 5.5
+
+[node name="CarC" parent="TrafficCarsHighwaySouth" instance=ExtResource("36")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.1, -57)
+axis = 1
+min_pos = -10.0
+max_pos = 95.0
+speed = 7.0
 
 [node name="HighwayRamps" type="Node3D" parent="."]
 
@@ -2272,6 +2292,14 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 58.7, 0.1, -22)
 speed = 4.5
 start_direction = -1.0
 
+[node name="TrafficCarE" parent="TrafficCarsB" instance=ExtResource("120")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 61.3, 0.1, 30)
+speed = 6.0
+
+[node name="TrafficCarF" parent="TrafficCarsB" instance=ExtResource("36")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 58.7, 0.1, 5)
+speed = 5.0
+
 [node name="TreesB" type="Node3D" parent="."]
 
 [node name="TreeE1" parent="TreesB" instance=ExtResource("17")]
@@ -2789,6 +2817,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 121.3, 0.1, 24)
 speed = 6.0
 start_direction = -1.0
 
+[node name="TrafficCarF" parent="TrafficCarsC" instance=ExtResource("120")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 118.7, 0.1, 0)
+speed = 5.0
+
 
 [node name="TreesC" type="Node3D" parent="."]
 
@@ -3274,6 +3306,10 @@ speed = 4.5
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 181.3, 0.1, 24)
 speed = 6.0
 start_direction = -1.0
+
+[node name="TrafficCarF" parent="TrafficCarsD" instance=ExtResource("120")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 178.7, 0.1, 0)
+speed = 5.0
 
 
 [node name="TreesD" type="Node3D" parent="."]
@@ -5403,6 +5439,14 @@ min_pos = 100.0
 max_pos = 205.0
 speed = 8.0
 
+[node name="CarD" parent="TrafficCarsHighwayNorthEast" instance=ExtResource("120")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 175, 0.1, 63)
+axis = 1
+min_pos = 100.0
+max_pos = 205.0
+speed = 6.5
+start_direction = -1.0
+
 [node name="TrafficCarsHighwaySouthEast" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6, 0)
 
@@ -5420,6 +5464,13 @@ axis = 1
 min_pos = 100.0
 max_pos = 205.0
 speed = 5.5
+
+[node name="CarC" parent="TrafficCarsHighwaySouthEast" instance=ExtResource("36")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, 0.1, -57)
+axis = 1
+min_pos = 100.0
+max_pos = 205.0
+speed = 7.0
 
 
 [node name="HighwayRampsEast" type="Node3D" parent="."]
@@ -6623,6 +6674,21 @@ start_direction = -1.0
 
 [node name="CarD" parent="TrafficCarsCrossStreet1" instance=ExtResource("35")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 66, 0.1, 19.7)
+axis = 1
+min_pos = 6.0
+max_pos = 174.0
+speed = 5.5
+
+[node name="CarE" parent="TrafficCarsCrossStreet1" instance=ExtResource("120")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45, 0.1, 19.7)
+axis = 1
+min_pos = 6.0
+max_pos = 174.0
+speed = 6.5
+start_direction = -1.0
+
+[node name="CarF" parent="TrafficCarsCrossStreet1" instance=ExtResource("36")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 115, 0.1, 22.3)
 axis = 1
 min_pos = 6.0
 max_pos = 174.0

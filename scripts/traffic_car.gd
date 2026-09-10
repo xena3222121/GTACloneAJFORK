@@ -93,6 +93,12 @@ func _ready() -> void:
 	health = max_health
 	_setup_engine_audio()
 	_setup_headlights()
+	# Every instance of the same body style (NormalCar1, Taxi, ...) used to
+	# be the exact same single baked color citywide - one gloss/color pass
+	# per car instead of per model gives traffic real per-car variety. See
+	# car_paint.gd for why this never touches Camaro (the one model in this
+	# pack that already had real paint).
+	CarPaint.apply(model)
 
 # Same real recorded engine loop as car.gd (see Audio/Ambience/
 # ATTRIBUTION.md), kept duplicated rather than shared, matching this

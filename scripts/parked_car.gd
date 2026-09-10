@@ -85,6 +85,12 @@ func _ready() -> void:
 	add_to_group("parked_vehicles")
 	_setup_engine_audio()
 	_setup_headlights()
+	# See car_paint.gd - repaints/glosses the flat-default decorative pool
+	# (Normal1/2, SUV, Taxi, Hatchback). The dealer-exclusive Camaro/Mazda/
+	# RangeRover already have real paint and are left untouched automatically,
+	# so a purchased car's color never gets rerolled out from under the
+	# player on a garage respawn.
+	CarPaint.apply(model)
 
 func _setup_engine_audio() -> void:
 	engine_audio = AudioStreamPlayer3D.new()
